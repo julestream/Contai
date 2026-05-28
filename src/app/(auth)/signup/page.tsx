@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import Logo from '@/components/ui/Logo'
 import Button from '@/components/ui/Button'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
@@ -11,7 +12,7 @@ export default function SignUpPage() {
   const [role, setRole] = useState<'buyer' | 'artist'>('buyer')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  const router = useRouter()
 
   async function handleSignUp() {
     setLoading(true)
@@ -33,23 +34,31 @@ export default function SignUpPage() {
     }
 
     if (data.user) {
+      // Insert profile
       await supabase.from('profiles').insert({
         id: data.user.id,
         role,
       })
-      setSuccess(true)
+
+      // Sign in immediately
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInError) {
+        setError(signInError.message)
+        setLoading(false)
+        return
+      }
+
+      if (role === 'artist') {
+        router.push('/dashboard/onboarding')
+      } else {
+        router.push('/browse')
+      }
     }
     setLoading(false)
-  }
-
-  if (success) {
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center', maxWidth: '430px', margin: '0 auto' }}>
-        <Logo />
-        <h2 style={{ fontFamily: 'Georgia, serif', marginTop: '2rem' }}>Check your email</h2>
-        <p style={{ color: '#666', marginTop: '1rem' }}>We sent a confirmation link to {email}</p>
-      </div>
-    )
   }
 
   return (
