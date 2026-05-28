@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import FavoriteButton from '@/components/ui/FavoriteButton'
 
 export default async function ArtworkPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -34,10 +35,13 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
       )}
 
       <div style={{ padding: '1.5rem' }}>
-        {/* Artist */}
-        <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-          {(artwork as any).profiles?.full_name || 'Artist'}
-        </p>
+        {/* Artist & favorite */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            {(artwork as any).profiles?.full_name || 'Artist'}
+          </p>
+          <FavoriteButton artworkId={artwork.id} />
+        </div>
 
         {/* Title & Price */}
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '26px', marginTop: '4px' }}>{artwork.title}</h1>
@@ -51,7 +55,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
             {artwork.medium && <p><span style={{ color: '#999' }}>Medium</span><br />{artwork.medium}</p>}
             {artwork.year && <p><span style={{ color: '#999' }}>Year</span><br />{artwork.year}</p>}
             {artwork.width_cm && <p><span style={{ color: '#999' }}>Size</span><br />{artwork.width_cm} × {artwork.height_cm} cm</p>}
-            {artwork.original_or_print && <p><span style={{ color: '#999' }}>Type</span><br style={{textTransform: 'capitalize'}} />{artwork.original_or_print}</p>}
+            {artwork.original_or_print && <p><span style={{ color: '#999' }}>Type</span><br />{artwork.original_or_print}</p>}
             {artwork.framed && <p><span style={{ color: '#999' }}>Framed</span><br />Yes</p>}
             <p><span style={{ color: '#999' }}>Pickup</span><br />{artwork.pickup_area}</p>
           </div>
