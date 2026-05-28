@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import FavoriteButton from '@/components/ui/FavoriteButton'
+import MessageArtistButton from '@/components/ui/MessageArtistButton'
 
 export default async function ArtworkPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -15,6 +16,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
   if (!artwork) redirect('/browse')
 
   const images = artwork.images as string[]
+  const artist = (artwork as any).profiles
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '8rem' }}>
@@ -38,7 +40,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
         {/* Artist & favorite */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            {(artwork as any).profiles?.full_name || 'Artist'}
+            {artist?.full_name || 'Artist'}
           </p>
           <FavoriteButton artworkId={artwork.id} />
         </div>
@@ -77,18 +79,21 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
           </div>
         </Link>
 
+        {/* Message artist button */}
+        <MessageArtistButton artworkId={artwork.id} artistId={artist?.id} />
+
         {/* Guarantee strip */}
         <div style={{ marginTop: '1rem', padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', fontSize: '13px', color: '#666', textAlign: 'center' }}>
           🛡 Contai Guarantee — full refund if something goes wrong
         </div>
 
         {/* Artist card */}
-        <Link href={`/artist/${(artwork as any).profiles?.id}`} style={{ textDecoration: 'none' }}>
+        <Link href={`/artist/${artist?.id}`} style={{ textDecoration: 'none' }}>
           <div style={{ marginTop: '1.5rem', padding: '1rem', border: '1px solid #e8e8e8', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '999px', backgroundColor: '#f5f3ef', flexShrink: 0 }} />
             <div>
-              <p style={{ fontWeight: 600, fontSize: '14px' }}>{(artwork as any).profiles?.full_name}</p>
-              <p style={{ color: '#999', fontSize: '13px' }}>{(artwork as any).profiles?.city}</p>
+              <p style={{ fontWeight: 600, fontSize: '14px' }}>{artist?.full_name}</p>
+              <p style={{ color: '#999', fontSize: '13px' }}>{artist?.city}</p>
             </div>
           </div>
         </Link>
