@@ -1,0 +1,84 @@
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import Stripe from 'stripe'
+import { NextResponse } from 'next/server'
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-06-20',
+})
+
+export async function POST(request: Request) {
+  try {
+    const { artworkId } = await request.json()
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    // Fetch artwork
+    const { data: artwork } = await supabase
+      .from('artworks')
+      .select('*')
+      .eq('id', artworkId)
+      .eq('status', 'live')
+      .single()
+
+    if (!artwork) {
+      return NextResponse.json({ error: 'Artwork not available' }, { status: 400 })
+    }
+
+    // Check buyer is not the artist
+    if (artwork.artist_id === user.id) {
+      return NextResponse.json({ error: 'You cannot reserve your own artwork' }, { status: 400 })
+    }
+
+    const adminSupabase = createAdminClient()
+
+    // Create reservation
+    const { data: reservation } = await adminSupabase
+      .from('reservations')
+      .insert({
+        artwork_id: artworkId,
+        buyer_id: user.id,
+        status: 'reserved',
+        reservation_fee_huf: artwork.reservation_fee_huf,
+      })
+      .select('id')
+      .single()
+
+    // Create Stripe checkout session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'huf',
+          product_data: {
+            name: `Reservation fee — ${artwork.title}`,
+            description: 'This fee is deducted from the total price when you meet the artist.',
+          },
+          unit_amount: Math.round(artwork.reservation_fee_huf),
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/handoff/${reservation!.id}?success=1`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/artwork/${artworkId}`,
+      metadata: {
+        reservationId: reservation!.id,
+        artworkId,
+      },
+    })
+
+    // Store session ID
+    await adminSupabase
+      .from('reservations')
+      .update({ stripe_checkout_session_id: session.id })
+      .eq('id', reservation!.id)
+
+    return NextResponse.json({ url: session.url })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
