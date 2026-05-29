@@ -12,7 +12,6 @@ export default function HandoffClient({ reservation, userId }: any) {
   const [issueNotes, setIssueNotes] = useState('')
   const [issueSubmitted, setIssueSubmitted] = useState(false)
   const [submittingIssue, setSubmittingIssue] = useState(false)
-  const [conversationId, setConversationId] = useState<string | null>(null)
   const router = useRouter()
   const artwork = reservation.artworks
 
@@ -42,20 +41,6 @@ export default function HandoffClient({ reservation, userId }: any) {
     fetchAddress()
   }, [reservation.id, reservation.status])
 
-  useEffect(() => {
-    async function findConversation() {
-      const supabase = createClient()
-      const { data } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('artwork_id', artwork.id)
-        .eq('buyer_id', userId)
-        .single()
-      if (data) setConversationId(data.id)
-    }
-    findConversation()
-  }, [artwork.id, userId])
-
   async function handleConfirmHandoff() {
     setConfirming(true)
     const supabase = createClient()
@@ -70,9 +55,15 @@ export default function HandoffClient({ reservation, userId }: any) {
     const res = await fetch('/api/issues', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reservationId: reservation.id, issueType, issueNotes }),
+      body: JSON.stringify({
+        reservationId: reservation.id,
+        issueType,
+        issueNotes,
+      }),
     })
-    if (res.ok) setIssueSubmitted(true)
+    if (res.ok) {
+      setIssueSubmitted(true)
+    }
     setSubmittingIssue(false)
   }
 
@@ -108,7 +99,7 @@ export default function HandoffClient({ reservation, userId }: any) {
 
           {isPaid && reservation.handoff_code && (
             <div style={{ marginBottom: '1.5rem' }}>
-              <p style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>Your handoff code — show this to the artist:</p>
+              <p style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>Your handoff code:</p>
               <div style={{
                 padding: '1.5rem', backgroundColor: '#f5f3ef', borderRadius: '12px',
                 textAlign: 'center', fontFamily: 'monospace', fontSize: '32px',
@@ -124,41 +115,6 @@ export default function HandoffClient({ reservation, userId }: any) {
               <p style={{ fontSize: '13px', color: '#666', marginBottom: '4px' }}>Pickup address:</p>
               <p style={{ fontWeight: 600 }}>{address}</p>
             </div>
-          )}
-
-          {/* Message artist button */}
-          {isPaid && conversationId && (
-            <button
-              onClick={() => router.push(`/messages/${conversationId}`)}
-              style={{
-                width: '100%', padding: '14px', backgroundColor: 'white',
-                color: '#0a0a0a', border: '1px solid #0a0a0a', borderRadius: '999px',
-                fontSize: '15px', fontWeight: 500, cursor: 'pointer', marginBottom: '12px',
-              }}
-            >
-              💬 Message artist to arrange meetup
-            </button>
-          )}
-
-          {isPaid && !conversationId && (
-            <button
-              onClick={async () => {
-                const supabase = createClient()
-                const { data } = await supabase.from('conversations').insert({
-                  artwork_id: artwork.id,
-                  buyer_id: userId,
-                  artist_id: artwork.artist_id,
-                }).select('id').single()
-                if (data) router.push(`/messages/${data.id}`)
-              }}
-              style={{
-                width: '100%', padding: '14px', backgroundColor: 'white',
-                color: '#0a0a0a', border: '1px solid #0a0a0a', borderRadius: '999px',
-                fontSize: '15px', fontWeight: 500, cursor: 'pointer', marginBottom: '12px',
-              }}
-            >
-              💬 Message artist to arrange meetup
-            </button>
           )}
 
           <div style={{ marginBottom: '1.5rem' }}>
@@ -191,6 +147,7 @@ export default function HandoffClient({ reservation, userId }: any) {
             </button>
           )}
 
+          {/* Issue reporting */}
           {isPaid && !isCompleted && !showIssue && !issueSubmitted && (
             <button onClick={() => setShowIssue(true)} style={{
               width: '100%', padding: '12px', backgroundColor: 'transparent',
