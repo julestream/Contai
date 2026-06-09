@@ -1,72 +1,85 @@
 'use client'
-import { Home, ShoppingCart, Heart, User, Plus } from 'lucide-react'
-import { usePathname } from 'next/navigation'
+
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Home, LayoutGrid, Plus, Heart, User } from 'lucide-react'
 
 export default function TabBar() {
   const pathname = usePathname()
+  const isActive = (href: string) =>
+    href === '/' ? pathname === '/' : pathname.startsWith(href)
 
-  const tabs = [
-    { href: '/browse', icon: Home, label: 'Home' },
-    { href: '/shop', icon: ShoppingCart, label: 'Shop' },
-    { href: '/favorites', icon: Heart, label: 'Favorites' },
-    { href: '/me', icon: User, label: 'Me' },
-  ]
+  const Item = (href: string, label: string, Icon: any) => {
+    const active = isActive(href)
+    return (
+      <Link
+        href={href}
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 4,
+          textDecoration: 'none',
+          color: active ? '#0a0a0a' : '#999999',
+          fontSize: 11,
+          fontWeight: active ? 700 : 400,
+        }}
+      >
+        <Icon size={22} strokeWidth={active ? 2.4 : 2} />
+        <span>{label}</span>
+      </Link>
+    )
+  }
 
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: 0,
-      left: '50%',
-      transform: 'translateX(-50%)',
-      width: '100%',
-      maxWidth: '430px',
-      backgroundColor: '#ffffff',
-      borderTop: '1px solid #e8e8e8',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-around',
-      padding: '8px 0 20px',
-      zIndex: 50,
-    }}>
-      {tabs.slice(0, 2).map(({ href, icon: Icon, label }) => {
-        const active = pathname === href
-        return (
-          <Link key={href} href={href} style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-              <Icon size={22} color={active ? '#0a0a0a' : '#999999'} />
-              <span style={{ fontSize: '10px', color: active ? '#0a0a0a' : '#999999', fontWeight: active ? 600 : 400 }}>{label}</span>
-            </div>
-          </Link>
-        )
-      })}
-
-      <Link href="/dashboard/upload" style={{ textDecoration: 'none' }}>
-        <div style={{
-          width: '48px',
-          height: '48px',
-          borderRadius: '999px',
-          backgroundColor: '#0a0a0a',
+    <nav
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        background: '#ffffff',
+        borderTop: '1px solid #e8e8e8',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 480,
+          margin: '0 auto',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: '8px',
-        }}>
-          <Plus size={22} color="#ffffff" />
-        </div>
-      </Link>
-
-      {tabs.slice(2).map(({ href, icon: Icon, label }) => {
-        const active = pathname === href
-        return (
-          <Link key={href} href={href} style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-              <Icon size={22} color={active ? '#0a0a0a' : '#999999'} />
-              <span style={{ fontSize: '10px', color: active ? '#0a0a0a' : '#999999', fontWeight: active ? 600 : 400 }}>{label}</span>
-            </div>
-          </Link>
-        )
-      })}
-    </div>
+          padding: '8px 8px calc(8px + env(safe-area-inset-bottom))',
+        }}
+      >
+        {Item('/', 'Home', Home)}
+        {Item('/browse', 'Browse', LayoutGrid)}
+        <Link
+          href="/dashboard/upload"
+          aria-label="Sell"
+          style={{ flex: 1, display: 'flex', justifyContent: 'center' }}
+        >
+          <span
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 999,
+              background: '#0a0a0a',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: -18,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            }}
+          >
+            <Plus size={26} strokeWidth={2.4} />
+          </span>
+        </Link>
+        {Item('/favorites', 'Favorites', Heart)}
+        {Item('/me', 'Me', User)}
+      </div>
+    </nav>
   )
 }
