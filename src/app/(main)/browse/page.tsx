@@ -4,7 +4,7 @@ import Link from 'next/link'
 export default async function BrowsePage({
   searchParams,
 }: {
-  searchParams: { type?: string; size?: string; verified?: string }
+  searchParams: { type?: string; size?: string; verified?: string; q?: string }
 }) {
   const supabase = createClient()
 
@@ -16,6 +16,10 @@ export default async function BrowsePage({
 
   if (searchParams.type) {
     query = query.eq('type_of_art', searchParams.type)
+  }
+
+  if (searchParams.q) {
+    query = query.or(`title.ilike.%${searchParams.q}%,style.ilike.%${searchParams.q}%`)
   }
 
   const { data: artworks } = await query

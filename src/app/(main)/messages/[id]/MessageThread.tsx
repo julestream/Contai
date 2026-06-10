@@ -19,14 +19,14 @@ export default function MessageThread({ conversation, initialMessages, currentUs
   useEffect(() => {
     const supabase = createClient()
     const channel = supabase
-      .channel('messages')
+      .channel(`messages-${conversation.id}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
         filter: `conversation_id=eq.${conversation.id}`,
       }, (payload) => {
-        setMessages((prev: any[]) => [...prev, payload.new])
+        setMessages((prev: any[]) => prev.some(m => m.id === payload.new.id) ? prev : [...prev, payload.new])
       })
       .subscribe()
 
@@ -40,11 +40,15 @@ export default function MessageThread({ conversation, initialMessages, currentUs
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
 
-    await supabase.from('messages').insert({
+    const { data: inserted } = await supabase.from('messages').insert({
       conversation_id: conversation.id,
       sender_id: session.user.id,
       content: content.trim(),
-    })
+    }).select('*').single()
+
+    if (inserted) {
+      setMessages((prev: any[]) => prev.some(m => m.id === inserted.id) ? prev : [...prev, inserted])
+    }
 
     await supabase.from('conversations').update({
       last_message_at: new Date().toISOString(),
