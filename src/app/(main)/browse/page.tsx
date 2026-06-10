@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import SignInBanner from '@/components/layout/SignInBanner'
 
 export default async function BrowsePage({
   searchParams,
@@ -28,6 +29,7 @@ export default async function BrowsePage({
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
+      <SignInBanner />
       {/* Header */}
       <div style={{ padding: '1.5rem 1rem 1rem', borderBottom: '1px solid #e8e8e8' }}>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '1rem' }}>Browse</h1>
