@@ -58,7 +58,7 @@ export async function POST(request: Request) {
             name: `Reservation fee — ${artwork.title}`,
             description: 'This fee is deducted from the total price when you meet the artist.',
           },
-          unit_amount: Math.round(artwork.reservation_fee_huf),
+          unit_amount: Math.round(artwork.reservation_fee_huf * 100),
         },
         quantity: 1,
       }],
