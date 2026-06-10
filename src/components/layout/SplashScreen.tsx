@@ -1,18 +1,23 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import Logo from '@/components/ui/Logo'
 
-export default function HomePage() {
-  const router = useRouter()
+export default function SplashScreen() {
+  const [show, setShow] = useState(false)
   const [hidden, setHidden] = useState(false)
 
   useEffect(() => {
-    const fade = setTimeout(() => setHidden(true), 1200)
-    const go = setTimeout(() => router.replace("/browse"), 2000)
-    return () => { clearTimeout(fade); clearTimeout(go) }
-  }, [router])
+    const seen = sessionStorage.getItem('contai_splash_seen')
+    if (seen) return
+    sessionStorage.setItem('contai_splash_seen', '1')
+    setShow(true)
+    const fade = setTimeout(() => setHidden(true), 4000)
+    const remove = setTimeout(() => setShow(false), 5000)
+    return () => { clearTimeout(fade); clearTimeout(remove) }
+  }, [])
+
+  if (!show) return null
 
   return (
     <div
@@ -27,7 +32,8 @@ export default function HomePage() {
         justifyContent: 'center',
         gap: 40,
         opacity: hidden ? 0 : 1,
-        transition: 'opacity 700ms ease',
+        transition: 'opacity 1000ms ease',
+        pointerEvents: hidden ? 'none' : 'auto',
       }}
     >
       <Logo dark size={1.6} />
