@@ -3,29 +3,32 @@ interface LogoProps {
   size?: number
 }
 
-export default function Logo({ dark = false, size = 1 }: LogoProps) {
+export default function Logo({ dark = false, size = 0.75 }: LogoProps) {
   const color = dark ? '#ffffff' : '#0a0a0a'
-  const subColor = dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)'
+  const subColor = dark ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,0.5)'
+  const fraunces = 'var(--font-fraunces), Georgia, serif'
 
   return (
-    <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'stretch', textAlign: 'center' }}>
       <div style={{
-        fontFamily: 'Georgia, serif',
-        fontSize: `${28 * size}px`,
-        fontWeight: 400,
+        fontFamily: fraunces,
+        fontSize: `${48 * size}px`,
+        fontWeight: 500,
         color,
-        letterSpacing: '-0.02em',
+        letterSpacing: '-0.01em',
         lineHeight: 1,
       }}>
         cont<span style={{ fontStyle: 'italic' }}>ai</span>
       </div>
       <div style={{
         fontFamily: 'system-ui, sans-serif',
-        fontSize: `${9 * size}px`,
+        fontSize: `${12 * size}px`,
         color: subColor,
-        letterSpacing: '0.15em',
+        letterSpacing: '0.34em',
         textTransform: 'uppercase',
-        marginTop: `${4 * size}px`,
+        marginTop: `${3 * size}px`,
+        paddingLeft: '0.34em',
+        whiteSpace: 'nowrap',
       }}>
         The Art Market
       </div>
