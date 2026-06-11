@@ -53,7 +53,7 @@ export default function TabBar() {
           padding: '8px 8px calc(8px + env(safe-area-inset-bottom))',
         }}
       >
-        {Item('/', 'Home', Home)}
+        {Item('/home', 'Home', Home)}
         {Item('/browse', 'Browse', LayoutGrid)}
         <Link
           href="/dashboard/upload"

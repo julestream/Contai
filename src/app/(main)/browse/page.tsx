@@ -1,99 +1,32 @@
-import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import SignInBanner from '@/components/layout/SignInBanner'
 
-export default async function BrowsePage({
-  searchParams,
-}: {
-  searchParams: { type?: string; size?: string; verified?: string; q?: string }
-}) {
-  const supabase = createClient()
+const CATEGORIES = [
+  { num: '01', label: 'PAINTINGS', filter: 'Painting', icon: '/categories/01-paintings.svg' },
+  { num: '02', label: 'SCULPTURES', filter: 'Sculpture', icon: '/categories/02-sculptures.svg' },
+  { num: '03', label: 'GRAPHIC ART', filter: 'Graphic Art', icon: '/categories/03-graphic-art.svg' },
+  { num: '04', label: 'PHOTOGRAPHY', filter: 'Photography', icon: '/categories/04-photography.svg' },
+  { num: '05', label: 'PRINTS', filter: 'Print', icon: '/categories/05-prints.svg' },
+]
 
-  let query = supabase
-    .from('artworks')
-    .select('*, profiles(full_name, avatar_url)')
-    .eq('status', 'live')
-    .order('created_at', { ascending: false })
-
-  if (searchParams.type) {
-    query = query.eq('type_of_art', searchParams.type)
-  }
-
-  if (searchParams.q) {
-    query = query.or(`title.ilike.%${searchParams.q}%,style.ilike.%${searchParams.q}%`)
-  }
-
-  const { data: artworks } = await query
-
-  const types = ['Painting', 'Print', 'Photography', 'Graphic Art', 'Sculpture']
-
+export default function BrowsePage() {
   return (
-    <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
-      <SignInBanner />
-      {/* Header */}
-      <div style={{ padding: '1.5rem 1rem 1rem', borderBottom: '1px solid #e8e8e8' }}>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '1rem' }}>Browse</h1>
-
-        {/* Filter pills */}
-        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
-          <Link href="/browse" style={{ textDecoration: 'none' }}>
-            <div style={{
-              padding: '6px 14px', borderRadius: '999px', fontSize: '13px', whiteSpace: 'nowrap',
-              border: !searchParams.type ? '2px solid #0a0a0a' : '1px solid #e8e8e8',
-              background: !searchParams.type ? '#0a0a0a' : 'white',
-              color: !searchParams.type ? 'white' : '#0a0a0a',
-            }}>All</div>
-          </Link>
-          {types.map(t => (
-            <Link key={t} href={`/browse?type=${t}`} style={{ textDecoration: 'none' }}>
-              <div style={{
-                padding: '6px 14px', borderRadius: '999px', fontSize: '13px', whiteSpace: 'nowrap',
-                border: searchParams.type === t ? '2px solid #0a0a0a' : '1px solid #e8e8e8',
-                background: searchParams.type === t ? '#0a0a0a' : 'white',
-                color: searchParams.type === t ? 'white' : '#0a0a0a',
-              }}>{t}</div>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Results count */}
-      <div style={{ padding: '12px 1rem', color: '#999', fontSize: '13px' }}>
-        {artworks?.length || 0} works
-      </div>
-
-      {/* Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', backgroundColor: '#e8e8e8' }}>
-        {artworks?.map(artwork => (
-          <Link key={artwork.id} href={`/artwork/${artwork.id}`} style={{ textDecoration: 'none' }}>
-            <div style={{ backgroundColor: 'white', padding: '12px' }}>
-              {(artwork.images as string[])?.length > 0 ? (
-                <img
-                  src={(artwork.images as string[])[0]}
-                  style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '4px', marginBottom: '8px' }}
-                />
-              ) : (
-                <div style={{ width: '100%', aspectRatio: '1', backgroundColor: '#f5f3ef', borderRadius: '4px', marginBottom: '8px' }} />
-              )}
-              <p style={{ fontSize: '10px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {(artwork as any).profiles?.full_name || 'Artist'}
-              </p>
-              <p style={{ fontFamily: 'Georgia, serif', fontSize: '14px', marginTop: '2px', color: '#0a0a0a' }}>
-                {artwork.title}
-              </p>
-              <p style={{ fontSize: '13px', color: '#444', marginTop: '4px' }}>
-                {artwork.price_huf?.toLocaleString()} HUF
-              </p>
+    <div style={{
+      maxWidth: '430px', margin: '0 auto', minHeight: '100vh',
+      background: '#ffffff', display: 'flex', flexDirection: 'column',
+      padding: '8px 20px 96px',
+    }}>
+      {CATEGORIES.map(c => (
+        <Link key={c.filter} href={`/browse/results?type=${encodeURIComponent(c.filter)}`}
+          style={{ textDecoration: 'none', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <img src={c.icon} alt={c.label} style={{ width: '100%', maxHeight: '11vh', objectFit: 'contain', objectPosition: 'left' }} />
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
+              <span style={{ fontFamily: 'var(--font-instrument), sans-serif', fontSize: '8.4px', color: '#999' }}>{c.num}</span>
+              <span style={{ fontFamily: 'var(--font-instrument), sans-serif', fontSize: '12.6px', letterSpacing: '0.18em', color: '#0a0a0a' }}>{c.label}</span>
             </div>
-          </Link>
-        ))}
-      </div>
-
-      {artworks?.length === 0 && (
-        <div style={{ padding: '3rem', textAlign: 'center', color: '#999' }}>
-          No artworks found.
-        </div>
-      )}
+          </div>
+        </Link>
+      ))}
     </div>
   )
 }

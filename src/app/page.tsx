@@ -11,13 +11,13 @@ export default function HomePage() {
   useEffect(() => {
     const seen = sessionStorage.getItem('contai_splash_seen')
     if (seen) {
-      router.replace('/browse')
+      router.replace('/home')
       return
     }
     sessionStorage.setItem('contai_splash_seen', '1')
     setPhase('showing')
     const fade = setTimeout(() => setPhase('fading'), 4500)
-    const go = setTimeout(() => router.replace('/browse'), 5300)
+    const go = setTimeout(() => router.replace('/home'), 5300)
     return () => { clearTimeout(fade); clearTimeout(go) }
   }, [router])
 

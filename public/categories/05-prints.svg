@@ -1,0 +1,46 @@
+<svg viewBox="0 0 390 100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="pr-disp">
+      <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="3" seed="13" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="pr-soft">
+      <feTurbulence type="fractalNoise" baseFrequency="0.44" numOctaves="2" seed="8" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+
+  <rect width="390" height="100" fill="#FFFFFF"/>
+
+  <!-- Row 1 stamp rings -->
+  <circle cx="60"  cy="37" r="19" fill="none" stroke="#C05818" stroke-width="8"  filter="url(#pr-disp)" opacity="0.8"/>
+  <circle cx="60"  cy="37" r="19" fill="none" stroke="#E07830" stroke-width="4"  filter="url(#pr-soft)" opacity="0.65"/>
+  <circle cx="128" cy="30" r="17" fill="none" stroke="#B04E14" stroke-width="7"  filter="url(#pr-disp)" opacity="0.75"/>
+  <circle cx="128" cy="30" r="17" fill="none" stroke="#D06828" stroke-width="3.5" filter="url(#pr-soft)" opacity="0.6"/>
+  <circle cx="195" cy="35" r="20" fill="none" stroke="#C86020" stroke-width="9"  filter="url(#pr-disp)" opacity="0.85"/>
+  <circle cx="195" cy="35" r="20" fill="none" stroke="#E88038" stroke-width="4"  filter="url(#pr-soft)" opacity="0.7"/>
+  <circle cx="259" cy="29" r="18" fill="none" stroke="#B84E10" stroke-width="7.5" filter="url(#pr-disp)" opacity="0.78"/>
+  <circle cx="329" cy="36" r="19" fill="none" stroke="#C85818" stroke-width="8"  filter="url(#pr-disp)" opacity="0.8"/>
+
+  <!-- Registration mis-shift -->
+  <circle cx="62"  cy="39" r="19" fill="none" stroke="#2A5090" stroke-width="3" filter="url(#pr-soft)" opacity="0.45"/>
+  <circle cx="197" cy="37" r="20" fill="none" stroke="#2A5090" stroke-width="3" filter="url(#pr-soft)" opacity="0.4"/>
+  <circle cx="331" cy="38" r="19" fill="none" stroke="#1E4888" stroke-width="2.5" filter="url(#pr-soft)" opacity="0.38"/>
+
+  <!-- Row 2 filled stamps -->
+  <circle cx="94"  cy="72" r="15" fill="#8A3A0C" filter="url(#pr-disp)" opacity="0.82"/>
+  <circle cx="94"  cy="72" r="8"  fill="#C05818" filter="url(#pr-soft)" opacity="0.7"/>
+  <circle cx="164" cy="75" r="17" fill="#9A4212" filter="url(#pr-disp)" opacity="0.78"/>
+  <circle cx="164" cy="75" r="9"  fill="#D06020" filter="url(#pr-soft)" opacity="0.65"/>
+  <circle cx="236" cy="70" r="14" fill="#883808" filter="url(#pr-disp)" opacity="0.8"/>
+  <circle cx="236" cy="70" r="8"  fill="#B85218" filter="url(#pr-soft)" opacity="0.68"/>
+  <circle cx="305" cy="73" r="17" fill="#9A4010" filter="url(#pr-disp)" opacity="0.76"/>
+  <circle cx="305" cy="73" r="9"  fill="#C85820" filter="url(#pr-soft)" opacity="0.65"/>
+
+  <!-- Ink drag -->
+  <path d="M32,56 Q122,52 232,55 Q298,57 360,53" stroke="#7A3808" stroke-width="5" fill="none" stroke-linecap="round" filter="url(#pr-disp)" opacity="0.5"/>
+
+  <!-- Impasto highlight -->
+  <path d="M183,28 Q195,24 207,29" stroke="#F0E8D0" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.85"/>
+  <path d="M187,32 Q195,28 203,32" stroke="#FFFFFF" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+</svg>
