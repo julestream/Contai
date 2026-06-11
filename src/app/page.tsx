@@ -6,13 +6,22 @@ import Logo from '@/components/ui/Logo'
 
 export default function HomePage() {
   const router = useRouter()
-  const [hidden, setHidden] = useState(false)
+  const [phase, setPhase] = useState<'checking' | 'showing' | 'fading'>('checking')
 
   useEffect(() => {
-    const fade = setTimeout(() => setHidden(true), 1200)
-    const go = setTimeout(() => router.replace("/browse"), 2000)
+    const seen = sessionStorage.getItem('contai_splash_seen')
+    if (seen) {
+      router.replace('/browse')
+      return
+    }
+    sessionStorage.setItem('contai_splash_seen', '1')
+    setPhase('showing')
+    const fade = setTimeout(() => setPhase('fading'), 4500)
+    const go = setTimeout(() => router.replace('/browse'), 5300)
     return () => { clearTimeout(fade); clearTimeout(go) }
   }, [router])
+
+  if (phase === 'checking') return null
 
   return (
     <div
@@ -26,7 +35,7 @@ export default function HomePage() {
         alignItems: 'center',
         justifyContent: 'center',
         gap: 40,
-        opacity: hidden ? 0 : 1,
+        opacity: phase === 'fading' ? 0 : 1,
         transition: 'opacity 700ms ease',
       }}
     >
