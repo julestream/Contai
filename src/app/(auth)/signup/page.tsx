@@ -55,7 +55,7 @@ export default function SignUpPage() {
       if (role === 'artist') {
         router.push('/dashboard/onboarding')
       } else {
-        router.push('/browse')
+        router.push('/welcome')
       }
     }
     setLoading(false)
