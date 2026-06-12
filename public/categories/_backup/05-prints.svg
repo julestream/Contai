@@ -10,7 +10,7 @@
     </filter>
   </defs>
 
-  
+  <rect width="390" height="100" fill="#FFFFFF"/>
 
   <!-- Row 1 stamp rings -->
   <circle cx="60"  cy="37" r="19" fill="none" stroke="#C05818" stroke-width="8"  filter="url(#pr-disp)" opacity="0.8"/>

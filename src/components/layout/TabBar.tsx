@@ -21,7 +21,7 @@ export default function TabBar() {
           alignItems: 'center',
           gap: 4,
           textDecoration: 'none',
-          color: active ? '#0a0a0a' : '#999999',
+          color: active ? '#ffffff' : '#a8a8a8',
           fontSize: 11,
           fontWeight: active ? 700 : 400,
         }}
@@ -40,8 +40,8 @@ export default function TabBar() {
         left: 0,
         right: 0,
         zIndex: 50,
-        background: '#ffffff',
-        borderTop: '1px solid #e8e8e8',
+        background: '#0a0a0a',
+        borderTop: '1px solid #1c1c1c',
       }}
     >
       <div
@@ -65,13 +65,13 @@ export default function TabBar() {
               width: 48,
               height: 48,
               borderRadius: 999,
-              background: '#0a0a0a',
-              color: '#ffffff',
+              background: '#ffffff',
+              color: '#0a0a0a',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               marginTop: -18,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
             }}
           >
             <Plus size={26} strokeWidth={2.4} />

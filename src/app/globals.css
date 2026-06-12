@@ -13,10 +13,10 @@ html {
 body {
   background-color: #ffffff;
   color: #0a0a0a;
-  font-family: system-ui, sans-serif;
+  font-family: var(--font-instrument), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: Georgia, serif;
+  font-family: var(--font-fraunces), Georgia, serif;
 }

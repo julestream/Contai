@@ -12,27 +12,27 @@ export default function TopBar() {
   function submit(e: React.FormEvent) {
     e.preventDefault()
     const term = q.trim()
-    router.push(term ? `/browse?q=${encodeURIComponent(term)}` : '/browse')
+    router.push(term ? `/browse/results?q=${encodeURIComponent(term)}` : '/browse')
   }
 
   return (
-    <div style={{ position: 'sticky', top: 0, zIndex: 40, background: '#ffffff', borderBottom: '1px solid #eee' }}>
+    <div style={{ position: 'sticky', top: 0, zIndex: 40, background: '#0a0a0a', borderBottom: '1px solid #1c1c1c' }}>
       <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px' }}>
-        <Link href="/notifications" aria-label="Notifications" style={{ color: '#0a0a0a', flexShrink: 0 }}>
+        <Link href="/notifications" aria-label="Notifications" style={{ color: '#ffffff', flexShrink: 0 }}>
           <Bell size={24} />
         </Link>
         <form onSubmit={submit} style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f2f2f2', borderRadius: 999, padding: '9px 14px' }}>
-            <Search size={18} color="#999" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1f1f1f', borderRadius: 999, padding: '9px 14px' }}>
+            <Search size={18} color="#888" />
             <input
               value={q}
               onChange={e => setQ(e.target.value)}
               placeholder="Search for items, members..."
-              style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 15, width: '100%', color: '#0a0a0a' }}
+              style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 15, width: '100%', color: '#ffffff' }}
             />
           </div>
         </form>
-        <Link href="/messages" aria-label="Messages" style={{ color: '#0a0a0a', flexShrink: 0 }}>
+        <Link href="/messages" aria-label="Messages" style={{ color: '#ffffff', flexShrink: 0 }}>
           <MessageCircle size={24} />
         </Link>
       </div>

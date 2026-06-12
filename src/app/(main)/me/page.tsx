@@ -112,7 +112,7 @@ export default function MePage() {
         {/* Sign out */}
         <button onClick={handleSignOut} style={{
           width: '100%', marginTop: '28px', padding: '16px', borderRadius: '999px',
-          border: '1px solid #0a0a0a', background: 'white', color: '#0a0a0a',
+          border: '1px solid #0a0a0a', background: '#0a0a0a', color: '#f5f3ef',
           fontSize: '16px', fontWeight: 600, cursor: 'pointer',
         }}>
           Sign out

@@ -10,7 +10,7 @@
     </filter>
   </defs>
 
-  
+  <rect width="390" height="100" fill="#FFFFFF"/>
 
   <!-- Circle -->
   <circle cx="158" cy="50" r="40" fill="none" stroke="#B83018" stroke-width="13" filter="url(#g-disp)" opacity="0.9"/>

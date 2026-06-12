@@ -10,7 +10,7 @@
     </filter>
   </defs>
 
-  
+  <rect width="390" height="100" fill="#FFFFFF"/>
 
   <!-- Plinth -->
   <path d="M90,85 Q195,80 300,85" stroke="#8A7A68" stroke-width="12" fill="none" stroke-linecap="round" filter="url(#s-disp)" opacity="0.9"/>

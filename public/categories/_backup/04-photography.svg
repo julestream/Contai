@@ -10,7 +10,7 @@
     </filter>
   </defs>
 
-  
+  <rect width="390" height="100" fill="#FFFFFF"/>
 
   <!-- Horizon light -->
   <path d="M28,38 Q120,31 195,34 Q274,36 358,30" stroke="#ACA498" stroke-width="13" fill="none" stroke-linecap="round" filter="url(#ph-disp)" opacity="0.7"/>

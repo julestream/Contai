@@ -10,7 +10,7 @@
     </filter>
   </defs>
 
-  
+  <rect width="390" height="100" fill="#FFFFFF"/>
 
   <!-- Cadmium orange sweeps -->
   <path d="M20,78 Q70,40 135,36 Q190,33 232,48 Q262,58 293,46" stroke="#C55A10" stroke-width="13" fill="none" stroke-linecap="round" filter="url(#p-disp)" opacity="0.9"/>
