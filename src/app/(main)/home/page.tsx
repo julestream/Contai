@@ -11,7 +11,7 @@ const MOOD_BG: Record<string, string> = {
 function SectionHeader({ title, href }: { title: string; href?: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', padding: '0 1rem', marginBottom: '12px' }}>
-      <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '19px', color: '#0a0a0a' }}>{title}</h2>
+      <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '19px', color: '#0a0a0a' }}>{title}</h2>
       {href && (
         <Link href={href} style={{ fontSize: '12px', color: '#666', textDecoration: 'none', letterSpacing: '0.04em' }}>
           VIEW ALL
@@ -49,8 +49,9 @@ export default async function HomePage() {
     .order('created_at', { ascending: true })
     .limit(6)
 
-  // Your favorites
+  // Your favorites + Recommended for you
   let favorites: any[] = []
+  let recommended: any[] = []
   if (user) {
     const { data: favRows } = await supabase
       .from('favorites')
@@ -58,6 +59,24 @@ export default async function HomePage() {
       .eq('user_id', user.id)
       .limit(6)
     favorites = (favRows || []).map((f: any) => f.artworks).filter(Boolean)
+
+    // Recommended based on saved preferred art types
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('preferred_types')
+      .eq('id', user.id)
+      .single()
+    const prefTypes: string[] = prof?.preferred_types || []
+    if (prefTypes.length > 0) {
+      const { data: recs } = await supabase
+        .from('artworks')
+        .select('*, profiles(full_name)')
+        .eq('status', 'live')
+        .in('type_of_art', prefTypes)
+        .order('created_at', { ascending: false })
+        .limit(6)
+      recommended = recs || []
+    }
   }
 
   const news = [
@@ -70,8 +89,22 @@ export default async function HomePage() {
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
       <div style={{ padding: '1.25rem 1rem 0.5rem' }}>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '26px' }}>Discover</h1>
+        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px' }}>Discover</h1>
       </div>
+
+      {/* Recommended for you */}
+      {recommended.length > 0 && (
+        <section style={{ margin: '12px 0 28px' }}>
+          <SectionHeader title="Recommended for you" href="/browse" />
+          <HRow>
+            {recommended.map(a => (
+              <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+                <ArtworkCard artwork={a} />
+              </div>
+            ))}
+          </HRow>
+        </section>
+      )}
 
       {/* News carousel */}
       <div style={{ margin: '12px 0 28px' }}>
@@ -83,7 +116,7 @@ export default async function HomePage() {
               padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
             }}>
               <span style={{ fontSize: '11px', opacity: 0.7, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{n.tag}</span>
-              <span style={{ fontFamily: 'Georgia, serif', fontSize: '18px', marginTop: '4px' }}>{n.title}</span>
+              <span style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', marginTop: '4px' }}>{n.title}</span>
             </div>
           ))}
         </HRow>
@@ -106,12 +139,12 @@ export default async function HomePage() {
         <SectionHeader title="Shop by mood" href="/browse" />
         <HRow>
           {MOODS.map(m => (
-            <Link key={m} href={`/browse?mood=${m}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
+            <Link key={m} href={`/browse/results?mood=${m}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
               <div style={{
                 width: '120px', height: '90px', borderRadius: '12px', background: MOOD_BG[m] || '#eee',
                 display: 'flex', alignItems: 'flex-end', padding: '10px',
               }}>
-                <span style={{ fontFamily: 'Georgia, serif', fontSize: '15px', color: '#0a0a0a' }}>{m}</span>
+                <span style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '15px', color: '#0a0a0a' }}>{m}</span>
               </div>
             </Link>
           ))}

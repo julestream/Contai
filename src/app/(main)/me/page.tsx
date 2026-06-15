@@ -3,12 +3,15 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronRight, Bell } from 'lucide-react'
+import { ChevronRight, Bell, HelpCircle } from 'lucide-react'
 
 export default function MePage() {
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [vacation, setVacation] = useState(false)
+  const [savingVac, setSavingVac] = useState(false)
+  const [showVacInfo, setShowVacInfo] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -17,14 +20,27 @@ export default function MePage() {
       if (!session) { router.push('/signin'); return }
       const { data } = await supabase
         .from('profiles')
-        .select('full_name, role, avatar_url, city')
+        .select('full_name, role, avatar_url, city, vacation_mode')
         .eq('id', session.user.id)
         .single()
       setProfile(data)
+      setVacation(!!data?.vacation_mode)
       setLoading(false)
     }
     load()
   }, [router])
+
+  async function toggleVacation() {
+    const next = !vacation
+    setVacation(next)
+    setSavingVac(true)
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      await supabase.from('profiles').update({ vacation_mode: next }).eq('id', session.user.id)
+    }
+    setSavingVac(false)
+  }
 
   async function handleSignOut() {
     const supabase = createClient()
@@ -62,7 +78,7 @@ export default function MePage() {
         <Link href="/notifications" aria-label="Notifications" style={{ color: '#0a0a0a' }}>
           <Bell size={22} />
         </Link>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', fontWeight: 700 }}>Me</h1>
+        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', fontWeight: 700 }}>Me</h1>
         <span style={{ width: 22 }} />
       </div>
 
@@ -73,7 +89,7 @@ export default function MePage() {
             {profile?.avatar_url && <img src={profile.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
           </div>
           <div>
-            <p style={{ fontFamily: 'Georgia, serif', fontSize: '24px' }}>{profile?.full_name || 'Your name'}</p>
+            <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px' }}>{profile?.full_name || 'Your name'}</p>
             <p style={{ fontSize: '14px', color: '#999', textTransform: 'capitalize' }}>{role}{profile?.city ? ` · ${profile.city}` : ''}</p>
           </div>
         </div>
@@ -92,7 +108,35 @@ export default function MePage() {
             <Row label="My listings" href="/dashboard" />
             <Row label="Sales" soon />
             <Row label="Get paid" soon />
-            <Row label="Vacation mode" soon />
+
+            {/* Vacation mode toggle */}
+            <div style={{ padding: '16px 0', borderBottom: '1px solid #eee' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '16px', color: '#0a0a0a' }}>
+                  Vacation mode
+                  <button onClick={() => setShowVacInfo(v => !v)} aria-label="What is vacation mode?"
+                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', color: '#bbb' }}>
+                    <HelpCircle size={15} />
+                  </button>
+                </span>
+                <button onClick={toggleVacation} disabled={savingVac} aria-label="Toggle vacation mode"
+                  style={{
+                    width: '46px', height: '26px', borderRadius: '999px', border: 'none', cursor: 'pointer',
+                    background: vacation ? '#0a0a0a' : '#d8d4cc', position: 'relative', transition: 'background 0.2s',
+                  }}>
+                  <span style={{
+                    position: 'absolute', top: '3px', left: vacation ? '23px' : '3px',
+                    width: '20px', height: '20px', borderRadius: '999px', background: '#fff', transition: 'left 0.2s',
+                  }} />
+                </button>
+              </div>
+              {showVacInfo && (
+                <p style={{ fontSize: '13px', color: '#777', marginTop: '10px', lineHeight: 1.5 }}>
+                  When vacation mode is on, your artworks stay visible and people can still favourite them, but buyers can't reserve or purchase until you turn it off. Use it when you're away and can't meet buyers.
+                </p>
+              )}
+            </div>
+
             <Row label="Verification" href="/dashboard/verification" />
           </>
         )}

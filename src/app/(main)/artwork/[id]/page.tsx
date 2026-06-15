@@ -9,7 +9,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
 
   const { data: artwork } = await supabase
     .from('artworks')
-    .select('*, profiles(id, full_name, avatar_url, city, pickup_area)')
+    .select('*, profiles(id, full_name, avatar_url, city, pickup_area, vacation_mode)')
     .eq('id', params.id)
     .single()
 
@@ -17,6 +17,8 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
 
   const images = artwork.images as string[]
   const artist = (artwork as any).profiles
+  const onVacation = !!artist?.vacation_mode
+  const isSold = artwork.status === 'sold'
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '8rem' }}>
@@ -46,8 +48,8 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
         </div>
 
         {/* Title & Price */}
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '26px', marginTop: '4px' }}>{artwork.title}</h1>
-        <p style={{ fontFamily: 'Georgia, serif', fontSize: '22px', marginTop: '8px' }}>
+        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', marginTop: '4px' }}>{artwork.title}</h1>
+        <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '22px', marginTop: '8px' }}>
           {artwork.price_huf?.toLocaleString()} HUF
         </p>
 
@@ -63,34 +65,58 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
           </div>
         </div>
 
-        {/* Reserve button */}
-        <Link href={`/reserve/${artwork.id}`} style={{ textDecoration: 'none' }}>
+        {/* Reserve / status area */}
+        {isSold ? (
           <div style={{
-            marginTop: '1.5rem',
-            padding: '16px',
-            backgroundColor: '#0a0a0a',
-            color: 'white',
-            borderRadius: '999px',
-            textAlign: 'center',
-            fontSize: '16px',
-            fontWeight: 500,
+            marginTop: '1.5rem', padding: '16px', backgroundColor: '#eee', color: '#666',
+            borderRadius: '999px', textAlign: 'center', fontSize: '16px', fontWeight: 500,
           }}>
-            Reserve · {artwork.reservation_fee_huf?.toLocaleString()} HUF
+            Sold
           </div>
-        </Link>
+        ) : onVacation ? (
+          <div style={{
+            marginTop: '1.5rem', padding: '16px', backgroundColor: '#f5f3ef', color: '#8a857c',
+            borderRadius: '12px', textAlign: 'center', fontSize: '14px', lineHeight: 1.5,
+          }}>
+            This artist is currently away.<br />You can still favourite this piece and message them — reservations reopen when they're back.
+          </div>
+        ) : (
+          <Link href={`/reserve/${artwork.id}`} style={{ textDecoration: 'none' }}>
+            <div style={{
+              marginTop: '1.5rem', padding: '16px', backgroundColor: '#0a0a0a', color: 'white',
+              borderRadius: '999px', textAlign: 'center', fontSize: '16px', fontWeight: 500,
+            }}>
+              Reserve · {artwork.reservation_fee_huf?.toLocaleString()} HUF
+            </div>
+          </Link>
+        )}
+
+        {/* Send offer button (negotiation) */}
+        {!isSold && (
+          <Link href={`/messages?artwork=${artwork.id}&offer=1`} style={{ textDecoration: 'none' }}>
+            <div style={{
+              marginTop: '10px', padding: '14px', backgroundColor: 'white', color: '#0a0a0a',
+              border: '1px solid #0a0a0a', borderRadius: '999px', textAlign: 'center', fontSize: '15px', fontWeight: 500,
+            }}>
+              Make an offer
+            </div>
+          </Link>
+        )}
 
         {/* Message artist button */}
         <MessageArtistButton artworkId={artwork.id} artistId={artist?.id} />
 
         {/* Guarantee strip */}
         <div style={{ marginTop: '1rem', padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', fontSize: '13px', color: '#666', textAlign: 'center' }}>
-          🛡 Contai Guarantee — full refund if something goes wrong
+          Contai Guarantee — full refund if something goes wrong
         </div>
 
         {/* Artist card */}
         <Link href={`/artist/${artist?.id}`} style={{ textDecoration: 'none' }}>
           <div style={{ marginTop: '1.5rem', padding: '1rem', border: '1px solid #e8e8e8', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '999px', backgroundColor: '#f5f3ef', flexShrink: 0 }} />
+            <div style={{ width: '48px', height: '48px', borderRadius: '999px', backgroundColor: '#f5f3ef', flexShrink: 0, overflow: 'hidden' }}>
+              {artist?.avatar_url && <img src={artist.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+            </div>
             <div>
               <p style={{ fontWeight: 600, fontSize: '14px' }}>{artist?.full_name}</p>
               <p style={{ color: '#999', fontSize: '13px' }}>{artist?.city}</p>
