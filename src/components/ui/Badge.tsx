@@ -1,50 +1,54 @@
 'use client'
 import { useState } from 'react'
 
-type BadgeType = 'verified_artist' | 'certificate' | 'curator_approved'
+type BadgeType = 'verified_artist' | 'established_artist' | 'curator_approved' | 'certificate'
 
-const BADGE_CONFIG = {
+const BADGE_CONFIG: Record<BadgeType, { label: string; color: string; bg: string; description: string }> = {
   verified_artist: {
     label: 'Verified Artist',
-    color: '#2d6a4f',
-    bg: '#eef4f1',
-    icon: '✓',
-    description: 'Identity confirmed by Contai. This artist has completed our review process.',
+    color: '#3a5a44',
+    bg: '#eef2ee',
+    description: 'Identity confirmed by Contai. This artist has completed our verification process.',
   },
-  certificate: {
-    label: 'Certificate',
-    color: '#92400e',
-    bg: '#fef3c7',
-    icon: '◈',
-    description: 'A certificate of authenticity or provenance document is on file for this artist.',
+  established_artist: {
+    label: 'Established Artist',
+    color: '#9c5a3c',
+    bg: '#f6ece3',
+    description: 'An active artist with a proven track record of sales and reviewed credentials on Contai.',
   },
   curator_approved: {
     label: 'Curator Pick',
-    color: '#6d28d9',
-    bg: '#ede9fe',
-    icon: '◆',
-    description: 'This artist has been personally selected by the Contai editorial team.',
+    color: '#6b4a6b',
+    bg: '#f1ebf0',
+    description: 'Hand-selected by the Contai editorial team for exceptional work.',
+  },
+  certificate: {
+    label: 'Certificate',
+    color: '#3a4a66',
+    bg: '#eaeef4',
+    description: 'A certificate of authenticity is on file for this artwork.',
   },
 }
 
 export default function Badge({ type }: { type: BadgeType }) {
   const [showTooltip, setShowTooltip] = useState(false)
   const config = BADGE_CONFIG[type]
+  if (!config) return null
 
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', position: 'relative' }}>
       <div style={{
-        display: 'inline-flex', alignItems: 'center', gap: '4px',
-        padding: '4px 10px', borderRadius: '999px',
+        display: 'inline-flex', alignItems: 'center',
+        padding: '4px 12px', borderRadius: '999px',
         backgroundColor: config.bg, color: config.color,
-        fontSize: '12px', fontWeight: 600,
+        fontSize: '12px', fontWeight: 600, letterSpacing: '0.01em',
       }}>
-        <span>{config.icon}</span>
-        <span>{config.label}</span>
+        {config.label}
       </div>
       <button
         onClick={() => setShowTooltip(!showTooltip)}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999', fontSize: '12px', padding: '0 2px' }}
+        aria-label="What does this badge mean?"
+        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#bbb', fontSize: '13px', padding: '0 2px', lineHeight: 1 }}
       >?</button>
       {showTooltip && (
         <div style={{
@@ -53,6 +57,7 @@ export default function Badge({ type }: { type: BadgeType }) {
           borderRadius: '8px', padding: '12px', fontSize: '13px',
           color: '#444', width: '220px', marginTop: '4px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          lineHeight: 1.5,
         }}>
           {config.description}
           <button onClick={() => setShowTooltip(false)} style={{ display: 'block', marginTop: '8px', color: '#0a0a0a', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px' }}>

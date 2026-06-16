@@ -10,6 +10,7 @@ export default function AdminBar() {
     { href: '/admin/listings', label: 'Listings' },
     { href: '/admin/documents', label: 'Documents' },
     { href: '/admin/issues', label: 'Issues' },
+    { href: '/admin/artists', label: 'Artists' },
   ]
 
   return (
