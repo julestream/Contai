@@ -36,7 +36,7 @@ export default function Badge({ type }: { type: BadgeType }) {
   if (!config) return null
 
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', position: 'relative' }}>
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', position: 'relative' }}>
       <div style={{
         display: 'inline-flex', alignItems: 'center',
         padding: '4px 12px', borderRadius: '999px',
@@ -48,14 +48,20 @@ export default function Badge({ type }: { type: BadgeType }) {
       <button
         onClick={() => setShowTooltip(!showTooltip)}
         aria-label="What does this badge mean?"
-        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#bbb', fontSize: '13px', padding: '0 2px', lineHeight: 1 }}
+        style={{
+          width: '15px', height: '15px', borderRadius: '999px',
+          border: '1px solid #c8c8c8', background: 'none', color: '#999',
+          cursor: 'pointer', fontSize: '9px', lineHeight: 1, fontWeight: 700,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          padding: 0, flexShrink: 0,
+        }}
       >?</button>
       {showTooltip && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, zIndex: 10,
           backgroundColor: 'white', border: '1px solid #e8e8e8',
           borderRadius: '8px', padding: '12px', fontSize: '13px',
-          color: '#444', width: '220px', marginTop: '4px',
+          color: '#444', width: '220px', marginTop: '6px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           lineHeight: 1.5,
         }}>
