@@ -32,9 +32,13 @@ export default async function DashboardPage() {
       {/* Header */}
       <div style={{ padding: '1.5rem', backgroundColor: '#f5f3ef', borderBottom: '1px solid #e8e8e8' }}>
         <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Artist</p>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginTop: '4px' }}>
+        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px', marginTop: '4px' }}>
           {profile?.full_name || 'Your Dashboard'}
         </h1>
+
+        <Link href={`/artist/${user.id}`} style={{ fontSize: '13px', color: '#0a0a0a', textDecoration: 'underline', display: 'inline-block', marginTop: '6px' }}>
+          View my public profile
+        </Link>
 
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px', marginTop: '1rem' }}>
@@ -45,7 +49,7 @@ export default async function DashboardPage() {
             { label: 'Sold', value: stats.sold },
           ].map(stat => (
             <div key={stat.label} style={{ textAlign: 'center' }}>
-              <p style={{ fontFamily: 'Georgia, serif', fontSize: '22px' }}>{stat.value}</p>
+              <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '22px' }}>{stat.value}</p>
               <p style={{ fontSize: '11px', color: '#666' }}>{stat.label}</p>
             </div>
           ))}
@@ -59,7 +63,10 @@ export default async function DashboardPage() {
             + List artwork
           </div>
         </Link>
-        <Link href="/dashboard/profile" style={{ textDecoration: 'none', flex: 1 }}><div style={{ padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', textAlign: 'center', fontSize: '14px' }}>Edit profile</div></Link><Link href="/dashboard/verification" style={{ textDecoration: 'none', flex: 1 }}>
+        <Link href="/dashboard/profile" style={{ textDecoration: 'none', flex: 1 }}>
+          <div style={{ padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', textAlign: 'center', fontSize: '14px' }}>Edit profile</div>
+        </Link>
+        <Link href="/dashboard/verification" style={{ textDecoration: 'none', flex: 1 }}>
           <div style={{ padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', textAlign: 'center', fontSize: '14px' }}>
             Verification
           </div>
@@ -68,7 +75,7 @@ export default async function DashboardPage() {
 
       {/* Artworks list */}
       <div style={{ padding: '1rem' }}>
-        <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '18px', marginBottom: '1rem' }}>Your listings</h2>
+        <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', marginBottom: '1rem' }}>Your listings</h2>
 
         {artworks?.length === 0 && (
           <p style={{ color: '#999', fontSize: '14px' }}>No artworks yet. List your first work!</p>
@@ -78,25 +85,27 @@ export default async function DashboardPage() {
           {artworks?.map(artwork => {
             const images = artwork.images as string[]
             return (
-              <div key={artwork.id} style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px' }}>
-                {images?.length > 0 ? (
-                  <img src={images[0]} style={{ width: '56px', height: '56px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
-                ) : (
-                  <div style={{ width: '56px', height: '56px', backgroundColor: '#f5f3ef', borderRadius: '6px', flexShrink: 0 }} />
-                )}
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontWeight: 600, fontSize: '14px' }}>{artwork.title}</p>
-                  <p style={{ fontSize: '13px', color: '#666', marginTop: '2px' }}>{artwork.price_huf?.toLocaleString()} HUF</p>
+              <Link key={artwork.id} href={`/dashboard/edit/${artwork.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px' }}>
+                  {images?.length > 0 ? (
+                    <img src={images[0]} style={{ width: '56px', height: '56px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
+                  ) : (
+                    <div style={{ width: '56px', height: '56px', backgroundColor: '#f5f3ef', borderRadius: '6px', flexShrink: 0 }} />
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 600, fontSize: '14px' }}>{artwork.title}</p>
+                    <p style={{ fontSize: '13px', color: '#666', marginTop: '2px' }}>{artwork.price_huf?.toLocaleString()} HUF</p>
+                  </div>
+                  <span style={{
+                    padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 600,
+                    backgroundColor: artwork.status === 'live' ? '#eef4f1' : artwork.status === 'under_review' ? '#fef3c7' : artwork.status === 'sold' ? '#f5f3ef' : '#fdf0f0',
+                    color: artwork.status === 'live' ? '#2d6a4f' : artwork.status === 'under_review' ? '#92400e' : artwork.status === 'sold' ? '#666' : '#b94040',
+                    textTransform: 'capitalize',
+                  }}>
+                    {artwork.status?.replace(/_/g, ' ')}
+                  </span>
                 </div>
-                <span style={{
-                  padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 600,
-                  backgroundColor: artwork.status === 'live' ? '#eef4f1' : artwork.status === 'under_review' ? '#fef3c7' : artwork.status === 'sold' ? '#f5f3ef' : '#fdf0f0',
-                  color: artwork.status === 'live' ? '#2d6a4f' : artwork.status === 'under_review' ? '#92400e' : artwork.status === 'sold' ? '#666' : '#b94040',
-                  textTransform: 'capitalize',
-                }}>
-                  {artwork.status?.replace(/_/g, ' ')}
-                </span>
-              </div>
+              </Link>
             )
           })}
         </div>
