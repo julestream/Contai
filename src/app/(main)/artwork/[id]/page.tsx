@@ -49,7 +49,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
 
         {/* Title & Price */}
         <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', marginTop: '4px' }}>{artwork.title}</h1>
-        <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '22px', marginTop: '8px' }}>
+        <p style={{ fontFamily: 'var(--font-instrument), sans-serif', fontSize: '22px', marginTop: '8px' }}>
           {artwork.price_huf?.toLocaleString()} HUF
         </p>
 
