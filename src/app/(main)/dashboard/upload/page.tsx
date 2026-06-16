@@ -60,6 +60,9 @@ export default function UploadPage() {
   const [mood, setMood] = useState<string[]>([])
   const [style, setStyle] = useState('')
 
+  const [certificatePath, setCertificatePath] = useState('')
+  const [certUploading, setCertUploading] = useState(false)
+
   const reservationFee = price ? Math.max(500, Math.round(parseFloat(price) * 0.08)) : 0
 
   useEffect(() => {
@@ -122,6 +125,27 @@ export default function UploadPage() {
     setUploading(false)
   }
 
+  async function handleCertUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setError('')
+    setCertUploading(true)
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { setError('You are not signed in.'); setCertUploading(false); return }
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    const path = `${session.user.id}/certificates/${Date.now()}-${safeName}`
+    const { error: upErr } = await supabase.storage.from('verification-docs').upload(path, file, { upsert: true })
+    if (upErr) {
+      setError('Certificate upload failed: ' + upErr.message)
+      setCertUploading(false)
+      return
+    }
+    setCertificatePath(path)
+    setCertUploading(false)
+  }
+
   async function handleSubmit() {
     setError('')
     if (!hasId) { setError('You need to upload your ID before submitting an artwork for review.'); return }
@@ -153,6 +177,8 @@ export default function UploadPage() {
       colours: colourValue,
       mood,
       style,
+      certificate_path: certificatePath || null,
+      certificate_status: certificatePath ? 'pending' : 'none',
       status: 'under_review',
     })
 
@@ -172,7 +198,7 @@ export default function UploadPage() {
 
   return (
     <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
-      <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '1rem' }}>List artwork</h1>
+      <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px', marginBottom: '1rem' }}>List artwork</h1>
 
       {hasId === false && (
         <div style={{ padding: '14px 16px', backgroundColor: '#fdf0f0', border: '1px solid #f0d0d0', borderRadius: '10px', marginBottom: '1.5rem' }}>
@@ -190,7 +216,7 @@ export default function UploadPage() {
         ))}
       </div>
 
-      <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '1.5rem' }}>{steps[step - 1]}</h2>
+      <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '20px', marginBottom: '1.5rem' }}>{steps[step - 1]}</h2>
 
       {step === 1 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -298,6 +324,16 @@ export default function UploadPage() {
                 <button key={s} onClick={() => setStyle(s)} style={chip(style === s)}>{s}</button>
               ))}
             </div>
+          </div>
+          <div>
+            <p style={{ fontWeight: 600, marginBottom: '4px' }}>Certificate of authenticity <span style={{ color: '#999', fontWeight: 400 }}>(optional)</span></p>
+            <p style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>PDF or JPG. Reviewed by Contai; if approved, a Certificate badge appears on this artwork.</p>
+            <label style={{ display: 'inline-block', cursor: 'pointer' }}>
+              <input type="file" accept="image/jpeg,image/jpg,application/pdf" onChange={handleCertUpload} style={{ display: 'none' }} />
+              <span style={{ padding: '8px 16px', borderRadius: '999px', border: '1px solid #0a0a0a', fontSize: '14px' }}>
+                {certUploading ? 'Uploading...' : certificatePath ? 'Certificate added' : 'Add certificate'}
+              </span>
+            </label>
           </div>
         </div>
       )}
