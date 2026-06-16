@@ -80,10 +80,11 @@ export default async function HomePage() {
   }
 
   const news = [
-    { id: 1, title: 'Welcome to Contai', tag: 'Editorial' },
-    { id: 2, title: 'Meet the artists', tag: 'Stories' },
-    { id: 3, title: 'How reservations work', tag: 'Guide' },
-    { id: 4, title: 'Budapest art scene', tag: 'City' },
+    { id: 1, title: 'Presenting Contai', tag: 'About', href: '/about' },
+    { id: 2, title: 'Meet the artists', tag: 'Stories', href: '/artists-feature' },
+    { id: 3, title: 'Find your art mood', tag: 'Quiz', href: '/quiz' },
+    { id: 4, title: 'How reservations work', tag: 'Guide', href: '/how-it-works' },
+    { id: 5, title: 'Contai news', tag: 'News', href: '/news' },
   ]
 
   return (
@@ -106,18 +107,20 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* News carousel */}
+      {/* Discover carousel */}
       <div style={{ margin: '12px 0 28px' }}>
         <HRow>
           {news.map(n => (
-            <div key={n.id} style={{
-              flexShrink: 0, width: '260px', height: '150px', borderRadius: '12px',
-              background: 'linear-gradient(135deg,#1a1a1a,#3a3a3a)', color: '#fff',
-              padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-            }}>
-              <span style={{ fontSize: '11px', opacity: 0.7, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{n.tag}</span>
-              <span style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', marginTop: '4px' }}>{n.title}</span>
-            </div>
+            <Link key={n.id} href={n.href} style={{ textDecoration: 'none', flexShrink: 0 }}>
+              <div style={{
+                width: '260px', height: '150px', borderRadius: '12px',
+                background: n.tag === 'Quiz' ? 'linear-gradient(135deg,#9c5a3c,#6b4a6b)' : 'linear-gradient(135deg,#1a1a1a,#3a3a3a)',
+                color: '#fff', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+              }}>
+                <span style={{ fontSize: '11px', opacity: 0.8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{n.tag}</span>
+                <span style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', marginTop: '4px' }}>{n.title}</span>
+              </div>
+            </Link>
           ))}
         </HRow>
       </div>

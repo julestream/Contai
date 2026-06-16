@@ -6,6 +6,7 @@ import MessageArtistButton from '@/components/ui/MessageArtistButton'
 
 export default async function ArtworkPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const { data: artwork } = await supabase
     .from('artworks')
@@ -19,6 +20,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
   const artist = (artwork as any).profiles
   const onVacation = !!artist?.vacation_mode
   const isSold = artwork.status === 'sold'
+  const isOwner = user?.id === artwork.artist_id
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '8rem' }}>
@@ -39,6 +41,18 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
       )}
 
       <div style={{ padding: '1.5rem' }}>
+        {/* Owner edit banner */}
+        {isOwner && (
+          <Link href={`/dashboard/edit/${artwork.id}`} style={{ textDecoration: 'none' }}>
+            <div style={{
+              marginBottom: '1rem', padding: '12px', backgroundColor: '#0a0a0a', color: '#fff',
+              borderRadius: '8px', textAlign: 'center', fontSize: '14px', fontWeight: 500,
+            }}>
+              Edit this listing
+            </div>
+          </Link>
+        )}
+
         {/* Artist & favorite */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
@@ -92,7 +106,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
         )}
 
         {/* Send offer button (negotiation) */}
-        {!isSold && (
+        {!isSold && !isOwner && (
           <Link href={`/messages?artwork=${artwork.id}&offer=1`} style={{ textDecoration: 'none' }}>
             <div style={{
               marginTop: '10px', padding: '14px', backgroundColor: 'white', color: '#0a0a0a',
@@ -104,7 +118,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
         )}
 
         {/* Message artist button */}
-        <MessageArtistButton artworkId={artwork.id} artistId={artist?.id} />
+        {!isOwner && <MessageArtistButton artworkId={artwork.id} artistId={artist?.id} />}
 
         {/* Guarantee strip */}
         <div style={{ marginTop: '1rem', padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', fontSize: '13px', color: '#666', textAlign: 'center' }}>
