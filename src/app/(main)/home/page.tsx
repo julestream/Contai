@@ -56,7 +56,7 @@ export default async function HomePage() {
     const { data: favRows } = await supabase
       .from('favorites')
       .select('artwork_id, artworks(*, profiles(full_name))')
-      .eq('user_id', user.id)
+      .eq('profile_id', user.id)
       .limit(6)
     favorites = (favRows || []).map((f: any) => f.artworks).filter(Boolean)
 

@@ -59,7 +59,7 @@ export default async function DashboardPage() {
             + List artwork
           </div>
         </Link>
-        <Link href="/dashboard/verification" style={{ textDecoration: 'none', flex: 1 }}>
+        <Link href="/dashboard/profile" style={{ textDecoration: 'none', flex: 1 }}><div style={{ padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', textAlign: 'center', fontSize: '14px' }}>Edit profile</div></Link><Link href="/dashboard/verification" style={{ textDecoration: 'none', flex: 1 }}>
           <div style={{ padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', textAlign: 'center', fontSize: '14px' }}>
             Verification
           </div>
