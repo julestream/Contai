@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import FavoriteButton from '@/components/ui/FavoriteButton'
 import MessageArtistButton from '@/components/ui/MessageArtistButton'
+import MakeOfferButton from '@/components/ui/MakeOfferButton'
 import Badge from '@/components/ui/Badge'
 
 export default async function ArtworkPage({ params }: { params: { id: string } }) {
@@ -114,16 +115,9 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
           </Link>
         )}
 
-        {/* Send offer button (negotiation) */}
-        {!isSold && !isOwner && (
-          <Link href={`/messages?artwork=${artwork.id}&offer=1`} style={{ textDecoration: 'none' }}>
-            <div style={{
-              marginTop: '10px', padding: '14px', backgroundColor: 'white', color: '#0a0a0a',
-              border: '1px solid #0a0a0a', borderRadius: '999px', textAlign: 'center', fontSize: '15px', fontWeight: 500,
-            }}>
-              Make an offer
-            </div>
-          </Link>
+        {/* Make an offer (negotiation) */}
+        {!isSold && !isOwner && !onVacation && (
+          <MakeOfferButton artworkId={artwork.id} artistId={artist?.id} />
         )}
 
         {/* Message artist button */}

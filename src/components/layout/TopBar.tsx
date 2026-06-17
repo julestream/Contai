@@ -2,12 +2,29 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { Bell, MessageCircle, Search } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Bell, MessageCircle, Search, Shield } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function TopBar() {
   const router = useRouter()
   const [q, setQ] = useState('')
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    async function checkAdmin() {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const { data } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single()
+      if (data?.role === 'admin') setIsAdmin(true)
+    }
+    checkAdmin()
+  }, [])
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -32,6 +49,11 @@ export default function TopBar() {
             />
           </div>
         </form>
+        {isAdmin && (
+          <Link href="/admin" aria-label="Admin" style={{ color: '#c8a24a', flexShrink: 0 }}>
+            <Shield size={24} />
+          </Link>
+        )}
         <Link href="/messages" aria-label="Messages" style={{ color: '#ffffff', flexShrink: 0 }}>
           <MessageCircle size={24} />
         </Link>

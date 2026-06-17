@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: Request) {
   try {
-    const { artworkId } = await request.json()
+    const { artworkId, offerId, deliveryChoice } = await request.json()
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
@@ -29,9 +29,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Artwork not available' }, { status: 400 })
     }
 
-    // Check buyer is not the artist
     if (artwork.artist_id === user.id) {
       return NextResponse.json({ error: 'You cannot reserve your own artwork' }, { status: 400 })
+    }
+
+    // Determine price + fee — use accepted offer if provided and valid
+    let agreedPrice = artwork.price_huf
+    let fee = artwork.reservation_fee_huf
+    if (offerId) {
+      const { data: offer } = await supabase
+        .from('offers')
+        .select('*')
+        .eq('id', offerId)
+        .eq('buyer_id', user.id)
+        .eq('artwork_id', artworkId)
+        .eq('status', 'accepted')
+        .single()
+      if (offer) {
+        agreedPrice = offer.amount_huf
+        fee = Math.max(500, Math.round(offer.amount_huf * 0.08))
+      }
     }
 
     const adminSupabase = createAdminClient()
@@ -43,7 +60,9 @@ export async function POST(request: Request) {
         artwork_id: artworkId,
         buyer_id: user.id,
         status: 'reserved',
-        reservation_fee_huf: artwork.reservation_fee_huf,
+        reservation_fee_huf: fee,
+        agreed_price_huf: agreedPrice,
+        delivery_choice: deliveryChoice === 'delivery' ? 'delivery' : 'pickup',
       })
       .select('id')
       .single()
@@ -58,7 +77,7 @@ export async function POST(request: Request) {
             name: `Reservation fee — ${artwork.title}`,
             description: 'This fee is deducted from the total price when you meet the artist.',
           },
-          unit_amount: Math.round(artwork.reservation_fee_huf * 100),
+          unit_amount: Math.round(fee * 100),
         },
         quantity: 1,
       }],
@@ -71,7 +90,6 @@ export async function POST(request: Request) {
       },
     })
 
-    // Store session ID
     await adminSupabase
       .from('reservations')
       .update({ stripe_checkout_session_id: session.id })

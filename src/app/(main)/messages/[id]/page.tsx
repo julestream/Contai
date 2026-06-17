@@ -9,7 +9,7 @@ export default async function MessagePage({ params }: { params: { id: string } }
 
   const { data: conversation } = await supabase
     .from('conversations')
-    .select('*, artworks(id, title, images, price_huf), buyer:profiles!conversations_buyer_id_fkey(full_name), artist:profiles!conversations_artist_id_fkey(full_name)')
+    .select('*, artworks(id, title, images, price_huf, pickup_method, reservation_fee_huf), buyer:profiles!conversations_buyer_id_fkey(full_name), artist:profiles!conversations_artist_id_fkey(full_name)')
     .eq('id', params.id)
     .single()
 
@@ -21,10 +21,17 @@ export default async function MessagePage({ params }: { params: { id: string } }
     .eq('conversation_id', params.id)
     .order('created_at', { ascending: true })
 
+  const { data: offers } = await supabase
+    .from('offers')
+    .select('*')
+    .eq('conversation_id', params.id)
+    .order('created_at', { ascending: true })
+
   return (
     <MessageThread
       conversation={conversation}
       initialMessages={messages || []}
+      initialOffers={offers || []}
       currentUserId={user.id}
     />
   )

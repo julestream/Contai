@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 export default function HandoffClient({ reservation, userId }: any) {
@@ -12,6 +11,7 @@ export default function HandoffClient({ reservation, userId }: any) {
   const [issueNotes, setIssueNotes] = useState('')
   const [issueSubmitted, setIssueSubmitted] = useState(false)
   const [submittingIssue, setSubmittingIssue] = useState(false)
+  const [error, setError] = useState('')
   const router = useRouter()
   const artwork = reservation.artworks
 
@@ -43,26 +43,40 @@ export default function HandoffClient({ reservation, userId }: any) {
 
   async function handleConfirmHandoff() {
     setConfirming(true)
-    const supabase = createClient()
-    await supabase.from('reservations').update({ status: 'handoff_completed' }).eq('id', reservation.id)
-    await supabase.from('artworks').update({ status: 'sold' }).eq('id', artwork.id)
-    router.refresh()
+    setError('')
+    try {
+      const res = await fetch('/api/confirm-handoff', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reservationId: reservation.id }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Could not confirm handoff.'); setConfirming(false); return }
+      router.refresh()
+    } catch {
+      setError('Could not confirm handoff.')
+    }
     setConfirming(false)
   }
 
   async function handleReportIssue() {
     setSubmittingIssue(true)
-    const res = await fetch('/api/issues', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        reservationId: reservation.id,
-        issueType,
-        issueNotes,
-      }),
-    })
-    if (res.ok) {
+    setError('')
+    try {
+      const res = await fetch('/api/issues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reservationId: reservation.id,
+          issueType,
+          issueNotes,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Could not submit issue.'); setSubmittingIssue(false); return }
       setIssueSubmitted(true)
+    } catch {
+      setError('Could not submit issue.')
     }
     setSubmittingIssue(false)
   }
@@ -86,14 +100,14 @@ export default function HandoffClient({ reservation, userId }: any) {
 
       {isCompleted ? (
         <div style={{ padding: '1rem', backgroundColor: '#eef4f1', borderRadius: '12px', marginBottom: '1.5rem', textAlign: 'center' }}>
-          <p style={{ color: '#2d6a4f', fontWeight: 600, fontSize: '18px' }}>✓ Handoff completed!</p>
+          <p style={{ color: '#2d6a4f', fontWeight: 600, fontSize: '18px' }}>Handoff completed</p>
           <p style={{ color: '#2d6a4f', fontSize: '14px', marginTop: '4px' }}>The artwork is yours.</p>
         </div>
       ) : (
         <>
           {timeLeft && (
             <div style={{ padding: '12px', backgroundColor: '#f5f3ef', borderRadius: '8px', marginBottom: '1.5rem', textAlign: 'center' }}>
-              <p style={{ fontSize: '14px', color: '#666' }}>⏱ {timeLeft}</p>
+              <p style={{ fontSize: '14px', color: '#666' }}>{timeLeft}</p>
             </div>
           )}
 
@@ -130,7 +144,7 @@ export default function HandoffClient({ reservation, userId }: any) {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: 'white', fontSize: '12px', flexShrink: 0,
                 }}>
-                  {step.done ? '✓' : i + 1}
+                  {step.done ? 'x' : i + 1}
                 </div>
                 <p style={{ fontSize: '14px', color: step.done ? '#0a0a0a' : '#999' }}>{step.label}</p>
               </div>
@@ -143,7 +157,7 @@ export default function HandoffClient({ reservation, userId }: any) {
               color: 'white', border: 'none', borderRadius: '999px',
               fontSize: '16px', fontWeight: 500, cursor: 'pointer', marginBottom: '12px',
             }}>
-              {confirming ? 'Confirming...' : '✓ I received the artwork'}
+              {confirming ? 'Confirming...' : 'I received the artwork'}
             </button>
           )}
 
@@ -199,6 +213,8 @@ export default function HandoffClient({ reservation, userId }: any) {
               <p style={{ color: '#b94040', fontSize: '14px', marginTop: '4px' }}>We'll respond within 24 hours.</p>
             </div>
           )}
+
+          {error && <p style={{ color: '#b94040', fontSize: '14px', marginTop: '12px', textAlign: 'center' }}>{error}</p>}
         </>
       )}
     </div>
