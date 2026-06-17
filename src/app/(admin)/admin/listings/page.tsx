@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import ApproveRejectButtons from './ApproveRejectButtons'
+import CertificateActions from './CertificateActions'
 
 export default async function AdminListingsPage() {
   const supabase = createClient()
@@ -34,7 +35,6 @@ export default async function AdminListingsPage() {
       .eq('document_type', 'id')
       .in('profile_id', artistIds)
     for (const d of docs || []) {
-      // prefer 'approved' over 'pending' if multiple
       if (d.status === 'approved' || !idDocsByArtist[d.profile_id]) {
         idDocsByArtist[d.profile_id] = d.status
       }
@@ -50,7 +50,7 @@ export default async function AdminListingsPage() {
 
   return (
     <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '28px', marginBottom: '2rem' }}>
+      <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '28px', marginBottom: '2rem' }}>
         Review Listings ({artworks?.length || 0})
       </h1>
 
@@ -74,7 +74,7 @@ export default async function AdminListingsPage() {
               ))}
             </div>
 
-            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px' }}>{artwork.title}</h2>
+            <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '20px' }}>{artwork.title}</h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px', flexWrap: 'wrap' }}>
               <p style={{ color: '#666' }}>by {(artwork as any).profiles?.full_name || 'Unknown artist'}</p>
               <span style={{ padding: '3px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 600, backgroundColor: badge.bg, color: badge.color }}>
@@ -90,6 +90,14 @@ export default async function AdminListingsPage() {
               <p><strong>Pickup area:</strong> {artwork.pickup_area}</p>
               <p><strong>Type:</strong> {artwork.type_of_art}</p>
             </div>
+
+            {artwork.certificate_status && artwork.certificate_status !== 'none' && (
+              <CertificateActions
+                artworkId={artwork.id}
+                certificatePath={artwork.certificate_path}
+                status={artwork.certificate_status}
+              />
+            )}
 
             <ApproveRejectButtons artworkId={artwork.id} />
           </div>

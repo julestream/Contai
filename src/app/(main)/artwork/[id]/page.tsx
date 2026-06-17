@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import FavoriteButton from '@/components/ui/FavoriteButton'
 import MessageArtistButton from '@/components/ui/MessageArtistButton'
+import Badge from '@/components/ui/Badge'
 
 export default async function ArtworkPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -21,6 +22,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
   const onVacation = !!artist?.vacation_mode
   const isSold = artwork.status === 'sold'
   const isOwner = user?.id === artwork.artist_id
+  const hasCertificate = artwork.certificate_status === 'approved'
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '8rem' }}>
@@ -66,6 +68,13 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
         <p style={{ fontFamily: 'var(--font-instrument), sans-serif', fontSize: '22px', marginTop: '8px' }}>
           {artwork.price_huf?.toLocaleString()} HUF
         </p>
+
+        {/* Certificate badge */}
+        {hasCertificate && (
+          <div style={{ marginTop: '12px' }}>
+            <Badge type="certificate" />
+          </div>
+        )}
 
         {/* Details */}
         <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: '#f5f3ef', borderRadius: '8px', fontSize: '14px' }}>
