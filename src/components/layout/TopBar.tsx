@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { Bell, MessageCircle, Search, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { usePathname } from 'next/navigation'
 
 export default function TopBar() {
   const router = useRouter()
+  const pathname = usePathname()
   const [q, setQ] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
+  const [hasUnread, setHasUnread] = useState(false)
 
   useEffect(() => {
     async function checkAdmin() {
@@ -25,6 +28,39 @@ export default function TopBar() {
     }
     checkAdmin()
   }, [])
+
+  useEffect(() => {
+    async function checkUnread() {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const userId = session.user.id
+
+      const { data: convs } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`buyer_id.eq.${userId},artist_id.eq.${userId}`)
+
+      if (!convs || convs.length === 0) {
+        setHasUnread(false)
+        return
+      }
+
+      const convIds = convs.map((c: any) => c.id)
+
+      const { data: unread } = await supabase
+        .from('messages')
+        .select('id')
+        .in('conversation_id', convIds)
+        .neq('sender_id', userId)
+        .eq('read', false)
+        .limit(1)
+
+      setHasUnread(!!(unread && unread.length > 0))
+    }
+    checkUnread()
+  }, [pathname])
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -54,8 +90,20 @@ export default function TopBar() {
             <Shield size={24} />
           </Link>
         )}
-        <Link href="/messages" aria-label="Messages" style={{ color: '#ffffff', flexShrink: 0 }}>
+        <Link href="/messages" aria-label="Messages" style={{ position: 'relative', color: '#ffffff', flexShrink: 0 }}>
           <MessageCircle size={24} />
+          {hasUnread && (
+            <span style={{
+              position: 'absolute',
+              top: -2,
+              right: -2,
+              width: 9,
+              height: 9,
+              borderRadius: '50%',
+              background: '#e53e3e',
+              border: '2px solid #0a0a0a',
+            }} />
+          )}
         </Link>
       </div>
     </div>
