@@ -94,6 +94,7 @@ export default async function HomePage() {
   }
 
   const news = [
+    { id: 6, title: 'The Contai Guarantee', tag: 'Guarantee', href: '/guarantee' },
     { id: 1, title: 'Presenting Contai', tag: 'About', href: '/about' },
     { id: 2, title: 'Meet the artists', tag: 'Stories', href: '/artists-feature' },
     { id: 3, title: 'Find your art mood', tag: 'Quiz', href: '/quiz' },
@@ -128,7 +129,7 @@ export default async function HomePage() {
             <Link key={n.id} href={n.href} style={{ textDecoration: 'none', flexShrink: 0 }}>
               <div style={{
                 width: '260px', height: '150px', borderRadius: '12px',
-                background: n.tag === 'Quiz' ? 'linear-gradient(135deg,#9c5a3c,#6b4a6b)' : 'linear-gradient(135deg,#1a1a1a,#3a3a3a)',
+                background: n.tag === 'Guarantee' ? 'linear-gradient(135deg,#1c2b3a,#3a5a44)' : n.tag === 'Quiz' ? 'linear-gradient(135deg,#9c5a3c,#6b4a6b)' : 'linear-gradient(135deg,#1a1a1a,#3a3a3a)',
                 color: '#fff', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
               }}>
                 <span style={{ fontSize: '11px', opacity: 0.8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{n.tag}</span>
