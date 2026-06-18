@@ -49,9 +49,10 @@ export default async function HomePage() {
     .order('created_at', { ascending: true })
     .limit(6)
 
-  // Your favorites + Recommended for you
+  // Your favorites + Recommended for you + Recently viewed
   let favorites: any[] = []
   let recommended: any[] = []
+  let recentlyViewed: any[] = []
   if (user) {
     const { data: favRows } = await supabase
       .from('favorites')
@@ -77,6 +78,17 @@ export default async function HomePage() {
         .limit(6)
       recommended = recs || []
     }
+
+    // Recently viewed
+    const { data: rvRows } = await supabase
+      .from('recently_viewed')
+      .select('artwork_id, viewed_at, artworks(*, profiles(full_name))')
+      .eq('user_id', user.id)
+      .order('viewed_at', { ascending: false })
+      .limit(8)
+    recentlyViewed = (rvRows || [])
+      .map((r: any) => r.artworks)
+      .filter((a: any) => a && a.status === 'live')
   }
 
   const news = [
@@ -166,11 +178,19 @@ export default async function HomePage() {
         </HRow>
       </section>
 
-      {/* Recently viewed - coming soon */}
-      <section style={{ marginBottom: '28px' }}>
-        <SectionHeader title="Recently viewed" />
-        <p style={{ padding: '0 1rem', color: '#bbb', fontSize: '13px' }}>Coming soon</p>
-      </section>
+      {/* Recently viewed */}
+      {recentlyViewed.length > 0 && (
+        <section style={{ marginBottom: '28px' }}>
+          <SectionHeader title="Recently viewed" />
+          <HRow>
+            {recentlyViewed.map(a => (
+              <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+                <ArtworkCard artwork={a} />
+              </div>
+            ))}
+          </HRow>
+        </section>
+      )}
 
       {/* Your favorites */}
       {user && favorites.length > 0 && (

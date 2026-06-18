@@ -5,6 +5,7 @@ import FavoriteButton from '@/components/ui/FavoriteButton'
 import MessageArtistButton from '@/components/ui/MessageArtistButton'
 import MakeOfferButton from '@/components/ui/MakeOfferButton'
 import Badge from '@/components/ui/Badge'
+import RecordView from '@/components/ui/RecordView'
 
 export default async function ArtworkPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -27,6 +28,8 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '8rem' }}>
+      <RecordView artworkId={artwork.id} />
+
       {/* Image */}
       {images?.length > 0 ? (
         <img src={images[0]} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover' }} />
