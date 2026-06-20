@@ -94,12 +94,12 @@ export default async function HomePage() {
   }
 
   const news = [
-    { id: 6, title: 'The Contai Guarantee', tag: 'Guarantee', href: '/guarantee' },
     { id: 1, title: 'Presenting Contai', tag: 'About', href: '/about' },
     { id: 2, title: 'Meet the artists', tag: 'Stories', href: '/artists-feature' },
     { id: 3, title: 'Find your art mood', tag: 'Quiz', href: '/quiz' },
     { id: 4, title: 'How reservations work', tag: 'Guide', href: '/how-it-works' },
     { id: 5, title: 'Contai news', tag: 'News', href: '/news' },
+    { id: 6, title: 'The Contai Guarantee', tag: 'Guarantee', href: '/guarantee' },
   ]
 
   return (
