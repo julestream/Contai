@@ -68,8 +68,10 @@ export async function POST(request: Request) {
       .single()
 
     // Create Stripe checkout session
+    // No payment_method_types specified — Stripe shows all methods
+    // enabled in the Dashboard that are eligible for the currency/country
+    // (cards, Apple Pay, Google Pay, Link, Amazon Pay where supported).
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
       line_items: [{
         price_data: {
           currency: 'huf',
