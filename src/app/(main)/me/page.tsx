@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronRight, Bell, HelpCircle } from 'lucide-react'
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
 
 export default function MePage() {
   const router = useRouter()
@@ -146,12 +147,22 @@ export default function MePage() {
         <Row label="Personal info" soon />
         <Row label="Notifications" href="/notifications" />
         <Row label="Badges" soon />
-        <Row label="Privacy" soon />
+
+        {/* Legal */}
+        <p style={sectionLabel}>Legal</p>
+        <Row label="Privacy Policy" href="/privacy" />
+        <Row label="Terms of Service" href="/terms" />
 
         {/* Help */}
         <p style={sectionLabel}>Help & support</p>
         <Row label="Help centre" soon />
         <Row label="Chat with us" soon />
+
+        {/* Language */}
+        <p style={sectionLabel}>Language</p>
+        <div style={{ padding: '12px 0' }}>
+          <LanguageSwitcher />
+        </div>
 
         {/* Sign out */}
         <button onClick={handleSignOut} style={{
