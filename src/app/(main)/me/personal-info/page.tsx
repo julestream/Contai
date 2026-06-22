@@ -13,6 +13,8 @@ export default function PersonalInfoPage() {
   const [fullName, setFullName] = useState('')
   const [city, setCity] = useState('')
   const [email, setEmail] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -22,17 +24,35 @@ export default function PersonalInfoPage() {
       setEmail(session.user.email || '')
       const { data } = await supabase
         .from('profiles')
-        .select('full_name, city')
+        .select('full_name, city, avatar_url')
         .eq('id', session.user.id)
         .single()
       if (data) {
         setFullName(data.full_name || '')
         setCity(data.city || '')
+        setAvatarUrl(data.avatar_url || '')
       }
       setLoading(false)
     }
     load()
   }, [router])
+
+  async function handleAvatar(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setError('')
+    setUploadingAvatar(true)
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { setUploadingAvatar(false); return }
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    const path = `avatars/${session.user.id}-${Date.now()}-${safeName}`
+    const { error: upErr } = await supabase.storage.from('artwork-images').upload(path, file, { upsert: true })
+    if (upErr) { setError('Photo upload failed: ' + upErr.message); setUploadingAvatar(false); return }
+    const { data } = supabase.storage.from('artwork-images').getPublicUrl(path)
+    setAvatarUrl(data.publicUrl)
+    setUploadingAvatar(false)
+  }
 
   async function handleSave() {
     setSaving(true)
@@ -44,6 +64,7 @@ export default function PersonalInfoPage() {
     const { error: updErr } = await supabase.from('profiles').update({
       full_name: fullName,
       city,
+      avatar_url: avatarUrl,
     }).eq('id', session.user.id)
     if (updErr) { setError(updErr.message); setSaving(false); return }
     setSaving(false)
@@ -62,6 +83,19 @@ export default function PersonalInfoPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
         <Link href="/me" style={{ textDecoration: 'none', color: '#0a0a0a', fontSize: '20px' }}>←</Link>
         <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px' }}>Personal info</h1>
+      </div>
+
+      {/* Avatar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '1.5rem' }}>
+        <div style={{ width: '72px', height: '72px', borderRadius: '999px', backgroundColor: '#f5f3ef', overflow: 'hidden', flexShrink: 0 }}>
+          {avatarUrl && <img src={avatarUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+        </div>
+        <label style={{ cursor: 'pointer' }}>
+          <input type="file" accept="image/*" onChange={handleAvatar} style={{ display: 'none' }} />
+          <span style={{ padding: '8px 16px', borderRadius: '999px', border: '1px solid #0a0a0a', fontSize: '14px' }}>
+            {uploadingAvatar ? 'Uploading...' : avatarUrl ? 'Change photo' : 'Add photo'}
+          </span>
+        </label>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

@@ -98,7 +98,7 @@ export default function MePage() {
         {/* Buying */}
         <p style={sectionLabel}>Buying</p>
         <Row label="Orders" href="/me/orders" />
-        <Row label="Saved searches" soon />
+        <Row label="Saved searches" href="/me/saved-searches" />
         <Row label="Favorites" href="/favorites" />
         <Row label="Payment methods" soon />
 
@@ -107,8 +107,8 @@ export default function MePage() {
           <>
             <p style={sectionLabel}>Selling</p>
             <Row label="My listings" href="/dashboard" />
-            <Row label="Sales" soon />
-            <Row label="Get paid" soon />
+            <Row label="Sales" href="/me/sales" />
+            <Row label="Get paid" href="/me/get-paid" />
 
             {/* Vacation mode toggle */}
             <div style={{ padding: '16px 0', borderBottom: '1px solid #eee' }}>

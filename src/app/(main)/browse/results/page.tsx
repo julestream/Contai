@@ -3,6 +3,7 @@ import Link from 'next/link'
 import ArtworkCard from '@/components/ui/ArtworkCard'
 import { Suspense } from 'react'
 import FilterPanel from '@/components/ui/FilterPanel'
+import SaveSearchButton from '@/components/ui/SaveSearchButton'
 
 function parseList(v?: string): string[] {
   if (!v) return []
@@ -71,6 +72,10 @@ export default async function BrowseResultsPage({
 
       <Suspense>
         <FilterPanel />
+      </Suspense>
+
+      <Suspense>
+        <SaveSearchButton />
       </Suspense>
 
       <div style={{ padding: '4px 1rem 12px', color: '#999', fontSize: '13px' }}>
