@@ -97,7 +97,7 @@ export default function MePage() {
 
         {/* Buying */}
         <p style={sectionLabel}>Buying</p>
-        <Row label="Orders" soon />
+        <Row label="Orders" href="/me/orders" />
         <Row label="Saved searches" soon />
         <Row label="Favorites" href="/favorites" />
         <Row label="Payment methods" soon />
@@ -144,9 +144,9 @@ export default function MePage() {
 
         {/* Account */}
         <p style={sectionLabel}>Account info</p>
-        <Row label="Personal info" soon />
+        <Row label="Personal info" href="/me/personal-info" />
         <Row label="Notifications" href="/notifications" />
-        <Row label="Badges" soon />
+        <Row label="Badges" href="/me/badges" />
 
         {/* Legal */}
         <p style={sectionLabel}>Legal</p>
@@ -155,8 +155,8 @@ export default function MePage() {
 
         {/* Help */}
         <p style={sectionLabel}>Help & support</p>
-        <Row label="Help centre" soon />
-        <Row label="Chat with us" soon />
+        <Row label="Help centre" href="/me/help" />
+        <Row label="Contact us" href="/me/contact" />
 
         {/* Language */}
         <p style={sectionLabel}>Language</p>
