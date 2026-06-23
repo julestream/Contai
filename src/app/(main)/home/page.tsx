@@ -5,9 +5,12 @@ import Link from 'next/link'
 import ArtworkCard from '@/components/ui/ArtworkCard'
 
 const MOODS = ['Joy', 'Harmony', 'Self-reflection', 'Inspiration', 'Intrigue']
-const MOOD_BG: Record<string, string> = {
-  Joy: '#f4e4c1', Harmony: '#d8e4d0', 'Self-reflection': '#d6dde8',
-  Inspiration: '#ecd9e0', Intrigue: '#dcd6e8',
+const MOOD_IMG: Record<string, string> = {
+  Joy: '/moods/joy.jpg',
+  Harmony: '/moods/harmony.jpg',
+  'Self-reflection': '/moods/self-reflection.jpg',
+  Inspiration: '/moods/inspiration.jpg',
+  Intrigue: '/moods/intrigue.jpg',
 }
 
 function SectionHeader({ title, href }: { title: string; href?: string }) {
@@ -43,7 +46,7 @@ export default async function HomePage() {
     .order('created_at', { ascending: false })
     .limit(6)
 
-  // Curatorial picks (for now: a selection of live works; later: a 'featured' flag)
+  // Curatorial picks
   const { data: picks } = await supabase
     .from('artworks')
     .select('*, profiles(full_name)')
@@ -51,7 +54,6 @@ export default async function HomePage() {
     .order('created_at', { ascending: true })
     .limit(6)
 
-  // Your favorites + Recommended for you + Recently viewed
   let favorites: any[] = []
   let recommended: any[] = []
   let recentlyViewed: any[] = []
@@ -63,7 +65,6 @@ export default async function HomePage() {
       .limit(6)
     favorites = (favRows || []).map((f: any) => f.artworks).filter(Boolean)
 
-    // Recommended based on saved preferred art types
     const { data: prof } = await supabase
       .from('profiles')
       .select('preferred_types')
@@ -81,7 +82,6 @@ export default async function HomePage() {
       recommended = recs || []
     }
 
-    // Recently viewed
     const { data: rvRows } = await supabase
       .from('recently_viewed')
       .select('artwork_id, viewed_at, artworks(*, profiles(full_name))')
@@ -93,24 +93,24 @@ export default async function HomePage() {
       .filter((a: any) => a && a.status === 'live')
   }
 
-  // Carousel cards, ordered warm -> cold by gradient
+  // Carousel cards, warm -> cold
   const news = [
-    { id: 1, title: 'Presenting', emphasis: 'Contai', tag: 'About', href: '/about' },
-    { id: 2, title: 'Meet the', emphasis: 'artists', tag: 'Stories', href: '/artists-feature' },
-    { id: 3, title: 'Find your', emphasis: 'art mood', tag: 'Quiz', href: '/quiz' },
-    { id: 4, title: 'How', emphasis: 'reservations', titleAfter: 'work', tag: 'Guide', href: '/how-it-works' },
-    { id: 5, title: 'Contai', emphasis: 'news', tag: 'News', href: '/news' },
-    { id: 6, title: 'The Contai', emphasis: 'Guarantee', tag: 'Guarantee', href: '/guarantee' },
+    { id: 1, eyebrow: 'About', title: 'Presenting', emphasis: 'Contai', tag: 'About', href: '/about' },
+    { id: 2, eyebrow: 'Stories', title: 'Meet the', emphasis: 'artists', tag: 'Stories', href: '/artists-feature' },
+    { id: 3, eyebrow: 'Quiz', title: 'Find your', emphasis: 'art mood', tag: 'Quiz', href: '/quiz' },
+    { id: 4, eyebrow: 'Guide', title: 'How', emphasis: 'reservations', titleAfter: 'work', tag: 'Guide', href: '/how-it-works' },
+    { id: 5, eyebrow: 'Thank you', title: 'For our', emphasis: 'testers', tag: 'News', href: '/news' },
+    { id: 6, eyebrow: 'Guarantee', title: 'The Contai', emphasis: 'Guarantee', tag: 'Guarantee', href: '/guarantee' },
   ]
 
   function cardBackground(tag: string): string {
     switch (tag) {
-      case 'About': return 'linear-gradient(150deg,#5e2a38,#7c3a4a)'       // burgundy
-      case 'Stories': return 'linear-gradient(150deg,#a8552c,#c06f3a)'     // burned orange
-      case 'Quiz': return 'linear-gradient(150deg,#4e5a2f,#65733f)'        // moss olive
-      case 'Guide': return 'linear-gradient(150deg,#16615a,#1f7a6f)'       // peacock teal
-      case 'News': return 'linear-gradient(150deg,#2b3c66,#3d5181)'        // indigo
-      case 'Guarantee': return 'linear-gradient(150deg,#4a3358,#634470)'   // aubergine
+      case 'About': return 'linear-gradient(150deg,#5e2a38,#7c3a4a)'
+      case 'Stories': return 'linear-gradient(150deg,#a8552c,#c06f3a)'
+      case 'Quiz': return 'linear-gradient(150deg,#4e5a2f,#65733f)'
+      case 'Guide': return 'linear-gradient(150deg,#16615a,#1f7a6f)'
+      case 'News': return 'linear-gradient(150deg,#2b3c66,#3d5181)'
+      case 'Guarantee': return 'linear-gradient(150deg,#4a3358,#634470)'
       default: return 'linear-gradient(150deg,#1a1a1a,#3a3a3a)'
     }
   }
@@ -147,7 +147,7 @@ export default async function HomePage() {
                 display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
               }}>
                 <div>
-                  <span style={{ fontSize: '10.5px', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, opacity: 0.74 }}>{n.tag}</span>
+                  <span style={{ fontSize: '10.5px', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, opacity: 0.74 }}>{n.eyebrow}</span>
                   <div style={{ width: '26px', height: '1px', background: 'currentColor', opacity: 0.5, marginTop: '9px' }} />
                 </div>
                 <div style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontWeight: 500, fontSize: '21px', lineHeight: 1.12, letterSpacing: '-0.01em' }}>
@@ -179,10 +179,23 @@ export default async function HomePage() {
           {MOODS.map(m => (
             <Link key={m} href={`/browse/results?mood=${m}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
               <div style={{
-                width: '120px', height: '90px', borderRadius: '12px', background: MOOD_BG[m] || '#eee',
-                display: 'flex', alignItems: 'flex-end', padding: '10px',
+                width: '120px', height: '90px', borderRadius: '12px', overflow: 'hidden',
+                position: 'relative', background: '#2a2a2a',
               }}>
-                <span style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '15px', color: '#0a0a0a' }}>{m}</span>
+                <img
+                  src={MOOD_IMG[m]}
+                  alt={m}
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0) 100%)',
+                }} />
+                <span style={{
+                  position: 'absolute', left: '10px', bottom: '8px',
+                  fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '15px', color: '#fff',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+                }}>{m}</span>
               </div>
             </Link>
           ))}
