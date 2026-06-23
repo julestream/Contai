@@ -93,14 +93,27 @@ export default async function HomePage() {
       .filter((a: any) => a && a.status === 'live')
   }
 
+  // Carousel cards, ordered warm -> cold by gradient
   const news = [
-    { id: 1, title: 'Presenting Contai', tag: 'About', href: '/about' },
-    { id: 2, title: 'Meet the artists', tag: 'Stories', href: '/artists-feature' },
-    { id: 3, title: 'Find your art mood', tag: 'Quiz', href: '/quiz' },
-    { id: 4, title: 'How reservations work', tag: 'Guide', href: '/how-it-works' },
-    { id: 5, title: 'Contai news', tag: 'News', href: '/news' },
-    { id: 6, title: 'The Contai Guarantee', tag: 'Guarantee', href: '/guarantee' },
+    { id: 1, title: 'Presenting', emphasis: 'Contai', tag: 'About', href: '/about' },
+    { id: 2, title: 'Meet the', emphasis: 'artists', tag: 'Stories', href: '/artists-feature' },
+    { id: 3, title: 'Find your', emphasis: 'art mood', tag: 'Quiz', href: '/quiz' },
+    { id: 4, title: 'How', emphasis: 'reservations', titleAfter: 'work', tag: 'Guide', href: '/how-it-works' },
+    { id: 5, title: 'Contai', emphasis: 'news', tag: 'News', href: '/news' },
+    { id: 6, title: 'The Contai', emphasis: 'Guarantee', tag: 'Guarantee', href: '/guarantee' },
   ]
+
+  function cardBackground(tag: string): string {
+    switch (tag) {
+      case 'About': return 'linear-gradient(150deg,#5e2a38,#7c3a4a)'       // burgundy
+      case 'Stories': return 'linear-gradient(150deg,#a8552c,#c06f3a)'     // burned orange
+      case 'Quiz': return 'linear-gradient(150deg,#4e5a2f,#65733f)'        // moss olive
+      case 'Guide': return 'linear-gradient(150deg,#16615a,#1f7a6f)'       // peacock teal
+      case 'News': return 'linear-gradient(150deg,#2b3c66,#3d5181)'        // indigo
+      case 'Guarantee': return 'linear-gradient(150deg,#4a3358,#634470)'   // aubergine
+      default: return 'linear-gradient(150deg,#1a1a1a,#3a3a3a)'
+    }
+  }
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
@@ -128,12 +141,19 @@ export default async function HomePage() {
           {news.map(n => (
             <Link key={n.id} href={n.href} style={{ textDecoration: 'none', flexShrink: 0 }}>
               <div style={{
-                width: '260px', height: '150px', borderRadius: '12px',
-                background: n.tag === 'Guarantee' ? 'linear-gradient(135deg,#1c2b3a,#3a5a44)' : n.tag === 'Quiz' ? 'linear-gradient(135deg,#9c5a3c,#6b4a6b)' : 'linear-gradient(135deg,#1a1a1a,#3a3a3a)',
-                color: '#fff', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+                width: '248px', height: '158px', borderRadius: '14px',
+                background: cardBackground(n.tag),
+                color: '#f2ebe2', padding: '18px', position: 'relative', overflow: 'hidden',
+                display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
               }}>
-                <span style={{ fontSize: '11px', opacity: 0.8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{n.tag}</span>
-                <span style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', marginTop: '4px' }}>{n.title}</span>
+                <div>
+                  <span style={{ fontSize: '10.5px', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, opacity: 0.74 }}>{n.tag}</span>
+                  <div style={{ width: '26px', height: '1px', background: 'currentColor', opacity: 0.5, marginTop: '9px' }} />
+                </div>
+                <div style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontWeight: 500, fontSize: '21px', lineHeight: 1.12, letterSpacing: '-0.01em' }}>
+                  {n.title} <span style={{ fontStyle: 'italic', fontWeight: 400 }}>{n.emphasis}</span>{n.titleAfter ? ` ${n.titleAfter}` : ''}
+                </div>
+                <span style={{ position: 'absolute', bottom: '16px', right: '18px', fontSize: '17px', opacity: 0.55 }}>→</span>
               </div>
             </Link>
           ))}
