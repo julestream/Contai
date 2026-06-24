@@ -6,11 +6,11 @@ import ArtworkCard from '@/components/ui/ArtworkCard'
 
 const MOODS = ['Joy', 'Harmony', 'Self-reflection', 'Inspiration', 'Intrigue']
 const MOOD_IMG: Record<string, string> = {
-  Joy: '/moods/joy.jpg',
-  Harmony: '/moods/harmony.jpg',
-  'Self-reflection': '/moods/self-reflection.jpg',
-  Inspiration: '/moods/inspiration.jpg',
-  Intrigue: '/moods/intrigue.jpg',
+  Joy: '/moods/joy.png',
+  Harmony: '/moods/harmony.png',
+  'Self-reflection': '/moods/self-reflection.png',
+  Inspiration: '/moods/inspiration.png',
+  Intrigue: '/moods/intrigue.png',
 }
 
 function SectionHeader({ title, href }: { title: string; href?: string }) {
