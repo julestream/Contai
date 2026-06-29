@@ -5,8 +5,7 @@ import { useLang } from '@/i18n/LanguageProvider'
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
 import { Heart } from 'lucide-react'
 
-// TODO: replace with your real SurveyMonkey link when ready
-const SURVEY_URL = 'https://www.surveymonkey.com/'
+const SURVEY_URL = 'https://www.surveymonkey.com/share/157adc36-e6a1-4bed-b17a-b3eb702dd9cd'
 
 const COPY: Record<string, { title: string; body: string; cta: string; note: string }> = {
   hu: {
