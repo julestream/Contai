@@ -12,7 +12,7 @@ export default function CurrencySwitcher({ compact = false }: { compact?: boolea
 
   if (compact) {
     return (
-      <div style={{ display: 'inline-flex', gap: '2px', background: '#1f1f1f', borderRadius: '999px', padding: '3px' }}>
+      <div style={{ display: 'inline-flex', gap: '3px', background: '#0a0a0a', borderRadius: '999px', padding: '3px', border: '1px solid #2a2a2a' }}>
         {OPTIONS.map(o => {
           const active = currency === o.value
           return (
@@ -20,8 +20,8 @@ export default function CurrencySwitcher({ compact = false }: { compact?: boolea
               style={{
                 padding: '4px 9px', borderRadius: '999px', border: 'none', cursor: 'pointer',
                 fontSize: '12px', fontWeight: active ? 600 : 400, lineHeight: 1,
-                background: active ? '#c8a24a' : 'transparent',
-                color: active ? '#0a0a0a' : '#bbb',
+                background: active ? '#ffffff' : '#0a0a0a',
+                color: active ? '#0a0a0a' : '#ffffff',
               }}>
               {o.label}
             </button>

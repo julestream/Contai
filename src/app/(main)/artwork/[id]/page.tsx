@@ -7,6 +7,7 @@ import MakeOfferButton from '@/components/ui/MakeOfferButton'
 import Badge from '@/components/ui/Badge'
 import RecordView from '@/components/ui/RecordView'
 import Price from '@/components/ui/Price'
+import BackButton from '@/components/ui/BackButton'
 
 export default async function ArtworkPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -31,12 +32,15 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '8rem' }}>
       <RecordView artworkId={artwork.id} />
 
-      {/* Image */}
-      {images?.length > 0 ? (
-        <img src={images[0]} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover' }} />
-      ) : (
-        <div style={{ width: '100%', aspectRatio: '1', backgroundColor: '#f5f3ef' }} />
-      )}
+      {/* Image with floating back button */}
+      <div style={{ position: 'relative' }}>
+        <BackButton fallback="/browse" />
+        {images?.length > 0 ? (
+          <img src={images[0]} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover' }} />
+        ) : (
+          <div style={{ width: '100%', aspectRatio: '1', backgroundColor: '#f5f3ef' }} />
+        )}
+      </div>
 
       {/* Thumbnails */}
       {images?.length > 1 && (
