@@ -42,7 +42,7 @@ export default function SignInPage() {
       } else if (profile?.role === 'artist') {
         router.push('/dashboard')
       } else {
-        router.push('/browse')
+        router.push('/home')
       }
     }
     setLoading(false)
@@ -62,7 +62,6 @@ export default function SignInPage() {
       setError('Could not sign in with Google. Please try again.')
       setGoogleLoading(false)
     }
-    // On success the browser redirects to Google, so no further code runs here.
   }
 
   const inputStyle: React.CSSProperties = {

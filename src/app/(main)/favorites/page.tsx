@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import Price from '@/components/ui/Price'
 
 export default async function FavoritesPage() {
   const supabase = createClient()
@@ -50,7 +51,7 @@ export default async function FavoritesPage() {
                   {artwork.profiles?.full_name}
                 </p>
                 <p style={{ fontFamily: 'Georgia, serif', fontSize: '14px', marginTop: '2px' }}>{artwork.title}</p>
-                <p style={{ fontSize: '13px', color: '#444', marginTop: '4px' }}>{artwork.price_huf?.toLocaleString()} HUF</p>
+                <Price huf={artwork.price_huf} style={{ display: 'block', fontSize: '13px', color: '#444', marginTop: '4px' }} />
               </div>
             </Link>
           )

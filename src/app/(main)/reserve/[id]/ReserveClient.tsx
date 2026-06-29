@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Logo from '@/components/ui/Logo'
 import Button from '@/components/ui/Button'
+import Price from '@/components/ui/Price'
 
 export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, agreedOffer: any }) {
   const [step, setStep] = useState(1)
@@ -57,7 +58,7 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
 
           {agreedOffer && (
             <div style={{ padding: '10px 14px', backgroundColor: '#eef2ee', borderRadius: '10px', marginBottom: '1.5rem', fontSize: '14px', color: '#3a5a44' }}>
-              Agreed price from your accepted offer: {agreedOffer.amount_huf.toLocaleString()} HUF
+              Agreed price from your accepted offer: <Price huf={agreedOffer.amount_huf} />
             </div>
           )}
 
@@ -76,15 +77,15 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
           <div style={{ padding: '1rem', backgroundColor: '#f5f3ef', borderRadius: '12px', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span style={{ color: '#666', fontSize: '14px' }}>Artwork price</span>
-              <span style={{ fontSize: '14px' }}>{effectivePrice?.toLocaleString()} HUF</span>
+              <Price huf={effectivePrice} style={{ fontSize: '14px' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span style={{ color: '#666', fontSize: '14px' }}>Reservation fee (8%)</span>
-              <span style={{ fontSize: '14px', fontWeight: 600 }}>{fee?.toLocaleString()} HUF</span>
+              <Price huf={fee} style={{ fontSize: '14px', fontWeight: 600 }} />
             </div>
             <div style={{ borderTop: '1px solid #e8e8e8', paddingTop: '8px', display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: '#666', fontSize: '14px' }}>Remaining to pay in person</span>
-              <span style={{ fontSize: '14px' }}>{remaining?.toLocaleString()} HUF</span>
+              <Price huf={remaining} style={{ fontSize: '14px' }} />
             </div>
           </div>
 
@@ -142,7 +143,7 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
             )}
             <div>
               <p style={{ fontWeight: 600 }}>{artwork.title}</p>
-              <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', marginTop: '4px' }}>{fee?.toLocaleString()} HUF</p>
+              <Price huf={fee} style={{ display: 'block', fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', marginTop: '4px' }} />
               <p style={{ fontSize: '12px', color: '#999', marginTop: '2px' }}>{deliveryChoice === 'delivery' ? 'Local delivery' : 'In-person pickup'}</p>
             </div>
           </div>
@@ -154,7 +155,7 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
           {error && <p style={{ color: '#b94040', fontSize: '14px', marginBottom: '1rem' }}>{error}</p>}
 
           <Button full onClick={handlePay} loading={loading}>
-            Pay {fee?.toLocaleString()} HUF
+            Pay <Price huf={fee} />
           </Button>
           <Button full variant="ghost" onClick={() => setStep(1)}>Back</Button>
         </>

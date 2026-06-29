@@ -13,7 +13,6 @@ export async function GET(request: NextRequest) {
     if (!error) {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        // Check if this user already has a profile
         const { data: profile } = await supabase
           .from('profiles')
           .select('role')
@@ -40,7 +39,7 @@ export async function GET(request: NextRequest) {
         if (profile.role === 'artist') {
           return NextResponse.redirect(`${origin}/dashboard`)
         }
-        return NextResponse.redirect(`${origin}/browse`)
+        return NextResponse.redirect(`${origin}/home`)
       }
     }
   }

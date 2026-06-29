@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Price from '@/components/ui/Price'
 
 export default function ArtworkCard({ artwork }: { artwork: any }) {
   const img = (artwork.images as string[])?.[0]
@@ -16,9 +17,7 @@ export default function ArtworkCard({ artwork }: { artwork: any }) {
         <p style={{ fontFamily: 'Georgia, serif', fontSize: '14px', marginTop: '2px', color: '#0a0a0a' }}>
           {artwork.title}
         </p>
-        <p style={{ fontSize: '13px', color: '#444', marginTop: '4px' }}>
-          {artwork.price_huf?.toLocaleString()} HUF
-        </p>
+        <Price huf={artwork.price_huf} style={{ display: 'block', fontSize: '13px', color: '#444', marginTop: '4px' }} />
       </div>
     </Link>
   )

@@ -6,6 +6,7 @@ import MessageArtistButton from '@/components/ui/MessageArtistButton'
 import MakeOfferButton from '@/components/ui/MakeOfferButton'
 import Badge from '@/components/ui/Badge'
 import RecordView from '@/components/ui/RecordView'
+import Price from '@/components/ui/Price'
 
 export default async function ArtworkPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -69,9 +70,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
 
         {/* Title & Price */}
         <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', marginTop: '4px' }}>{artwork.title}</h1>
-        <p style={{ fontFamily: 'var(--font-instrument), sans-serif', fontSize: '22px', marginTop: '8px' }}>
-          {artwork.price_huf?.toLocaleString()} HUF
-        </p>
+        <Price huf={artwork.price_huf} style={{ display: 'block', fontFamily: 'var(--font-instrument), sans-serif', fontSize: '22px', marginTop: '8px' }} />
 
         {/* Certificate badge */}
         {hasCertificate && (
@@ -113,7 +112,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
               marginTop: '1.5rem', padding: '16px', backgroundColor: '#0a0a0a', color: 'white',
               borderRadius: '999px', textAlign: 'center', fontSize: '16px', fontWeight: 500,
             }}>
-              Reserve · {artwork.reservation_fee_huf?.toLocaleString()} HUF
+              Reserve · <Price huf={artwork.reservation_fee_huf} />
             </div>
           </Link>
         )}

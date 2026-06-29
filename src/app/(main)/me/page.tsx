@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronRight, Bell, HelpCircle } from 'lucide-react'
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
+import CurrencySwitcher from '@/components/ui/CurrencySwitcher'
 
 export default function MePage() {
   const router = useRouter()
@@ -162,6 +163,12 @@ export default function MePage() {
         <p style={sectionLabel}>Language</p>
         <div style={{ padding: '12px 0' }}>
           <LanguageSwitcher />
+        </div>
+
+        {/* Currency */}
+        <p style={sectionLabel}>Currency</p>
+        <div style={{ padding: '12px 0' }}>
+          <CurrencySwitcher />
         </div>
 
         {/* Sign out */}

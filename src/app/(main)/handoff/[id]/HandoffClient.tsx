@@ -2,6 +2,10 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
+// Pieces at or above this price get the secure gallery + Contai-present handoff.
+// Stored in HUF (≈ €1,500). Tune this number anytime as rates drift.
+const HIGH_VALUE_HUF = 600000
+
 export default function HandoffClient({ reservation, userId }: any) {
   const [address, setAddress] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState('')
@@ -14,6 +18,9 @@ export default function HandoffClient({ reservation, userId }: any) {
   const [error, setError] = useState('')
   const router = useRouter()
   const artwork = reservation.artworks
+
+  const salePrice = reservation.agreed_price_huf || artwork?.price_huf || 0
+  const isHighValue = salePrice >= HIGH_VALUE_HUF
 
   useEffect(() => {
     if (!reservation.reservation_expires_at) return
@@ -98,6 +105,21 @@ export default function HandoffClient({ reservation, userId }: any) {
         </div>
       </div>
 
+      {/* High-value secure handoff notice */}
+      {isHighValue && !isCompleted && (
+        <div style={{ marginBottom: '1.5rem', padding: '1rem', borderRadius: '12px', background: '#f3efe6', border: '1px solid #e4d9c2' }}>
+          <p style={{ fontWeight: 600, fontSize: '15px', color: '#0a0a0a', marginBottom: '6px' }}>
+            Secure handoff for this piece
+          </p>
+          <p style={{ fontSize: '13.5px', color: '#5a5246', lineHeight: 1.6 }}>
+            Because this is a higher-value artwork, your handoff takes place at a Contai gallery for added security, and a member of the Contai team — often our founder — is present to support the exchange. We'll arrange the details with you directly.
+          </p>
+          <p style={{ fontSize: '12.5px', color: '#8a8170', lineHeight: 1.6, marginTop: '8px' }}>
+            Secure locations: Contai Gallery, Bucharest · Budapest (coming soon)
+          </p>
+        </div>
+      )}
+
       {isCompleted ? (
         <div style={{ padding: '1rem', backgroundColor: '#eef4f1', borderRadius: '12px', marginBottom: '1.5rem', textAlign: 'center' }}>
           <p style={{ color: '#2d6a4f', fontWeight: 600, fontSize: '18px' }}>Handoff completed</p>
@@ -126,7 +148,9 @@ export default function HandoffClient({ reservation, userId }: any) {
 
           {address && (
             <div style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid #e8e8e8', borderRadius: '12px' }}>
-              <p style={{ fontSize: '13px', color: '#666', marginBottom: '4px' }}>Pickup address:</p>
+              <p style={{ fontSize: '13px', color: '#666', marginBottom: '4px' }}>
+                {isHighValue ? 'Secure gallery location:' : 'Pickup address:'}
+              </p>
               <p style={{ fontWeight: 600 }}>{address}</p>
             </div>
           )}
