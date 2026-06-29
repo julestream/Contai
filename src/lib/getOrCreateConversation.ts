@@ -6,27 +6,22 @@ export async function getOrCreateConversation(artworkId: string, artistId: strin
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  // Check if conversation exists
   const { data: existing } = await supabase
     .from('conversations')
     .select('id')
     .eq('artwork_id', artworkId)
     .eq('buyer_id', user.id)
     .eq('artist_id', artistId)
-    .single()
+    .maybeSingle()
 
   if (existing) return existing.id
 
-  // Create new conversation
-  const { data: newConv } = await supabase
+  const { data: newConv, error: insErr } = await supabase
     .from('conversations')
-    .insert({
-      artwork_id: artworkId,
-      buyer_id: user.id,
-      artist_id: artistId,
-    })
+    .insert({ artwork_id: artworkId, buyer_id: user.id, artist_id: artistId })
     .select('id')
     .single()
 
+  if (insErr) { console.error('Conversation create failed:', insErr.message); return null }
   return newConv?.id
 }

@@ -46,13 +46,23 @@ export default async function HomePage() {
     .order('created_at', { ascending: false })
     .limit(6)
 
-  // Curatorial picks
-  const { data: picks } = await supabase
+  // Curatorial picks — featured first, fall back to newest if none featured
+  let { data: picks } = await supabase
     .from('artworks')
     .select('*, profiles(full_name)')
     .eq('status', 'live')
-    .order('created_at', { ascending: true })
+    .eq('featured', true)
+    .order('created_at', { ascending: false })
     .limit(6)
+  if (!picks || picks.length === 0) {
+    const { data: fallbackPicks } = await supabase
+      .from('artworks')
+      .select('*, profiles(full_name)')
+      .eq('status', 'live')
+      .order('created_at', { ascending: true })
+      .limit(6)
+    picks = fallbackPicks || []
+  }
 
   let favorites: any[] = []
   let recommended: any[] = []
@@ -124,7 +134,7 @@ export default async function HomePage() {
       {/* Recommended for you */}
       {recommended.length > 0 && (
         <section style={{ margin: '12px 0 28px' }}>
-          <SectionHeader title="Recommended for you" href="/browse" />
+          <SectionHeader title="Recommended for you" href="/browse/newest" />
           <HRow>
             {recommended.map(a => (
               <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
@@ -162,7 +172,7 @@ export default async function HomePage() {
 
       {/* Newest additions */}
       <section style={{ marginBottom: '28px' }}>
-        <SectionHeader title="Newest additions" href="/browse" />
+        <SectionHeader title="Newest additions" href="/browse/newest" />
         <HRow>
           {newest?.map(a => (
             <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
@@ -174,7 +184,7 @@ export default async function HomePage() {
 
       {/* Shop by mood */}
       <section style={{ marginBottom: '28px' }}>
-        <SectionHeader title="Shop by mood" href="/browse" />
+        <SectionHeader title="Shop by mood" href="/browse/results" />
         <HRow>
           {MOODS.map(m => (
             <Link key={m} href={`/browse/results?mood=${m}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
@@ -204,7 +214,7 @@ export default async function HomePage() {
 
       {/* Curatorial picks */}
       <section style={{ marginBottom: '28px' }}>
-        <SectionHeader title="Curatorial picks" href="/browse" />
+        <SectionHeader title="Curatorial picks" href="/browse/curatorial" />
         <HRow>
           {picks?.map(a => (
             <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>

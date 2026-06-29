@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Send } from 'lucide-react'
+import Price from '@/components/ui/Price'
 
 export default function MessageThread({ conversation, initialMessages, initialOffers, currentUserId }: any) {
   const router = useRouter()
@@ -107,7 +108,7 @@ export default function MessageThread({ conversation, initialMessages, initialOf
         )}
         <div>
           <p style={{ fontWeight: 600, fontSize: '14px' }}>{artwork?.title}</p>
-          <p style={{ fontSize: '12px', color: '#999' }}>{artwork?.price_huf?.toLocaleString()} HUF</p>
+          <p style={{ fontSize: '12px', color: '#999' }}>{artwork?.price_huf ? <Price huf={artwork.price_huf} /> : null}</p>
         </div>
       </div>
 
@@ -141,7 +142,7 @@ export default function MessageThread({ conversation, initialMessages, initialOf
                     {offer.proposed_by === 'buyer' ? 'Buyer offer' : 'Artist counter'}
                   </p>
                   <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '22px', margin: '4px 0' }}>
-                    {offer.amount_huf.toLocaleString()} HUF
+                    <Price huf={offer.amount_huf} />
                   </p>
                   <p style={{ fontSize: '12px', color: '#999' }}>Reservation fee (8%): {fee.toLocaleString()} HUF</p>
 

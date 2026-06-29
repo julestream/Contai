@@ -72,6 +72,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
     if (updErr) { setError(updErr.message); setSaving(false); return }
     setSaving(false)
     setSaved(true)
+    router.push('/dashboard')
   }
 
   const inputStyle: React.CSSProperties = {

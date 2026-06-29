@@ -87,9 +87,12 @@ export default function MePage() {
       <div style={{ padding: '0 1rem' }}>
         {/* Profile header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '8px 0 16px' }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '999px', backgroundColor: '#f5f3ef', flexShrink: 0, overflow: 'hidden' }}>
-            {profile?.avatar_url && <img src={profile.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-          </div>
+          <Link href={isArtist ? '/dashboard/profile' : '/me/personal-info'} aria-label="Edit profile"
+            style={{ width: '64px', height: '64px', borderRadius: '999px', backgroundColor: '#f5f3ef', flexShrink: 0, overflow: 'hidden', display: 'block', position: 'relative' }}>
+            {profile?.avatar_url
+              ? <img src={profile.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontSize: '11px' }}>Edit</span>}
+          </Link>
           <div>
             <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px' }}>{profile?.full_name || 'Your name'}</p>
             <p style={{ fontSize: '14px', color: '#999', textTransform: 'capitalize' }}>{role}{profile?.city ? ` · ${profile.city}` : ''}</p>

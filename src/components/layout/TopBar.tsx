@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { Bell, MessageCircle, Search, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { usePathname } from 'next/navigation'
+import CurrencySwitcher from '@/components/ui/CurrencySwitcher'
 
 export default function TopBar() {
   const router = useRouter()
@@ -85,6 +86,9 @@ export default function TopBar() {
             />
           </div>
         </form>
+        <div style={{ flexShrink: 0 }}>
+          <CurrencySwitcher compact />
+        </div>
         {isAdmin && (
           <Link href="/admin" aria-label="Admin" style={{ color: '#c8a24a', flexShrink: 0 }}>
             <Shield size={24} />

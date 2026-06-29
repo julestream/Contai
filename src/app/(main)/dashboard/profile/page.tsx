@@ -82,6 +82,7 @@ export default function EditProfilePage() {
     if (updErr) { setError(updErr.message); setSaving(false); return }
     setSaving(false)
     setSaved(true)
+    router.push('/dashboard')
   }
 
   const inputStyle: React.CSSProperties = {
