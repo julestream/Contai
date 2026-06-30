@@ -19,23 +19,39 @@ export default function Button({
   children,
   type = 'button',
 }: ButtonProps) {
-  const base = 'inline-flex items-center justify-center font-medium transition-all rounded-full'
-  const sizes = {
-    sm: 'px-4 py-2 text-sm',
-    md: 'px-6 py-3 text-base',
+  const sizeStyles: Record<string, React.CSSProperties> = {
+    sm: { padding: '8px 16px', fontSize: '14px' },
+    md: { padding: '13px 24px', fontSize: '16px' },
   }
-  const variants = {
-    primary: 'bg-ink text-white hover:bg-ink-mid disabled:opacity-40',
-    secondary: 'bg-white text-ink border border-ink hover:bg-bone disabled:opacity-40',
-    ghost: 'bg-transparent text-ink-muted hover:text-ink disabled:opacity-40',
+
+  const variantStyles: Record<string, React.CSSProperties> = {
+    primary: { background: '#0a0a0a', color: '#ffffff', border: 'none' },
+    secondary: { background: '#ffffff', color: '#0a0a0a', border: '1px solid #0a0a0a' },
+    ghost: { background: 'transparent', color: '#666', border: 'none' },
   }
+
+  const isDisabled = disabled || loading
 
   return (
     <button
       type={type}
       onClick={onClick}
-      disabled={disabled || loading}
-      className={`${base} ${sizes[size]} ${variants[variant]} ${full ? 'w-full' : ''}`}
+      disabled={isDisabled}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px',
+        fontWeight: 500,
+        borderRadius: '999px',
+        cursor: isDisabled ? 'default' : 'pointer',
+        width: full ? '100%' : 'auto',
+        opacity: isDisabled ? 0.5 : 1,
+        transition: 'opacity 0.15s',
+        fontFamily: 'var(--font-instrument), sans-serif',
+        ...sizeStyles[size],
+        ...variantStyles[variant],
+      }}
     >
       {loading ? 'Loading...' : children}
     </button>
