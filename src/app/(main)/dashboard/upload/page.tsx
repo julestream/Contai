@@ -40,6 +40,7 @@ export default function UploadPage() {
   const [uploading, setUploading] = useState(false)
 
   const [title, setTitle] = useState('')
+  const [artistName, setArtistName] = useState('')
   const [typeOfArt, setTypeOfArt] = useState('')
   const [medium, setMedium] = useState('')
   const [year, setYear] = useState('')
@@ -159,6 +160,7 @@ export default function UploadPage() {
 
     const { error: insertError } = await supabase.from('artworks').insert({
       artist_id: session.user.id,
+      artist_name: artistName.trim() || null,
       title,
       medium,
       year: year ? parseInt(year) : null,
@@ -235,6 +237,10 @@ export default function UploadPage() {
       {step === 2 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <input placeholder="Title" value={title} onChange={e => setTitle(e.target.value)} style={inputStyle} />
+          <div>
+            <input placeholder="Artist name (optional)" value={artistName} onChange={e => setArtistName(e.target.value)} style={{ ...inputStyle, width: '100%' }} />
+            <p style={{ fontSize: '12px', color: '#999', marginTop: '6px' }}>Leave blank if this is your own work. Fill in only if you're listing on behalf of another artist.</p>
+          </div>
           <div>
             <p style={{ fontWeight: 600, marginBottom: '8px', fontSize: '14px' }}>Art type</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>

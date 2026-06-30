@@ -51,7 +51,6 @@ export default function MePage() {
   }
 
   const role = profile?.role
-  const isArtist = role === 'artist' || role === 'admin'
 
   const sectionLabel: React.CSSProperties = { fontSize: '12px', letterSpacing: '0.08em', color: '#999', textTransform: 'uppercase', margin: '24px 0 4px' }
 
@@ -83,7 +82,7 @@ export default function MePage() {
       <div style={{ padding: '0 1rem' }}>
         {/* Profile header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '8px 0 16px' }}>
-          <Link href={isArtist ? '/dashboard/profile' : '/me/personal-info'} aria-label="Edit profile"
+          <Link href={role === 'artist' || role === 'admin' ? '/dashboard/profile' : '/me/personal-info'} aria-label="Edit profile"
             style={{ width: '64px', height: '64px', borderRadius: '999px', backgroundColor: '#f5f3ef', flexShrink: 0, overflow: 'hidden', display: 'block', position: 'relative' }}>
             {profile?.avatar_url
               ? <img src={profile.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -102,45 +101,41 @@ export default function MePage() {
         <Row label="Favorites" href="/favorites" />
         <Row label="Payment methods" soon />
 
-        {/* Selling (artists only) */}
-        {isArtist && (
-          <>
-            <p style={sectionLabel}>Selling</p>
-            <Row label="My listings" href="/dashboard" />
-            <Row label="Sales" href="/me/sales" />
-            <Row label="Get paid" href="/me/get-paid" />
+        {/* Selling — available to everyone */}
+        <p style={sectionLabel}>Selling</p>
+        <Row label="My listings" href="/dashboard" />
+        <Row label="Sales" href="/me/sales" />
+        <Row label="Get paid" href="/me/get-paid" />
 
-            {/* Vacation mode toggle */}
-            <div style={{ padding: '16px 0', borderBottom: '1px solid #eee' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '16px', color: '#0a0a0a' }}>
-                  Vacation mode
-                  <button onClick={() => setShowVacInfo(v => !v)} aria-label="What is vacation mode?"
-                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', color: '#bbb' }}>
-                    <HelpCircle size={15} />
-                  </button>
-                </span>
-                <button onClick={toggleVacation} disabled={savingVac} aria-label="Toggle vacation mode"
-                  style={{
-                    width: '46px', height: '26px', borderRadius: '999px', border: 'none', cursor: 'pointer',
-                    background: vacation ? '#0a0a0a' : '#d8d4cc', position: 'relative', transition: 'background 0.2s',
-                  }}>
-                  <span style={{
-                    position: 'absolute', top: '3px', left: vacation ? '23px' : '3px',
-                    width: '20px', height: '20px', borderRadius: '999px', background: '#fff', transition: 'left 0.2s',
-                  }} />
-                </button>
-              </div>
-              {showVacInfo && (
-                <p style={{ fontSize: '13px', color: '#777', marginTop: '10px', lineHeight: 1.5 }}>
-                  When vacation mode is on, your artworks stay visible and people can still favourite them, but buyers can't reserve or purchase until you turn it off. Use it when you're away and can't meet buyers.
-                </p>
-              )}
-            </div>
+        {/* Vacation mode toggle */}
+        <div style={{ padding: '16px 0', borderBottom: '1px solid #eee' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '16px', color: '#0a0a0a' }}>
+              Vacation mode
+              <button onClick={() => setShowVacInfo(v => !v)} aria-label="What is vacation mode?"
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', color: '#bbb' }}>
+                <HelpCircle size={15} />
+              </button>
+            </span>
+            <button onClick={toggleVacation} disabled={savingVac} aria-label="Toggle vacation mode"
+              style={{
+                width: '46px', height: '26px', borderRadius: '999px', border: 'none', cursor: 'pointer',
+                background: vacation ? '#0a0a0a' : '#d8d4cc', position: 'relative', transition: 'background 0.2s',
+              }}>
+              <span style={{
+                position: 'absolute', top: '3px', left: vacation ? '23px' : '3px',
+                width: '20px', height: '20px', borderRadius: '999px', background: '#fff', transition: 'left 0.2s',
+              }} />
+            </button>
+          </div>
+          {showVacInfo && (
+            <p style={{ fontSize: '13px', color: '#777', marginTop: '10px', lineHeight: 1.5 }}>
+              When vacation mode is on, your artworks stay visible and people can still favourite them, but buyers can't reserve or purchase until you turn it off. Use it when you're away and can't meet buyers.
+            </p>
+          )}
+        </div>
 
-            <Row label="Verification" href="/dashboard/verification" />
-          </>
-        )}
+        <Row label="Verification" href="/dashboard/verification" />
 
         {/* Account */}
         <p style={sectionLabel}>Account info</p>

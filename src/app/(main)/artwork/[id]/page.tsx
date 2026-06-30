@@ -23,6 +23,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
 
   const images = artwork.images as string[]
   const artist = (artwork as any).profiles
+  const displayArtist = artwork.artist_name || artist?.full_name || 'Artist'
   const onVacation = !!artist?.vacation_mode
   const isSold = artwork.status === 'sold'
   const isOwner = user?.id === artwork.artist_id
@@ -51,7 +52,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
         {/* Artist & favorite */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            {artist?.full_name || 'Artist'}
+            {displayArtist}
           </p>
           <FavoriteButton artworkId={artwork.id} />
         </div>
@@ -118,7 +119,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
           Contai Guarantee — full refund if something goes wrong
         </div>
 
-        {/* Artist card */}
+        {/* Artist card (the account that listed it) */}
         <Link href={`/artist/${artist?.id}`} style={{ textDecoration: 'none' }}>
           <div style={{ marginTop: '1.5rem', padding: '1rem', border: '1px solid #e8e8e8', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '999px', backgroundColor: '#f5f3ef', flexShrink: 0, overflow: 'hidden' }}>
