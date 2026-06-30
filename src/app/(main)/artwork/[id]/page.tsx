@@ -61,13 +61,6 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
         <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', marginTop: '4px' }}>{artwork.title}</h1>
         <Price huf={artwork.price_huf} style={{ display: 'block', fontFamily: 'var(--font-instrument), sans-serif', fontSize: '22px', marginTop: '8px' }} />
 
-        {/* Description */}
-        {artwork.description && (
-          <p style={{ marginTop: '1rem', fontSize: '15px', lineHeight: 1.6, color: '#333', whiteSpace: 'pre-wrap' }}>
-            {artwork.description}
-          </p>
-        )}
-
         {/* Certificate badge */}
         {hasCertificate && (
           <div style={{ marginTop: '12px' }}>
@@ -75,7 +68,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
           </div>
         )}
 
-        {/* Details */}
+        {/* Details (technical specs) */}
         <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: '#f5f3ef', borderRadius: '8px', fontSize: '14px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             {artwork.medium && <p><span style={{ color: '#999' }}>Medium</span><br />{artwork.medium}</p>}
@@ -86,6 +79,13 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
             <p><span style={{ color: '#999' }}>Pickup</span><br />{artwork.pickup_area}</p>
           </div>
         </div>
+
+        {/* Description (story, after the specs) */}
+        {artwork.description && (
+          <p style={{ marginTop: '1.5rem', fontSize: '15px', lineHeight: 1.6, color: '#333', whiteSpace: 'pre-wrap' }}>
+            {artwork.description}
+          </p>
+        )}
 
         {/* Reserve / status area */}
         {isSold ? (
