@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronRight, Bell, HelpCircle } from 'lucide-react'
+import { ChevronRight, HelpCircle } from 'lucide-react'
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
 import CurrencySwitcher from '@/components/ui/CurrencySwitcher'
 
@@ -75,13 +75,9 @@ export default function MePage() {
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
-      {/* Top bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem' }}>
-        <Link href="/notifications" aria-label="Notifications" style={{ color: '#0a0a0a' }}>
-          <Bell size={22} />
-        </Link>
+      {/* Page title */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
         <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', fontWeight: 700 }}>Me</h1>
-        <span style={{ width: 22 }} />
       </div>
 
       <div style={{ padding: '0 1rem' }}>
@@ -94,7 +90,7 @@ export default function MePage() {
               : <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontSize: '11px' }}>Edit</span>}
           </Link>
           <div>
-            <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px' }}>{profile?.full_name || 'Your name'}</p>
+            <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px', color: '#0a0a0a' }}>{profile?.full_name || 'Your name'}</p>
             <p style={{ fontSize: '14px', color: '#999', textTransform: 'capitalize' }}>{role}{profile?.city ? ` · ${profile.city}` : ''}</p>
           </div>
         </div>

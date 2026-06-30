@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { deleteArtwork } from './deleteArtwork'
 
 const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Gouache', 'Ink', 'Pastel', 'Charcoal', 'Pencil', 'Mixed Media', 'Digital', 'Photography', 'Other']
 
@@ -21,6 +22,11 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
   const [height, setHeight] = useState('')
   const [price, setPrice] = useState('')
   const [pickupArea, setPickupArea] = useState('')
+  const [status, setStatus] = useState('')
+
+  const [hiding, setHiding] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -44,6 +50,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       setHeight(art.height_cm ? String(art.height_cm) : '')
       setPrice(art.price_huf ? String(art.price_huf) : '')
       setPickupArea(art.pickup_area || '')
+      setStatus(art.status || '')
       setLoading(false)
     }
     load()
@@ -75,6 +82,26 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
     router.push('/dashboard')
   }
 
+  async function handleToggleHide() {
+    setError('')
+    setHiding(true)
+    const supabase = createClient()
+    const next = status === 'hidden' ? 'live' : 'hidden'
+    const { error: hideErr } = await supabase.from('artworks').update({ status: next }).eq('id', params.id)
+    if (hideErr) { setError(hideErr.message); setHiding(false); return }
+    setStatus(next)
+    setHiding(false)
+    router.push('/dashboard')
+  }
+
+  async function handleDelete() {
+    setError('')
+    setDeleting(true)
+    const result = await deleteArtwork(params.id)
+    if (!result.ok) { setError(result.error || 'Could not delete.'); setDeleting(false); return }
+    router.push('/dashboard')
+  }
+
   const inputStyle: React.CSSProperties = {
     padding: '12px', borderRadius: '8px', border: '1px solid #e0dcd3',
     fontSize: '16px', outline: 'none', width: '100%', fontFamily: 'var(--font-instrument), sans-serif',
@@ -83,10 +110,18 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
   if (loading) return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>Loading...</div>
   if (denied) return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>You can only edit your own artwork. <Link href="/dashboard">Back to dashboard</Link></div>
 
+  const isHidden = status === 'hidden'
+
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', padding: '1.5rem', paddingBottom: '6rem' }}>
       <Link href="/dashboard" style={{ fontSize: '14px', color: '#666', textDecoration: 'none' }}>Back to dashboard</Link>
       <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px', margin: '1rem 0 1.5rem' }}>Edit artwork</h1>
+
+      {isHidden && (
+        <div style={{ padding: '10px 14px', background: '#f5f3ef', borderRadius: '10px', marginBottom: '1rem', fontSize: '13px', color: '#8a857c' }}>
+          This artwork is currently hidden. Buyers can't see it until you unhide it.
+        </div>
+      )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div>
@@ -142,6 +177,52 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       <p style={{ fontSize: '12px', color: '#999', textAlign: 'center', marginTop: '12px' }}>
         Changes go live immediately. No re-review needed.
       </p>
+
+      {/* Hide / Unhide */}
+      <button onClick={handleToggleHide} disabled={hiding} style={{
+        width: '100%', marginTop: '2rem', padding: '14px', borderRadius: '999px',
+        border: '1px solid #0a0a0a', background: '#fff', color: '#0a0a0a',
+        fontSize: '15px', fontWeight: 500, cursor: 'pointer', opacity: hiding ? 0.6 : 1,
+      }}>
+        {hiding ? 'Updating...' : isHidden ? 'Unhide — make visible again' : 'Hide from buyers'}
+      </button>
+      <p style={{ fontSize: '12px', color: '#999', textAlign: 'center', marginTop: '8px' }}>
+        Hiding keeps the artwork but removes it from the marketplace. You can unhide anytime.
+      </p>
+
+      {/* Delete */}
+      <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid #eee' }}>
+        {!confirmDelete ? (
+          <button onClick={() => setConfirmDelete(true)} style={{
+            width: '100%', padding: '14px', borderRadius: '999px',
+            border: '1px solid #e0c4c4', background: '#fff', color: '#b94040',
+            fontSize: '15px', fontWeight: 500, cursor: 'pointer',
+          }}>
+            Delete this artwork
+          </button>
+        ) : (
+          <div style={{ padding: '1rem', border: '1px solid #e0c4c4', borderRadius: '12px', background: '#fdf6f6' }}>
+            <p style={{ fontSize: '14px', color: '#b94040', fontWeight: 600, marginBottom: '4px' }}>Delete permanently?</p>
+            <p style={{ fontSize: '13px', color: '#8a6060', lineHeight: 1.5, marginBottom: '14px' }}>
+              This removes the artwork for good. If it has past offers or reservations, those records are kept and the piece is archived instead. This can't be undone.
+            </p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={handleDelete} disabled={deleting} style={{
+                flex: 1, padding: '12px', borderRadius: '999px', border: 'none',
+                background: '#b94040', color: '#fff', fontSize: '14px', fontWeight: 600, cursor: 'pointer', opacity: deleting ? 0.6 : 1,
+              }}>
+                {deleting ? 'Deleting...' : 'Yes, delete'}
+              </button>
+              <button onClick={() => setConfirmDelete(false)} disabled={deleting} style={{
+                flex: 1, padding: '12px', borderRadius: '999px', border: '1px solid #e0dcd3',
+                background: '#fff', color: '#0a0a0a', fontSize: '14px', cursor: 'pointer',
+              }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

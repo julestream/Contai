@@ -14,17 +14,32 @@ export default async function DashboardPage() {
     .eq('id', user.id)
     .single()
 
-  const { data: artworks } = await supabase
+  const { data: allArtworks } = await supabase
     .from('artworks')
     .select('*')
     .eq('artist_id', user.id)
     .order('created_at', { ascending: false })
+
+  // Hide archived ("removed") pieces from the dashboard, but keep them in the database
+  const artworks = (allArtworks || []).filter(a => a.status !== 'removed')
 
   const stats = {
     listed: artworks?.filter(a => a.status === 'live').length || 0,
     underReview: artworks?.filter(a => a.status === 'under_review').length || 0,
     reserved: artworks?.filter(a => a.status === 'reserved').length || 0,
     sold: artworks?.filter(a => a.status === 'sold').length || 0,
+  }
+
+  function statusPill(status: string) {
+    const map: Record<string, { bg: string; color: string }> = {
+      live: { bg: '#eef4f1', color: '#2d6a4f' },
+      under_review: { bg: '#fef3c7', color: '#92400e' },
+      sold: { bg: '#f5f3ef', color: '#666' },
+      reserved: { bg: '#e8eef4', color: '#2b4a6f' },
+      hidden: { bg: '#ece9e3', color: '#8a857c' },
+      rejected: { bg: '#fdf0f0', color: '#b94040' },
+    }
+    return map[status] || { bg: '#fdf0f0', color: '#b94040' }
   }
 
   return (
@@ -84,9 +99,10 @@ export default async function DashboardPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {artworks?.map(artwork => {
             const images = artwork.images as string[]
+            const pill = statusPill(artwork.status)
             return (
               <Link key={artwork.id} href={`/dashboard/edit/${artwork.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', opacity: artwork.status === 'hidden' ? 0.6 : 1 }}>
                   {images?.length > 0 ? (
                     <img src={images[0]} style={{ width: '56px', height: '56px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
                   ) : (
@@ -98,8 +114,8 @@ export default async function DashboardPage() {
                   </div>
                   <span style={{
                     padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 600,
-                    backgroundColor: artwork.status === 'live' ? '#eef4f1' : artwork.status === 'under_review' ? '#fef3c7' : artwork.status === 'sold' ? '#f5f3ef' : '#fdf0f0',
-                    color: artwork.status === 'live' ? '#2d6a4f' : artwork.status === 'under_review' ? '#92400e' : artwork.status === 'sold' ? '#666' : '#b94040',
+                    backgroundColor: pill.bg,
+                    color: pill.color,
                     textTransform: 'capitalize',
                   }}>
                     {artwork.status?.replace(/_/g, ' ')}

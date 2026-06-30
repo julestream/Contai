@@ -141,7 +141,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
               {artist?.avatar_url && <img src={artist.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
             </div>
             <div>
-              <p style={{ fontWeight: 600, fontSize: '14px' }}>{artist?.full_name}</p>
+              <p style={{ fontWeight: 600, fontSize: '14px', color: '#0a0a0a' }}>{artist?.full_name}</p>
               <p style={{ color: '#999', fontSize: '13px' }}>{artist?.city}</p>
             </div>
           </div>
