@@ -41,6 +41,7 @@ export default function UploadPage() {
 
   const [title, setTitle] = useState('')
   const [artistName, setArtistName] = useState('')
+  const [description, setDescription] = useState('')
   const [typeOfArt, setTypeOfArt] = useState('')
   const [medium, setMedium] = useState('')
   const [year, setYear] = useState('')
@@ -162,6 +163,7 @@ export default function UploadPage() {
       artist_id: session.user.id,
       artist_name: artistName.trim() || null,
       title,
+      description: description.trim() || null,
       medium,
       year: year ? parseInt(year) : null,
       width_cm: width ? parseFloat(width) : null,
@@ -240,6 +242,16 @@ export default function UploadPage() {
           <div>
             <input placeholder="Artist name (optional)" value={artistName} onChange={e => setArtistName(e.target.value)} style={{ ...inputStyle, width: '100%' }} />
             <p style={{ fontSize: '12px', color: '#999', marginTop: '6px' }}>Leave blank if this is your own work. Fill in only if you're listing on behalf of another artist.</p>
+          </div>
+          <div>
+            <textarea
+              placeholder="Description (optional) — tell buyers about this piece: its story, inspiration, technique…"
+              value={description}
+              onChange={e => setDescription(e.target.value.slice(0, 2000))}
+              rows={4}
+              style={{ ...inputStyle, width: '100%', resize: 'vertical', fontFamily: 'var(--font-instrument), sans-serif' }}
+            />
+            <p style={{ fontSize: '12px', color: '#999', marginTop: '6px', textAlign: 'right' }}>{description.length}/2000</p>
           </div>
           <div>
             <p style={{ fontWeight: 600, marginBottom: '8px', fontSize: '14px' }}>Art type</p>

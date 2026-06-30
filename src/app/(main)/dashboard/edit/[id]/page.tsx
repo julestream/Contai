@@ -16,6 +16,8 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
   const [denied, setDenied] = useState(false)
 
   const [title, setTitle] = useState('')
+  const [artistName, setArtistName] = useState('')
+  const [description, setDescription] = useState('')
   const [medium, setMedium] = useState('')
   const [year, setYear] = useState('')
   const [width, setWidth] = useState('')
@@ -44,6 +46,8 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       if (art.artist_id !== session.user.id) { setDenied(true); setLoading(false); return }
 
       setTitle(art.title || '')
+      setArtistName(art.artist_name || '')
+      setDescription(art.description || '')
       setMedium(art.medium || '')
       setYear(art.year ? String(art.year) : '')
       setWidth(art.width_cm ? String(art.width_cm) : '')
@@ -67,6 +71,8 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
     const priceNum = parseFloat(price)
     const { error: updErr } = await supabase.from('artworks').update({
       title,
+      artist_name: artistName.trim() || null,
+      description: description.trim() || null,
       medium,
       year: year ? parseInt(year) : null,
       width_cm: width ? parseFloat(width) : null,
@@ -127,6 +133,15 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
         <div>
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Title</label>
           <input value={title} onChange={e => setTitle(e.target.value)} style={inputStyle} />
+        </div>
+        <div>
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Artist name (optional)</label>
+          <input value={artistName} onChange={e => setArtistName(e.target.value)} style={inputStyle} placeholder="Leave blank if this is your own work" />
+        </div>
+        <div>
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Description (optional)</label>
+          <textarea value={description} onChange={e => setDescription(e.target.value.slice(0, 2000))} rows={4} style={{ ...inputStyle, resize: 'vertical' }} placeholder="Tell buyers about this piece…" />
+          <p style={{ fontSize: '12px', color: '#999', marginTop: '4px', textAlign: 'right' }}>{description.length}/2000</p>
         </div>
         <div>
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Price (HUF)</label>

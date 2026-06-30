@@ -61,6 +61,13 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
         <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', marginTop: '4px' }}>{artwork.title}</h1>
         <Price huf={artwork.price_huf} style={{ display: 'block', fontFamily: 'var(--font-instrument), sans-serif', fontSize: '22px', marginTop: '8px' }} />
 
+        {/* Description */}
+        {artwork.description && (
+          <p style={{ marginTop: '1rem', fontSize: '15px', lineHeight: 1.6, color: '#333', whiteSpace: 'pre-wrap' }}>
+            {artwork.description}
+          </p>
+        )}
+
         {/* Certificate badge */}
         {hasCertificate && (
           <div style={{ marginTop: '12px' }}>
