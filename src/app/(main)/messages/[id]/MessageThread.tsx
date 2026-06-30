@@ -2,8 +2,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Send } from 'lucide-react'
+import { Send, X } from 'lucide-react'
 import Price from '@/components/ui/Price'
+
+const SAFETY_COPY: Record<string, string> = {
+  hu: 'Tartsd a beszélgetést és a fizetést a Contain belül. Ha az appon kívül fizetsz vagy adsz meg elérhetőséget, a Contai Garancia nem véd, ha valami probléma adódik.',
+  en: 'Keep your chat and payment on Contai. If you pay or share contact details outside the app, the Contai Guarantee can\'t protect you if something goes wrong.',
+  ro: 'Păstrează conversația și plata în Contai. Dacă plătești sau oferi date de contact în afara aplicației, Garanția Contai nu te poate proteja dacă apare o problemă.',
+}
 
 export default function MessageThread({ conversation, initialMessages, initialOffers, currentUserId }: any) {
   const router = useRouter()
@@ -16,7 +22,12 @@ export default function MessageThread({ conversation, initialMessages, initialOf
   const [showOfferInput, setShowOfferInput] = useState(autoOffer)
   const [offerAmount, setOfferAmount] = useState('')
   const [working, setWorking] = useState(false)
+  const [showSafety, setShowSafety] = useState(true)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  // Pick the safety copy by saved language (falls back to Hungarian)
+  const lang = (typeof document !== 'undefined' && document.cookie.match(/contai_lang=(\w+)/)?.[1]) || 'hu'
+  const safetyText = SAFETY_COPY[lang] || SAFETY_COPY.hu
 
   const artwork = conversation.artworks
   const images = artwork?.images as string[]
@@ -100,9 +111,9 @@ export default function MessageThread({ conversation, initialMessages, initialOf
   ].sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime())
 
   return (
-    <div style={{ maxWidth: '430px', margin: '0 auto', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ maxWidth: '430px', margin: '0 auto', height: 'calc(100dvh - 56px)', display: 'flex', flexDirection: 'column', background: '#fff' }}>
       {/* Header */}
-      <div style={{ padding: '1rem', borderBottom: '1px solid #e8e8e8', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ padding: '1rem', borderBottom: '1px solid #e8e8e8', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
         {images?.length > 0 && (
           <img src={images[0]} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} />
         )}
@@ -185,9 +196,19 @@ export default function MessageThread({ conversation, initialMessages, initialOf
         <div ref={bottomRef} />
       </div>
 
+      {/* Safety notice */}
+      {showSafety && (
+        <div style={{ flexShrink: 0, padding: '10px 14px', background: '#fbf3e2', borderTop: '1px solid #f0e2c4', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+          <p style={{ fontSize: '12px', color: '#7a5d1e', lineHeight: 1.45, flex: 1, margin: 0 }}>{safetyText}</p>
+          <button onClick={() => setShowSafety(false)} aria-label="Dismiss" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b89b5e', flexShrink: 0, padding: 0, display: 'flex' }}>
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       {/* Offer composer */}
       {showOfferInput && (
-        <div style={{ padding: '12px 1rem', borderTop: '1px solid #e8e8e8', display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ flexShrink: 0, padding: '12px 1rem', borderTop: '1px solid #e8e8e8', display: 'flex', gap: '8px', alignItems: 'center' }}>
           <input
             value={offerAmount}
             onChange={e => setOfferAmount(e.target.value)}
@@ -207,7 +228,7 @@ export default function MessageThread({ conversation, initialMessages, initialOf
       )}
 
       {/* Composer */}
-      <div style={{ padding: '12px 1rem', borderTop: '1px solid #e8e8e8', display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <div style={{ flexShrink: 0, padding: '12px 1rem', borderTop: '1px solid #e8e8e8', display: 'flex', gap: '8px', alignItems: 'center' }}>
         {!showOfferInput && (
           <button onClick={() => setShowOfferInput(true)}
             style={{ padding: '10px 14px', borderRadius: '999px', border: '1px solid #0a0a0a', background: '#fff', color: '#0a0a0a', fontSize: '13px', cursor: 'pointer', flexShrink: 0 }}>
