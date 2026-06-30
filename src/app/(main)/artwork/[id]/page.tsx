@@ -7,7 +7,7 @@ import MakeOfferButton from '@/components/ui/MakeOfferButton'
 import Badge from '@/components/ui/Badge'
 import RecordView from '@/components/ui/RecordView'
 import Price from '@/components/ui/Price'
-import BackButton from '@/components/ui/BackButton'
+import ArtworkGallery from '@/components/ui/ArtworkGallery'
 
 export default async function ArtworkPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -32,24 +32,8 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '8rem' }}>
       <RecordView artworkId={artwork.id} />
 
-      {/* Image with floating back button */}
-      <div style={{ position: 'relative' }}>
-        <BackButton fallback="/browse" />
-        {images?.length > 0 ? (
-          <img src={images[0]} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover' }} />
-        ) : (
-          <div style={{ width: '100%', aspectRatio: '1', backgroundColor: '#f5f3ef' }} />
-        )}
-      </div>
-
-      {/* Thumbnails */}
-      {images?.length > 1 && (
-        <div style={{ display: 'flex', gap: '8px', padding: '12px', overflowX: 'auto' }}>
-          {images.map((url, i) => (
-            <img key={i} src={url} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }} />
-          ))}
-        </div>
-      )}
+      {/* Image gallery (clickable thumbnails + floating back button) */}
+      <ArtworkGallery images={images} />
 
       <div style={{ padding: '1.5rem' }}>
         {/* Owner edit banner */}

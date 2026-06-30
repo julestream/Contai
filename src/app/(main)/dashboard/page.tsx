@@ -79,10 +79,10 @@ export default async function DashboardPage() {
           </div>
         </Link>
         <Link href="/dashboard/profile" style={{ textDecoration: 'none', flex: 1 }}>
-          <div style={{ padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', textAlign: 'center', fontSize: '14px' }}>Edit profile</div>
+          <div style={{ padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', textAlign: 'center', fontSize: '14px', color: '#0a0a0a' }}>Edit profile</div>
         </Link>
         <Link href="/dashboard/verification" style={{ textDecoration: 'none', flex: 1 }}>
-          <div style={{ padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', textAlign: 'center', fontSize: '14px' }}>
+          <div style={{ padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', textAlign: 'center', fontSize: '14px', color: '#0a0a0a' }}>
             Verification
           </div>
         </Link>
