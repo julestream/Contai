@@ -8,6 +8,9 @@ import Badge from '@/components/ui/Badge'
 import RecordView from '@/components/ui/RecordView'
 import Price from '@/components/ui/Price'
 import ArtworkGallery from '@/components/ui/ArtworkGallery'
+import HighValueNotice from '@/components/ui/HighValueNotice'
+
+const HIGH_VALUE_HUF = 600000
 
 export default async function ArtworkPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -28,16 +31,15 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
   const isSold = artwork.status === 'sold'
   const isOwner = user?.id === artwork.artist_id
   const hasCertificate = artwork.certificate_status === 'approved'
+  const isHighValue = (artwork.price_huf || 0) >= HIGH_VALUE_HUF
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '8rem' }}>
       <RecordView artworkId={artwork.id} />
 
-      {/* Image gallery (clickable thumbnails + floating back button) */}
       <ArtworkGallery images={images} />
 
       <div style={{ padding: '1.5rem' }}>
-        {/* Owner edit banner */}
         {isOwner && (
           <Link href={`/dashboard/edit/${artwork.id}`} style={{ textDecoration: 'none' }}>
             <div style={{
@@ -49,7 +51,6 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
           </Link>
         )}
 
-        {/* Artist & favorite */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             {displayArtist}
@@ -57,18 +58,15 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
           <FavoriteButton artworkId={artwork.id} />
         </div>
 
-        {/* Title & Price */}
         <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', marginTop: '4px' }}>{artwork.title}</h1>
         <Price huf={artwork.price_huf} style={{ display: 'block', fontFamily: 'var(--font-instrument), sans-serif', fontSize: '22px', marginTop: '8px' }} />
 
-        {/* Certificate badge */}
         {hasCertificate && (
           <div style={{ marginTop: '12px' }}>
             <Badge type="certificate" />
           </div>
         )}
 
-        {/* Details (technical specs) */}
         <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: '#f5f3ef', borderRadius: '8px', fontSize: '14px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             {artwork.medium && <p><span style={{ color: '#999' }}>Medium</span><br />{artwork.medium}</p>}
@@ -80,14 +78,12 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
           </div>
         </div>
 
-        {/* Description (story, after the specs) */}
         {artwork.description && (
           <p style={{ marginTop: '1.5rem', fontSize: '15px', lineHeight: 1.6, color: '#333', whiteSpace: 'pre-wrap' }}>
             {artwork.description}
           </p>
         )}
 
-        {/* Reserve / status area */}
         {isSold ? (
           <div style={{
             marginTop: '1.5rem', padding: '16px', backgroundColor: '#eee', color: '#666',
@@ -113,20 +109,18 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
           </Link>
         )}
 
-        {/* Make an offer (negotiation) */}
+        {isHighValue && !isSold && <HighValueNotice />}
+
         {!isSold && !isOwner && !onVacation && (
           <MakeOfferButton artworkId={artwork.id} artistId={artist?.id} />
         )}
 
-        {/* Message artist button */}
         {!isOwner && <MessageArtistButton artworkId={artwork.id} artistId={artist?.id} />}
 
-        {/* Guarantee strip */}
         <div style={{ marginTop: '1rem', padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', fontSize: '13px', color: '#666', textAlign: 'center' }}>
           Contai Guarantee — full refund if something goes wrong
         </div>
 
-        {/* Artist card (the account that listed it) */}
         <Link href={`/artist/${artist?.id}`} style={{ textDecoration: 'none' }}>
           <div style={{ marginTop: '1.5rem', padding: '1rem', border: '1px solid #e8e8e8', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '999px', backgroundColor: '#f5f3ef', flexShrink: 0, overflow: 'hidden' }}>

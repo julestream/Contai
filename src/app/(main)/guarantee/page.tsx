@@ -67,6 +67,14 @@ export default function GuaranteePage() {
           ))}
         </ol>
 
+        {/* High-value works */}
+        <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '17px', marginTop: '1.75rem', marginBottom: '10px' }}>
+          {t('guarantee.highValueTitle')}
+        </h2>
+        <p style={{ fontSize: '14px', color: '#333', lineHeight: 1.6, background: '#f3f0e8', padding: '12px', borderRadius: '8px', border: '1px solid #e2dcc9' }}>
+          {t('guarantee.highValue')}
+        </p>
+
         {/* Not covered */}
         <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '17px', marginTop: '1.75rem', marginBottom: '10px' }}>
           {t('guarantee.notCoveredTitle')}
