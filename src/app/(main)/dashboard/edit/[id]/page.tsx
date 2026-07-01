@@ -24,6 +24,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
   const [height, setHeight] = useState('')
   const [price, setPrice] = useState('')
   const [pickupArea, setPickupArea] = useState('')
+  const [signed, setSigned] = useState(false)
   const [status, setStatus] = useState('')
 
   const [hiding, setHiding] = useState(false)
@@ -54,6 +55,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       setHeight(art.height_cm ? String(art.height_cm) : '')
       setPrice(art.price_huf ? String(art.price_huf) : '')
       setPickupArea(art.pickup_area || '')
+      setSigned(!!art.signed)
       setStatus(art.status || '')
       setLoading(false)
     }
@@ -80,6 +82,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       price_huf: priceNum,
       reservation_fee_huf: Math.round(priceNum * 0.08),
       pickup_area: pickupArea,
+      signed,
     }).eq('id', params.id)
 
     if (updErr) { setError(updErr.message); setSaving(false); return }
@@ -177,6 +180,10 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Pickup area</label>
           <input value={pickupArea} onChange={e => setPickupArea(e.target.value)} style={inputStyle} />
         </div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <input type="checkbox" checked={signed} onChange={e => setSigned(e.target.checked)} />
+          <span style={{ fontSize: '15px', color: '#0a0a0a' }}>Signed by the artist</span>
+        </label>
       </div>
 
       {error && <p style={{ color: '#b94040', fontSize: '14px', marginTop: '1rem' }}>{error}</p>}

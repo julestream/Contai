@@ -74,6 +74,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
             {artwork.width_cm && <p><span style={{ color: '#999' }}>Size</span><br />{artwork.width_cm} × {artwork.height_cm} cm</p>}
             {artwork.original_or_print && <p><span style={{ color: '#999' }}>Type</span><br />{artwork.original_or_print}</p>}
             {artwork.framed && <p><span style={{ color: '#999' }}>Framed</span><br />Yes</p>}
+            {artwork.signed && <p><span style={{ color: '#999' }}>Signed</span><br />Yes</p>}
             <p><span style={{ color: '#999' }}>Pickup</span><br />{artwork.pickup_area}</p>
           </div>
         </div>

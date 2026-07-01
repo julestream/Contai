@@ -49,6 +49,7 @@ export default function UploadPage() {
   const [height, setHeight] = useState('')
   const [depth, setDepth] = useState('')
   const [framed, setFramed] = useState(false)
+  const [signed, setSigned] = useState(false)
   const [originalOrPrint, setOriginalOrPrint] = useState<'original' | 'print'>('original')
 
   const [price, setPrice] = useState('')
@@ -170,6 +171,7 @@ export default function UploadPage() {
       height_cm: height ? parseFloat(height) : null,
       depth_cm: depth ? parseFloat(depth) : null,
       framed,
+      signed,
       original_or_print: originalOrPrint,
       price_huf: parseFloat(price),
       reservation_fee_huf: reservationFee,
@@ -279,6 +281,10 @@ export default function UploadPage() {
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
             <input type="checkbox" checked={framed} onChange={e => setFramed(e.target.checked)} />
             Framed
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input type="checkbox" checked={signed} onChange={e => setSigned(e.target.checked)} />
+            Signed by the artist
           </label>
         </div>
       )}
