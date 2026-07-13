@@ -4,8 +4,10 @@ import BackButton from '@/components/ui/BackButton'
 
 export default function ArtworkGallery({ images }: { images: string[] }) {
   const [active, setActive] = useState(0)
+  const [zoomed, setZoomed] = useState(false)
   const touchStartX = useRef<number | null>(null)
-  const touchEndX = useRef<number | null>(null)
+  const touchStartY = useRef<number | null>(null)
+  const moved = useRef(false)
 
   if (!images || images.length === 0) {
     return (
@@ -26,36 +28,47 @@ export default function ArtworkGallery({ images }: { images: string[] }) {
 
   function onTouchStart(e: React.TouchEvent) {
     touchStartX.current = e.touches[0].clientX
-    touchEndX.current = null
+    touchStartY.current = e.touches[0].clientY
+    moved.current = false
   }
 
   function onTouchMove(e: React.TouchEvent) {
-    touchEndX.current = e.touches[0].clientX
+    if (touchStartX.current === null) return
+    const dx = Math.abs(e.touches[0].clientX - touchStartX.current)
+    const dy = Math.abs(e.touches[0].clientY - (touchStartY.current ?? 0))
+    if (dx > 10 || dy > 10) moved.current = true
   }
 
-  function onTouchEnd() {
-    if (touchStartX.current === null || touchEndX.current === null) return
-    const distance = touchStartX.current - touchEndX.current
-    const threshold = 50 // minimum px to count as a swipe
-    if (distance > threshold) goTo(active + 1)        // swiped left → next
-    else if (distance < -threshold) goTo(active - 1)  // swiped right → previous
+  function onTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null) return
+    const endX = e.changedTouches[0].clientX
+    const distance = touchStartX.current - endX
+    const threshold = 50
+    if (Math.abs(distance) > threshold) {
+      if (distance > 0) goTo(active + 1)
+      else goTo(active - 1)
+    } else if (!moved.current) {
+      setZoomed(true)
+    }
     touchStartX.current = null
-    touchEndX.current = null
+    touchStartY.current = null
   }
 
   return (
     <div>
-      {/* Main image — swipeable, with back button */}
       <div
-        style={{ position: 'relative' }}
+        style={{ position: 'relative', paddingTop: '8px' }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
         <BackButton fallback="/browse" />
-        <img src={images[active]} style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', display: 'block' }} />
+        <img
+          src={images[active]}
+          onClick={() => setZoomed(true)}
+          style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', display: 'block', cursor: 'zoom-in' }}
+        />
 
-        {/* Dot indicators */}
         {count > 1 && (
           <div style={{
             position: 'absolute', bottom: '12px', left: 0, right: 0,
@@ -75,7 +88,6 @@ export default function ArtworkGallery({ images }: { images: string[] }) {
         )}
       </div>
 
-      {/* Thumbnails */}
       {count > 1 && (
         <div style={{ display: 'flex', gap: '8px', padding: '12px', overflowX: 'auto' }}>
           {images.map((url, i) => (
@@ -93,6 +105,35 @@ export default function ArtworkGallery({ images }: { images: string[] }) {
               <img src={url} style={{ width: '60px', height: '60px', objectFit: 'cover', display: 'block' }} />
             </button>
           ))}
+        </div>
+      )}
+
+      {zoomed && (
+        <div
+          onClick={() => setZoomed(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 100,
+            background: 'rgba(0,0,0,0.92)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1rem', cursor: 'zoom-out',
+          }}
+        >
+          <img
+            src={images[active]}
+            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+          />
+          <button
+            onClick={(e) => { e.stopPropagation(); setZoomed(false) }}
+            aria-label="Close"
+            style={{
+              position: 'absolute', top: '1rem', right: '1rem',
+              width: 40, height: 40, borderRadius: 999, border: 'none',
+              background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 22, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            ×
+          </button>
         </div>
       )}
     </div>

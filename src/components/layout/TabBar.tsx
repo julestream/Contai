@@ -40,14 +40,17 @@ export default function TabBar() {
         left: 0,
         right: 0,
         zIndex: 50,
-        background: '#0a0a0a',
-        borderTop: '1px solid #1c1c1c',
+        background: 'transparent',
+        display: 'flex',
+        justifyContent: 'center',
       }}
     >
       <div
         style={{
+          width: '100%',
           maxWidth: 480,
-          margin: '0 auto',
+          background: '#0a0a0a',
+          borderTop: '1px solid #1c1c1c',
           display: 'flex',
           alignItems: 'center',
           padding: '8px 8px calc(8px + env(safe-area-inset-bottom))',
