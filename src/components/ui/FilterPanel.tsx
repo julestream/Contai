@@ -21,6 +21,12 @@ const BADGES = [
   { value: 'curator_approved', label: 'Curator Pick' },
 ]
 
+const COUNTRIES = ['Hungary', 'Romania']
+const CITIES: Record<string, string[]> = {
+  Hungary: ['Budapest', 'Debrecen', 'Szeged', 'Miskolc', 'Pécs', 'Győr', 'Nyíregyháza', 'Kecskemét', 'Székesfehérvár', 'Szombathely', 'Other'],
+  Romania: ['Bucharest (București)', 'Cluj-Napoca', 'Timișoara', 'Iași', 'Constanța', 'Craiova', 'Brașov', 'Galați', 'Oradea', 'Sibiu', 'Târgu Mureș', 'Other'],
+}
+
 function parseList(v: string | null): string[] {
   if (!v) return []
   return v.split(',').filter(Boolean)
@@ -41,7 +47,8 @@ export default function FilterPanel() {
   const [framed, setFramed] = useState(searchParams.get('framed') || '')
   const [minPrice, setMinPrice] = useState(searchParams.get('min_price') || '')
   const [maxPrice, setMaxPrice] = useState(searchParams.get('max_price') || '')
-  const [location, setLocation] = useState(searchParams.get('location') || '')
+  const [country, setCountry] = useState(searchParams.get('country') || '')
+  const [city, setCity] = useState(searchParams.get('city') || '')
 
   function toggle(list: string[], setList: (v: string[]) => void, value: string) {
     if (list.includes(value)) setList(list.filter(v => v !== value))
@@ -61,14 +68,15 @@ export default function FilterPanel() {
     if (framed) params.set('framed', framed)
     if (minPrice) params.set('min_price', minPrice)
     if (maxPrice) params.set('max_price', maxPrice)
-    if (location) params.set('location', location)
+    if (country) params.set('country', country)
+    if (city) params.set('city', city)
     router.push(`/browse/results?${params.toString()}`)
     setOpen(false)
   }
 
   function clearAll() {
     setTypes([]); setMediums([]); setMoods([]); setColours([]); setMaterials([])
-    setSizes([]); setBadges([]); setFramed(''); setMinPrice(''); setMaxPrice(''); setLocation('')
+    setSizes([]); setBadges([]); setFramed(''); setMinPrice(''); setMaxPrice(''); setCountry(''); setCity('')
     const params = new URLSearchParams()
     if (searchParams.get('q')) params.set('q', searchParams.get('q')!)
     router.push(`/browse/results?${params.toString()}`)
@@ -78,7 +86,7 @@ export default function FilterPanel() {
   const activeCount =
     types.length + mediums.length + moods.length + colours.length +
     materials.length + sizes.length + badges.length +
-    (framed ? 1 : 0) + (minPrice || maxPrice ? 1 : 0) + (location ? 1 : 0)
+    (framed ? 1 : 0) + (minPrice || maxPrice ? 1 : 0) + (country || city ? 1 : 0)
 
   const chip = (active: boolean): React.CSSProperties => ({
     padding: '6px 12px', borderRadius: '999px', fontSize: '12.5px', cursor: 'pointer',
@@ -207,7 +215,16 @@ export default function FilterPanel() {
 
             {/* Location */}
             <div style={sectionLabel}>Location</div>
-            <input type="text" placeholder="City or area" value={location} onChange={e => setLocation(e.target.value)} style={input} />
+            <select value={country} onChange={e => { setCountry(e.target.value); setCity('') }} style={{ ...input, marginBottom: '8px' }}>
+              <option value="">Any country</option>
+              {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            {country && (
+              <select value={city} onChange={e => setCity(e.target.value)} style={input}>
+                <option value="">Any city</option>
+                {CITIES[country]?.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            )}
 
             {/* Actions */}
             <div style={{ display: 'flex', gap: '10px', marginTop: '28px', position: 'sticky', bottom: 0, background: '#fff', paddingTop: '12px' }}>

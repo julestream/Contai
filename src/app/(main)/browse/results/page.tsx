@@ -16,7 +16,7 @@ export default async function BrowseResultsPage({
   searchParams: {
     type?: string; mood?: string; q?: string; medium?: string; colour?: string;
     material?: string; size?: string; badge?: string; framed?: string;
-    min_price?: string; max_price?: string; location?: string;
+    min_price?: string; max_price?: string; country?: string; city?: string;
   }
 }) {
   const supabase = createClient()
@@ -45,7 +45,8 @@ export default async function BrowseResultsPage({
   if (searchParams.framed === 'false') query = query.eq('framed', false)
   if (searchParams.min_price) query = query.gte('price_huf', Number(searchParams.min_price))
   if (searchParams.max_price) query = query.lte('price_huf', Number(searchParams.max_price))
-  if (searchParams.location) query = query.ilike('pickup_area', `%${searchParams.location}%`)
+  if (searchParams.country) query = query.eq('country', searchParams.country)
+  if (searchParams.city) query = query.eq('city', searchParams.city)
   if (searchParams.q) query = query.or(`title.ilike.%${searchParams.q}%,style.ilike.%${searchParams.q}%`)
 
   // Artist badge filter: find matching artist ids first
