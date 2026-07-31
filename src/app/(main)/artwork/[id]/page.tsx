@@ -18,7 +18,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
 
   const { data: artwork } = await supabase
     .from('artworks')
-    .select('*, profiles(id, full_name, avatar_url, city, pickup_area, vacation_mode)')
+    .select('*, profiles(id, full_name, avatar_url, city, country, pickup_area, vacation_mode)')
     .eq('id', params.id)
     .single()
 
@@ -32,6 +32,11 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
   const isOwner = user?.id === artwork.artist_id
   const hasCertificate = artwork.certificate_status === 'approved'
   const isHighValue = (artwork.price_huf || 0) >= HIGH_VALUE_HUF
+
+  // Location: artwork's own city/country, falling back to the artist profile
+  const city = artwork.city || artist?.city || null
+  const country = artwork.country || artist?.country || null
+  const location = [artwork.pickup_area, city, country].filter(Boolean).join(', ')
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '8rem' }}>
@@ -61,6 +66,14 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
         <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', marginTop: '4px' }}>{artwork.title}</h1>
         <Price huf={artwork.price_huf} style={{ display: 'block', fontFamily: 'var(--font-instrument), sans-serif', fontSize: '22px', marginTop: '8px' }} />
 
+        {/* Location line — prominent for pickup-only */}
+        {(city || country) && (
+          <p style={{ fontSize: '13px', color: '#666', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span aria-hidden style={{ fontSize: '13px' }}>📍</span>
+            {[city, country].filter(Boolean).join(', ')}
+          </p>
+        )}
+
         {hasCertificate && (
           <div style={{ marginTop: '12px' }}>
             <Badge type="certificate" />
@@ -75,7 +88,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
             {artwork.original_or_print && <p><span style={{ color: '#999' }}>Type</span><br />{artwork.original_or_print}</p>}
             {artwork.framed && <p><span style={{ color: '#999' }}>Framed</span><br />Yes</p>}
             {artwork.signed && <p><span style={{ color: '#999' }}>Signed</span><br />Yes</p>}
-            <p><span style={{ color: '#999' }}>Pickup</span><br />{artwork.pickup_area}</p>
+            {location && <p style={{ gridColumn: '1 / -1' }}><span style={{ color: '#999' }}>Pickup location</span><br />{location}</p>}
           </div>
         </div>
 
@@ -129,7 +142,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
             </div>
             <div>
               <p style={{ fontWeight: 600, fontSize: '14px', color: '#0a0a0a' }}>{artist?.full_name}</p>
-              <p style={{ color: '#999', fontSize: '13px' }}>{artist?.city}</p>
+              <p style={{ color: '#999', fontSize: '13px' }}>{[artist?.city, artist?.country].filter(Boolean).join(', ')}</p>
             </div>
           </div>
         </Link>

@@ -7,6 +7,12 @@ import { deleteArtwork } from './deleteArtwork'
 
 const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Gouache', 'Ink', 'Pastel', 'Charcoal', 'Pencil', 'Mixed Media', 'Digital', 'Photography', 'Other']
 
+const COUNTRIES = ['Hungary', 'Romania']
+const CITIES: Record<string, string[]> = {
+  Hungary: ['Budapest', 'Debrecen', 'Szeged', 'Miskolc', 'Pécs', 'Győr', 'Nyíregyháza', 'Kecskemét', 'Székesfehérvár', 'Szombathely', 'Other'],
+  Romania: ['Bucharest (București)', 'Cluj-Napoca', 'Timișoara', 'Iași', 'Constanța', 'Craiova', 'Brașov', 'Galați', 'Oradea', 'Sibiu', 'Târgu Mureș', 'Other'],
+}
+
 export default function EditArtworkPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -23,6 +29,8 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
   const [width, setWidth] = useState('')
   const [height, setHeight] = useState('')
   const [price, setPrice] = useState('')
+  const [country, setCountry] = useState('')
+  const [city, setCity] = useState('')
   const [pickupArea, setPickupArea] = useState('')
   const [signed, setSigned] = useState(false)
   const [status, setStatus] = useState('')
@@ -54,6 +62,8 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       setWidth(art.width_cm ? String(art.width_cm) : '')
       setHeight(art.height_cm ? String(art.height_cm) : '')
       setPrice(art.price_huf ? String(art.price_huf) : '')
+      setCountry(art.country || '')
+      setCity(art.city || '')
       setPickupArea(art.pickup_area || '')
       setSigned(!!art.signed)
       setStatus(art.status || '')
@@ -81,6 +91,8 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       height_cm: height ? parseFloat(height) : null,
       price_huf: priceNum,
       reservation_fee_huf: Math.round(priceNum * 0.08),
+      country: country || null,
+      city: city || null,
       pickup_area: pickupArea,
       signed,
     }).eq('id', params.id)
@@ -177,6 +189,22 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
           </div>
         </div>
         <div>
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Country</label>
+          <select value={country} onChange={e => { setCountry(e.target.value); setCity('') }} style={inputStyle}>
+            <option value="">Select country</option>
+            {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        {country && (
+          <div>
+            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>City</label>
+            <select value={city} onChange={e => setCity(e.target.value)} style={inputStyle}>
+              <option value="">Select city</option>
+              {CITIES[country]?.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+        )}
+        <div>
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Pickup area</label>
           <input value={pickupArea} onChange={e => setPickupArea(e.target.value)} style={inputStyle} />
         </div>
@@ -200,7 +228,6 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
         Changes go live immediately. No re-review needed.
       </p>
 
-      {/* Hide / Unhide */}
       <button onClick={handleToggleHide} disabled={hiding} style={{
         width: '100%', marginTop: '2rem', padding: '14px', borderRadius: '999px',
         border: '1px solid #0a0a0a', background: '#fff', color: '#0a0a0a',
@@ -212,7 +239,6 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
         Hiding keeps the artwork but removes it from the marketplace. You can unhide anytime.
       </p>
 
-      {/* Delete */}
       <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid #eee' }}>
         {!confirmDelete ? (
           <button onClick={() => setConfirmDelete(true)} style={{
