@@ -9,6 +9,13 @@ const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Drawing', 'Print', 'Linocut',
 const TYPES = ['Painting', 'Print', 'Photography', 'Graphic Art', 'Sculpture']
 const MOODS = ['Joy', 'Harmony', 'Self-reflection', 'Inspiration', 'Intrigue']
 const STYLES = ['Abstract', 'Figurative', 'Landscape', 'Portrait', 'Still Life', 'Minimalist', 'Expressionist', 'Geometric', 'Surrealist', 'Street Art']
+
+const COUNTRIES = ['Hungary', 'Romania']
+const CITIES: Record<string, string[]> = {
+  Hungary: ['Budapest', 'Debrecen', 'Szeged', 'Miskolc', 'Pécs', 'Győr', 'Nyíregyháza', 'Kecskemét', 'Székesfehérvár', 'Szombathely', 'Other'],
+  Romania: ['Bucharest (București)', 'Cluj-Napoca', 'Timișoara', 'Iași', 'Constanța', 'Craiova', 'Brașov', 'Galați', 'Oradea', 'Sibiu', 'Târgu Mureș', 'Other'],
+}
+
 const COLOURS = [
   { name: 'Black', hex: '#0a0a0a' },
   { name: 'White', hex: '#ffffff' },
@@ -54,6 +61,8 @@ export default function UploadPage() {
 
   const [price, setPrice] = useState('')
 
+  const [country, setCountry] = useState('')
+  const [city, setCity] = useState('')
   const [pickupArea, setPickupArea] = useState('')
   const [pickupAddress, setPickupAddress] = useState('')
   const [pickupMethod, setPickupMethod] = useState<'in_person' | 'local_delivery'>('in_person')
@@ -93,12 +102,14 @@ export default function UploadPage() {
     if (step === 1 && images.length === 0) { setError('Please add at least one photo.'); return }
     if (step === 2) {
       if (!title.trim()) { setError('Please enter a title.'); return }
-      if (!typeOfArt) { setError('Please choose an art type.'); return }
       if (!medium) { setError('Please choose a medium.'); return }
-      if (!width.trim() || !height.trim()) { setError('Please enter width and height.'); return }
     }
     if (step === 3 && (!price.trim() || isNaN(parseFloat(price)))) { setError('Please enter a price.'); return }
-    if (step === 4 && (!pickupArea.trim() || !pickupAddress.trim())) { setError('Please enter both the pickup area and the exact address.'); return }
+    if (step === 4) {
+      if (!country) { setError('Please choose a country.'); return }
+      if (!city) { setError('Please choose a city.'); return }
+      if (!pickupArea.trim() || !pickupAddress.trim()) { setError('Please enter both the pickup area and the exact address.'); return }
+    }
     setStep(s => s + 1)
   }
 
@@ -152,7 +163,6 @@ export default function UploadPage() {
   async function handleSubmit() {
     setError('')
     if (!hasId) { setError('You need to upload your ID before submitting an artwork for review.'); return }
-    if (colours.length === 0 && !multicolour) { setError('Please choose at least one colour (or Multicolour).'); return }
     setLoading(true)
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
@@ -176,10 +186,12 @@ export default function UploadPage() {
       price_huf: parseFloat(price),
       reservation_fee_huf: reservationFee,
       images: images,
+      country,
+      city,
       pickup_area: pickupArea,
       pickup_address: pickupAddress,
       pickup_method: pickupMethod,
-      type_of_art: typeOfArt,
+      type_of_art: typeOfArt || null,
       colours: colourValue,
       mood,
       style,
@@ -255,23 +267,26 @@ export default function UploadPage() {
             />
             <p style={{ fontSize: '12px', color: '#999', marginTop: '6px', textAlign: 'right' }}>{description.length}/2000</p>
           </div>
-          <div>
-            <p style={{ fontWeight: 600, marginBottom: '8px', fontSize: '14px' }}>Art type</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {TYPES.map(t => (
-                <button key={t} onClick={() => setTypeOfArt(t)} style={chip(typeOfArt === t)}>{t}</button>
-              ))}
-            </div>
-          </div>
           <select value={medium} onChange={e => setMedium(e.target.value)} style={inputStyle}>
             <option value="">Select medium</option>
             {MEDIUMS.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
+          <div>
+            <p style={{ fontWeight: 600, marginBottom: '8px', fontSize: '14px' }}>Art type <span style={{ color: '#999', fontWeight: 400 }}>(optional)</span></p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {TYPES.map(t => (
+                <button key={t} onClick={() => setTypeOfArt(typeOfArt === t ? '' : t)} style={chip(typeOfArt === t)}>{t}</button>
+              ))}
+            </div>
+          </div>
           <input placeholder="Year (optional)" value={year} onChange={e => setYear(e.target.value)} style={inputStyle} />
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <input placeholder="W cm" value={width} onChange={e => setWidth(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
-            <input placeholder="H cm" value={height} onChange={e => setHeight(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
-            <input placeholder="D cm (opt)" value={depth} onChange={e => setDepth(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+          <div>
+            <p style={{ fontSize: '13px', color: '#999', marginBottom: '6px' }}>Dimensions (optional)</p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input placeholder="W cm" value={width} onChange={e => setWidth(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+              <input placeholder="H cm" value={height} onChange={e => setHeight(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+              <input placeholder="D cm" value={depth} onChange={e => setDepth(e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             {(['original', 'print'] as const).map(o => (
@@ -304,8 +319,36 @@ export default function UploadPage() {
 
       {step === 4 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <input placeholder="Public pickup area (e.g. 7th district)" value={pickupArea} onChange={e => setPickupArea(e.target.value)} style={inputStyle} />
-          <input placeholder="Exact pickup address (hidden from buyers)" value={pickupAddress} onChange={e => setPickupAddress(e.target.value)} style={inputStyle} />
+          <div>
+            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Country</label>
+            <select value={country} onChange={e => { setCountry(e.target.value); setCity('') }} style={{ ...inputStyle, width: '100%' }}>
+              <option value="">Select country</option>
+              {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+
+          {country && (
+            <div>
+              <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>City</label>
+              <select value={city} onChange={e => setCity(e.target.value)} style={{ ...inputStyle, width: '100%' }}>
+                <option value="">Select city</option>
+                {CITIES[country]?.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          )}
+
+          <div>
+            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Pickup area (public)</label>
+            <input placeholder="e.g. District VII, city centre" value={pickupArea} onChange={e => setPickupArea(e.target.value)} style={{ ...inputStyle, width: '100%' }} />
+            <p style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>The neighbourhood buyers see. Not the exact address.</p>
+          </div>
+
+          <div>
+            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Exact pickup address (private)</label>
+            <input placeholder="Street and number — hidden from buyers" value={pickupAddress} onChange={e => setPickupAddress(e.target.value)} style={{ ...inputStyle, width: '100%' }} />
+            <p style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>Only revealed to a buyer after they reserve.</p>
+          </div>
+
           <div style={{ display: 'flex', gap: '8px' }}>
             {(['in_person', 'local_delivery'] as const).map(m => (
               <button key={m} onClick={() => setPickupMethod(m)} style={{ ...chip(pickupMethod === m), flex: 1 }}>{m === 'in_person' ? 'In person' : 'Local delivery'}</button>
@@ -317,8 +360,8 @@ export default function UploadPage() {
       {step === 5 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <p style={{ fontWeight: 600, marginBottom: '8px' }}>Colours <span style={{ color: '#b94040' }}>*</span></p>
-            <p style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>Pick all that apply, or choose Multicolour.</p>
+            <p style={{ fontWeight: 600, marginBottom: '8px' }}>Colours <span style={{ color: '#999', fontWeight: 400 }}>(optional)</span></p>
+            <p style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>Helps buyers filter by colour. Pick all that apply, or Multicolour.</p>
             <button onClick={() => setMulticolour(v => !v)} style={{ ...chip(multicolour), marginBottom: '12px' }}>Multicolour</button>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {COLOURS.map(c => {
@@ -345,7 +388,7 @@ export default function UploadPage() {
             <p style={{ fontWeight: 600, marginBottom: '8px' }}>Style (optional)</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {STYLES.map(s => (
-                <button key={s} onClick={() => setStyle(s)} style={chip(style === s)}>{s}</button>
+                <button key={s} onClick={() => setStyle(style === s ? '' : s)} style={chip(style === s)}>{s}</button>
               ))}
             </div>
           </div>
