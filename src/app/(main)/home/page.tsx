@@ -67,6 +67,8 @@ export default async function HomePage() {
   let favorites: any[] = []
   let recommended: any[] = []
   let recentlyViewed: any[] = []
+  let nearYou: any[] = []
+  let nearCity: string | null = null
   if (user) {
     const { data: favRows } = await supabase
       .from('favorites')
@@ -75,11 +77,13 @@ export default async function HomePage() {
       .limit(6)
     favorites = (favRows || []).map((f: any) => f.artworks).filter(Boolean)
 
+    // One profile fetch for preferences + location
     const { data: prof } = await supabase
       .from('profiles')
-      .select('preferred_types')
+      .select('preferred_types, city, country')
       .eq('id', user.id)
       .single()
+
     const prefTypes: string[] = prof?.preferred_types || []
     if (prefTypes.length > 0) {
       const { data: recs } = await supabase
@@ -90,6 +94,19 @@ export default async function HomePage() {
         .order('created_at', { ascending: false })
         .limit(6)
       recommended = recs || []
+    }
+
+    // Near you — artworks in the buyer's own city
+    if (prof?.city) {
+      nearCity = prof.city
+      const { data: near } = await supabase
+        .from('artworks')
+        .select('*, profiles(full_name)')
+        .eq('status', 'live')
+        .eq('city', prof.city)
+        .order('created_at', { ascending: false })
+        .limit(6)
+      nearYou = near || []
     }
 
     const { data: rvRows } = await supabase
@@ -130,6 +147,20 @@ export default async function HomePage() {
       <div style={{ padding: '1.25rem 1rem 0.5rem' }}>
         <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px' }}>Discover</h1>
       </div>
+
+      {/* Near you */}
+      {nearYou.length > 0 && (
+        <section style={{ margin: '12px 0 28px' }}>
+          <SectionHeader title={`Near you in ${nearCity}`} href={`/browse/results?city=${encodeURIComponent(nearCity || '')}`} />
+          <HRow>
+            {nearYou.map(a => (
+              <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+                <ArtworkCard artwork={a} />
+              </div>
+            ))}
+          </HRow>
+        </section>
+      )}
 
       {/* Recommended for you */}
       {recommended.length > 0 && (

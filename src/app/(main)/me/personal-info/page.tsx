@@ -4,6 +4,12 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+const COUNTRIES = ['Hungary', 'Romania']
+const CITIES: Record<string, string[]> = {
+  Hungary: ['Budapest', 'Debrecen', 'Szeged', 'Miskolc', 'Pécs', 'Győr', 'Nyíregyháza', 'Kecskemét', 'Székesfehérvár', 'Szombathely', 'Other'],
+  Romania: ['Bucharest (București)', 'Cluj-Napoca', 'Timișoara', 'Iași', 'Constanța', 'Craiova', 'Brașov', 'Galați', 'Oradea', 'Sibiu', 'Târgu Mureș', 'Other'],
+}
+
 export default function PersonalInfoPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -11,6 +17,7 @@ export default function PersonalInfoPage() {
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
   const [fullName, setFullName] = useState('')
+  const [country, setCountry] = useState('')
   const [city, setCity] = useState('')
   const [email, setEmail] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
@@ -24,11 +31,12 @@ export default function PersonalInfoPage() {
       setEmail(session.user.email || '')
       const { data } = await supabase
         .from('profiles')
-        .select('full_name, city, avatar_url')
+        .select('full_name, country, city, avatar_url')
         .eq('id', session.user.id)
         .single()
       if (data) {
         setFullName(data.full_name || '')
+        setCountry(data.country || '')
         setCity(data.city || '')
         setAvatarUrl(data.avatar_url || '')
       }
@@ -63,7 +71,8 @@ export default function PersonalInfoPage() {
     if (!session) { setError('Not signed in'); setSaving(false); return }
     const { error: updErr } = await supabase.from('profiles').update({
       full_name: fullName,
-      city,
+      country: country || null,
+      city: city || null,
       avatar_url: avatarUrl,
     }).eq('id', session.user.id)
     if (updErr) { setError(updErr.message); setSaving(false); return }
@@ -103,10 +112,26 @@ export default function PersonalInfoPage() {
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Name</label>
           <input value={fullName} onChange={e => setFullName(e.target.value)} style={inputStyle} placeholder="Your name" />
         </div>
+
         <div>
-          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>City</label>
-          <input value={city} onChange={e => setCity(e.target.value)} style={inputStyle} placeholder="e.g. Budapest" />
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Country</label>
+          <select value={country} onChange={e => { setCountry(e.target.value); setCity('') }} style={inputStyle}>
+            <option value="">Select country</option>
+            {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
         </div>
+
+        {country && (
+          <div>
+            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>City</label>
+            <select value={city} onChange={e => setCity(e.target.value)} style={inputStyle}>
+              <option value="">Select city</option>
+              {CITIES[country]?.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <p style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>We use this to show you artworks you can pick up nearby.</p>
+          </div>
+        )}
+
         <div>
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Email</label>
           <input value={email} disabled style={{ ...inputStyle, background: '#f5f3ef', color: '#999' }} />
