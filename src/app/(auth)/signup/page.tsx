@@ -5,8 +5,10 @@ import Logo from '@/components/ui/Logo'
 import Button from '@/components/ui/Button'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useLang } from '@/i18n/LanguageProvider'
 
 export default function SignUpPage() {
+  const { t } = useLang()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<'buyer' | 'artist'>('buyer')
@@ -35,13 +37,11 @@ export default function SignUpPage() {
     }
 
     if (data.user) {
-      // Insert profile
       await supabase.from('profiles').insert({
         id: data.user.id,
         role,
       })
 
-      // Sign in immediately
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -66,8 +66,6 @@ export default function SignUpPage() {
     setGoogleLoading(true)
     setError('')
     const supabase = createClient()
-    // Pass the chosen role to the callback so a new Google user
-    // gets the correct profile (buyer or artist).
     const { error: googleError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -75,10 +73,9 @@ export default function SignUpPage() {
       },
     })
     if (googleError) {
-      setError('Could not sign up with Google. Please try again.')
+      setError(t('auth.googleSignUpError'))
       setGoogleLoading(false)
     }
-    // On success the browser redirects to Google.
   }
 
   return (
@@ -86,7 +83,7 @@ export default function SignUpPage() {
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <Logo />
       </div>
-      <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '1.5rem' }}>Create account</h1>
+      <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', marginBottom: '1.5rem' }}>{t('auth.createAccount')}</h1>
 
       <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem' }}>
         {(['buyer', 'artist'] as const).map(r => (
@@ -102,35 +99,34 @@ export default function SignUpPage() {
               color: role === r ? 'white' : '#0a0a0a',
               cursor: 'pointer',
               fontWeight: role === r ? 600 : 400,
-              textTransform: 'capitalize',
             }}
-          >{r}</button>
+          >{t(`auth.${r}`)}</button>
         ))}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <input
           type="email"
-          placeholder="Email"
+          placeholder={t('auth.email')}
           value={email}
           onChange={e => setEmail(e.target.value)}
           style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e8e8e8', fontSize: '16px', outline: 'none' }}
         />
         <input
           type="password"
-          placeholder="Password"
+          placeholder={t('auth.password')}
           value={password}
           onChange={e => setPassword(e.target.value)}
           style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e8e8e8', fontSize: '16px', outline: 'none' }}
         />
         {error && <p style={{ color: '#b94040', fontSize: '14px' }}>{error}</p>}
-        <Button onClick={handleSignUp} loading={loading} full>Create account</Button>
+        <Button onClick={handleSignUp} loading={loading} full>{t('auth.createAccount')}</Button>
       </div>
 
       {/* Divider */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '1.5rem 0' }}>
         <div style={{ flex: 1, height: '1px', background: '#e8e8e8' }} />
-        <span style={{ color: '#999', fontSize: '13px' }}>or</span>
+        <span style={{ color: '#999', fontSize: '13px' }}>{t('auth.or')}</span>
         <div style={{ flex: 1, height: '1px', background: '#e8e8e8' }} />
       </div>
 
@@ -161,11 +157,11 @@ export default function SignUpPage() {
           <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
           <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
         </svg>
-        {googleLoading ? 'Connecting…' : 'Continue with Google'}
+        {googleLoading ? t('auth.connecting') : t('auth.continueGoogle')}
       </button>
 
       <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#666', fontSize: '14px' }}>
-        Already have an account? <Link href="/signin" style={{ color: '#0a0a0a', fontWeight: 600 }}>Sign in</Link>
+        {t('auth.haveAccount')} <Link href="/signin" style={{ color: '#0a0a0a', fontWeight: 600 }}>{t('auth.signIn')}</Link>
       </p>
     </div>
   )
