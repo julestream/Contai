@@ -3,6 +3,8 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import ArtworkCard from '@/components/ui/ArtworkCard'
+import { cookies } from 'next/headers'
+import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
 
 const MOODS = ['Joy', 'Harmony', 'Self-reflection', 'Inspiration', 'Intrigue']
 const MOOD_IMG: Record<string, string> = {
@@ -13,13 +15,13 @@ const MOOD_IMG: Record<string, string> = {
   Intrigue: '/moods/intrigue.png',
 }
 
-function SectionHeader({ title, href }: { title: string; href?: string }) {
+function SectionHeader({ title, href, viewAllLabel }: { title: string; href?: string; viewAllLabel: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', padding: '0 1rem', marginBottom: '12px' }}>
       <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '19px', color: '#0a0a0a' }}>{title}</h2>
       {href && (
         <Link href={href} style={{ fontSize: '12px', color: '#666', textDecoration: 'none', letterSpacing: '0.04em' }}>
-          VIEW ALL
+          {viewAllLabel}
         </Link>
       )}
     </div>
@@ -37,6 +39,13 @@ function HRow({ children }: { children: React.ReactNode }) {
 export default async function HomePage() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
+
+  // Language (read server-side from cookie)
+  const lang = (cookies().get('contai_lang')?.value as Lang) || DEFAULT_LANG
+  const dict = getDict(lang)
+  const h = dict.home
+  const moodDict = dict.mood
+  const viewAll = dict.common.viewAll
 
   // Newest additions
   const { data: newest } = await supabase
@@ -77,7 +86,6 @@ export default async function HomePage() {
       .limit(6)
     favorites = (favRows || []).map((f: any) => f.artworks).filter(Boolean)
 
-    // One profile fetch for preferences + location
     const { data: prof } = await supabase
       .from('profiles')
       .select('preferred_types, city, country')
@@ -96,7 +104,6 @@ export default async function HomePage() {
       recommended = recs || []
     }
 
-    // Near you — artworks in the buyer's own city
     if (prof?.city) {
       nearCity = prof.city
       const { data: near } = await supabase
@@ -120,14 +127,14 @@ export default async function HomePage() {
       .filter((a: any) => a && a.status === 'live')
   }
 
-  // Carousel cards, warm -> cold
+  // Carousel cards, warm -> cold (text pulled from the dictionary)
   const news = [
-    { id: 1, eyebrow: 'About', title: 'Presenting', emphasis: 'Contai', tag: 'About', href: '/about' },
-    { id: 2, eyebrow: 'Stories', title: 'Meet the', emphasis: 'artists', tag: 'Stories', href: '/artists-feature' },
-    { id: 3, eyebrow: 'Quiz', title: 'Find your', emphasis: 'art mood', tag: 'Quiz', href: '/quiz' },
-    { id: 4, eyebrow: 'Guide', title: 'How', emphasis: 'reservations', titleAfter: 'work', tag: 'Guide', href: '/how-it-works' },
-    { id: 5, eyebrow: 'Thank you', title: 'For our', emphasis: 'testers', tag: 'News', href: '/news' },
-    { id: 6, eyebrow: 'Guarantee', title: 'The Contai', emphasis: 'Guarantee', tag: 'Guarantee', href: '/guarantee' },
+    { id: 1, eyebrow: h.aboutEyebrow, title: h.aboutTitle, emphasis: h.aboutEmphasis, tag: 'About', href: '/about' },
+    { id: 2, eyebrow: h.storiesEyebrow, title: h.storiesTitle, emphasis: h.storiesEmphasis, tag: 'Stories', href: '/artists-feature' },
+    { id: 3, eyebrow: h.quizEyebrow, title: h.quizTitle, emphasis: h.quizEmphasis, tag: 'Quiz', href: '/quiz' },
+    { id: 4, eyebrow: h.guideEyebrow, title: h.guideTitle, emphasis: h.guideEmphasis, tag: 'Guide', href: '/how-it-works' },
+    { id: 5, eyebrow: h.newsEyebrow, title: h.newsTitle, emphasis: h.newsEmphasis, tag: 'News', href: '/news' },
+    { id: 6, eyebrow: h.guaranteeEyebrow, title: h.guaranteeTitle, emphasis: h.guaranteeEmphasis, tag: 'Guarantee', href: '/guarantee' },
   ]
 
   function cardBackground(tag: string): string {
@@ -145,13 +152,17 @@ export default async function HomePage() {
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
       <div style={{ padding: '1.25rem 1rem 0.5rem' }}>
-        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px' }}>Discover</h1>
+        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px' }}>{h.discover}</h1>
       </div>
 
       {/* Near you */}
       {nearYou.length > 0 && (
         <section style={{ margin: '12px 0 28px' }}>
-          <SectionHeader title={`Near you in ${nearCity}`} href={`/browse/results?city=${encodeURIComponent(nearCity || '')}`} />
+          <SectionHeader
+            title={h.nearYou.replace('{city}', nearCity || '')}
+            href={`/browse/results?city=${encodeURIComponent(nearCity || '')}`}
+            viewAllLabel={viewAll}
+          />
           <HRow>
             {nearYou.map(a => (
               <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
@@ -165,7 +176,7 @@ export default async function HomePage() {
       {/* Recommended for you */}
       {recommended.length > 0 && (
         <section style={{ margin: '12px 0 28px' }}>
-          <SectionHeader title="Recommended for you" href="/browse/newest" />
+          <SectionHeader title={h.recommended} href="/browse/newest" viewAllLabel={viewAll} />
           <HRow>
             {recommended.map(a => (
               <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
@@ -192,7 +203,7 @@ export default async function HomePage() {
                   <div style={{ width: '26px', height: '1px', background: 'currentColor', opacity: 0.5, marginTop: '9px' }} />
                 </div>
                 <div style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontWeight: 500, fontSize: '21px', lineHeight: 1.12, letterSpacing: '-0.01em' }}>
-                  {n.title} <span style={{ fontStyle: 'italic', fontWeight: 400 }}>{n.emphasis}</span>{n.titleAfter ? ` ${n.titleAfter}` : ''}
+                  {n.title} <span style={{ fontStyle: 'italic', fontWeight: 400 }}>{n.emphasis}</span>
                 </div>
                 <span style={{ position: 'absolute', bottom: '16px', right: '18px', fontSize: '17px', opacity: 0.55 }}>→</span>
               </div>
@@ -203,7 +214,7 @@ export default async function HomePage() {
 
       {/* Newest additions */}
       <section style={{ marginBottom: '28px' }}>
-        <SectionHeader title="Newest additions" href="/browse/newest" />
+        <SectionHeader title={h.newest} href="/browse/newest" viewAllLabel={viewAll} />
         <HRow>
           {newest?.map(a => (
             <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
@@ -215,7 +226,7 @@ export default async function HomePage() {
 
       {/* Shop by mood */}
       <section style={{ marginBottom: '28px' }}>
-        <SectionHeader title="Shop by mood" href="/browse/results" />
+        <SectionHeader title={h.shopByMood} href="/browse/results" viewAllLabel={viewAll} />
         <HRow>
           {MOODS.map(m => (
             <Link key={m} href={`/browse/results?mood=${m}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
@@ -225,7 +236,7 @@ export default async function HomePage() {
               }}>
                 <img
                   src={MOOD_IMG[m]}
-                  alt={m}
+                  alt={moodDict[m] || m}
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                 />
                 <div style={{
@@ -236,7 +247,7 @@ export default async function HomePage() {
                   position: 'absolute', left: '10px', bottom: '8px',
                   fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '15px', color: '#fff',
                   textShadow: '0 1px 3px rgba(0,0,0,0.4)',
-                }}>{m}</span>
+                }}>{moodDict[m] || m}</span>
               </div>
             </Link>
           ))}
@@ -245,7 +256,7 @@ export default async function HomePage() {
 
       {/* Curatorial picks */}
       <section style={{ marginBottom: '28px' }}>
-        <SectionHeader title="Curatorial picks" href="/browse/curatorial" />
+        <SectionHeader title={h.curatorial} href="/browse/curatorial" viewAllLabel={viewAll} />
         <HRow>
           {picks?.map(a => (
             <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
@@ -258,7 +269,7 @@ export default async function HomePage() {
       {/* Recently viewed */}
       {recentlyViewed.length > 0 && (
         <section style={{ marginBottom: '28px' }}>
-          <SectionHeader title="Recently viewed" />
+          <SectionHeader title={h.recentlyViewed} viewAllLabel={viewAll} />
           <HRow>
             {recentlyViewed.map(a => (
               <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
@@ -272,7 +283,7 @@ export default async function HomePage() {
       {/* Your favorites */}
       {user && favorites.length > 0 && (
         <section style={{ marginBottom: '28px' }}>
-          <SectionHeader title="Your favorites" href="/favorites" />
+          <SectionHeader title={h.yourFavorites} href="/favorites" viewAllLabel={viewAll} />
           <HRow>
             {favorites.map(a => (
               <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
