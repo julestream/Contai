@@ -2,8 +2,10 @@
 import { useState } from 'react'
 import { getOrCreateConversation } from '@/lib/getOrCreateConversation'
 import { useRouter } from 'next/navigation'
+import { useLang } from '@/i18n/LanguageProvider'
 
 export default function MessageArtistButton({ artworkId, artistId }: { artworkId: string, artistId: string }) {
+  const { t } = useLang()
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -34,7 +36,7 @@ export default function MessageArtistButton({ artworkId, artistId }: { artworkId
         cursor: 'pointer',
       }}
     >
-      {loading ? 'Opening...' : 'Message Artist'}
+      {loading ? t('artwork.opening') : t('artwork.messageArtist')}
     </button>
   )
 }

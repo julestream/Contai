@@ -2,8 +2,10 @@
 import { useState } from 'react'
 import { getOrCreateConversation } from '@/lib/getOrCreateConversation'
 import { useRouter } from 'next/navigation'
+import { useLang } from '@/i18n/LanguageProvider'
 
 export default function MakeOfferButton({ artworkId, artistId }: { artworkId: string, artistId: string }) {
+  const { t } = useLang()
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
@@ -27,7 +29,7 @@ export default function MakeOfferButton({ artworkId, artistId }: { artworkId: st
         textAlign: 'center', fontSize: '15px', fontWeight: 500, cursor: 'pointer',
       }}
     >
-      {loading ? 'Opening...' : 'Make an offer'}
+      {loading ? t('artwork.opening') : t('artwork.makeOffer')}
     </button>
   )
 }

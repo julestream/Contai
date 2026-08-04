@@ -1,14 +1,19 @@
 import Link from 'next/link'
-
-const CATEGORIES = [
-  { num: '01', label: 'PAINTINGS', filter: 'Painting', icon: '/categories/01-paintings.svg' },
-  { num: '02', label: 'SCULPTURES', filter: 'Sculpture', icon: '/categories/02-sculptures.svg' },
-  { num: '03', label: 'GRAPHIC ART', filter: 'Graphic Art', icon: '/categories/03-graphic-art.svg' },
-  { num: '04', label: 'PHOTOGRAPHY', filter: 'Photography', icon: '/categories/04-photography.svg' },
-  { num: '05', label: 'PRINTS', filter: 'Print', icon: '/categories/05-prints.svg' },
-]
+import { cookies } from 'next/headers'
+import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
 
 export default function BrowsePage() {
+  const lang = (cookies().get('contai_lang')?.value as Lang) || DEFAULT_LANG
+  const b = getDict(lang).browse
+
+  const CATEGORIES = [
+    { num: '01', label: b.paintings, filter: 'Painting', icon: '/categories/01-paintings.svg' },
+    { num: '02', label: b.sculptures, filter: 'Sculpture', icon: '/categories/02-sculptures.svg' },
+    { num: '03', label: b.graphicArt, filter: 'Graphic Art', icon: '/categories/03-graphic-art.svg' },
+    { num: '04', label: b.photography, filter: 'Photography', icon: '/categories/04-photography.svg' },
+    { num: '05', label: b.prints, filter: 'Print', icon: '/categories/05-prints.svg' },
+  ]
+
   return (
     <div style={{
       maxWidth: '430px', margin: '0 auto',
