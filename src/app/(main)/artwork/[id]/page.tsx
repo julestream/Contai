@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { cookies } from 'next/headers'
+import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
 import FavoriteButton from '@/components/ui/FavoriteButton'
 import MessageArtistButton from '@/components/ui/MessageArtistButton'
 import MakeOfferButton from '@/components/ui/MakeOfferButton'
@@ -16,6 +18,9 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  const lang = (cookies().get('contai_lang')?.value as Lang) || DEFAULT_LANG
+  const a = getDict(lang).artwork
+
   const { data: artwork } = await supabase
     .from('artworks')
     .select('*, profiles(id, full_name, avatar_url, city, country, pickup_area, vacation_mode)')
@@ -26,14 +31,13 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
 
   const images = artwork.images as string[]
   const artist = (artwork as any).profiles
-  const displayArtist = artwork.artist_name || artist?.full_name || 'Artist'
+  const displayArtist = artwork.artist_name || artist?.full_name || a.artistFallback
   const onVacation = !!artist?.vacation_mode
   const isSold = artwork.status === 'sold'
   const isOwner = user?.id === artwork.artist_id
   const hasCertificate = artwork.certificate_status === 'approved'
   const isHighValue = (artwork.price_huf || 0) >= HIGH_VALUE_HUF
 
-  // Location: artwork's own city/country, falling back to the artist profile
   const city = artwork.city || artist?.city || null
   const country = artwork.country || artist?.country || null
   const location = [artwork.pickup_area, city, country].filter(Boolean).join(', ')
@@ -51,7 +55,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
               marginBottom: '1rem', padding: '12px', backgroundColor: '#0a0a0a', color: '#fff',
               borderRadius: '8px', textAlign: 'center', fontSize: '14px', fontWeight: 500,
             }}>
-              Edit this listing
+              {a.editListing}
             </div>
           </Link>
         )}
@@ -82,13 +86,13 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
 
         <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: '#f5f3ef', borderRadius: '8px', fontSize: '14px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            {artwork.medium && <p><span style={{ color: '#999' }}>Medium</span><br />{artwork.medium}</p>}
-            {artwork.year && <p><span style={{ color: '#999' }}>Year</span><br />{artwork.year}</p>}
-            {artwork.width_cm && <p><span style={{ color: '#999' }}>Size</span><br />{artwork.width_cm} × {artwork.height_cm} cm</p>}
-            {artwork.original_or_print && <p><span style={{ color: '#999' }}>Type</span><br />{artwork.original_or_print}</p>}
-            {artwork.framed && <p><span style={{ color: '#999' }}>Framed</span><br />Yes</p>}
-            {artwork.signed && <p><span style={{ color: '#999' }}>Signed</span><br />Yes</p>}
-            {location && <p style={{ gridColumn: '1 / -1' }}><span style={{ color: '#999' }}>Pickup location</span><br />{location}</p>}
+            {artwork.medium && <p><span style={{ color: '#999' }}>{a.medium}</span><br />{artwork.medium}</p>}
+            {artwork.year && <p><span style={{ color: '#999' }}>{a.year}</span><br />{artwork.year}</p>}
+            {artwork.width_cm && <p><span style={{ color: '#999' }}>{a.size}</span><br />{artwork.width_cm} × {artwork.height_cm} cm</p>}
+            {artwork.original_or_print && <p><span style={{ color: '#999' }}>{a.type}</span><br />{artwork.original_or_print}</p>}
+            {artwork.framed && <p><span style={{ color: '#999' }}>{a.framed}</span><br />{a.yes}</p>}
+            {artwork.signed && <p><span style={{ color: '#999' }}>{a.signed}</span><br />{a.yes}</p>}
+            {location && <p style={{ gridColumn: '1 / -1' }}><span style={{ color: '#999' }}>{a.pickupLocation}</span><br />{location}</p>}
           </div>
         </div>
 
@@ -103,14 +107,14 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
             marginTop: '1.5rem', padding: '16px', backgroundColor: '#eee', color: '#666',
             borderRadius: '999px', textAlign: 'center', fontSize: '16px', fontWeight: 500,
           }}>
-            Sold
+            {a.sold}
           </div>
         ) : onVacation ? (
           <div style={{
             marginTop: '1.5rem', padding: '16px', backgroundColor: '#f5f3ef', color: '#8a857c',
             borderRadius: '12px', textAlign: 'center', fontSize: '14px', lineHeight: 1.5,
           }}>
-            This artist is currently away.<br />You can still favourite this piece and message them — reservations reopen when they're back.
+            {a.vacationMsg}
           </div>
         ) : (
           <Link href={`/reserve/${artwork.id}`} style={{ textDecoration: 'none' }}>
@@ -118,7 +122,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
               marginTop: '1.5rem', padding: '16px', backgroundColor: '#0a0a0a', color: 'white',
               borderRadius: '999px', textAlign: 'center', fontSize: '16px', fontWeight: 500,
             }}>
-              Reserve · <Price huf={artwork.reservation_fee_huf} />
+              {a.reserve} · <Price huf={artwork.reservation_fee_huf} />
             </div>
           </Link>
         )}
@@ -132,7 +136,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
         {!isOwner && <MessageArtistButton artworkId={artwork.id} artistId={artist?.id} />}
 
         <div style={{ marginTop: '1rem', padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', fontSize: '13px', color: '#666', textAlign: 'center' }}>
-          Contai Guarantee — full refund if something goes wrong
+          {a.guaranteeStrip}
         </div>
 
         <Link href={`/artist/${artist?.id}`} style={{ textDecoration: 'none' }}>
