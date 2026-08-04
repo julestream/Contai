@@ -2,11 +2,16 @@ import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
+import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
 
 export default async function MessagesListPage() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/signin')
+
+  const lang = (cookies().get('contai_lang')?.value as Lang) || DEFAULT_LANG
+  const m = getDict(lang).messages
 
   const { data: conversations } = await supabase
     .from('conversations')
@@ -30,12 +35,12 @@ export default async function MessagesListPage() {
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
       <div style={{ padding: '1.5rem 1rem', borderBottom: '1px solid #e8e8e8' }}>
-        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px' }}>Messages</h1>
+        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px' }}>{m.messages}</h1>
       </div>
 
       {(!conversations || conversations.length === 0) && (
         <div style={{ padding: '3rem', textAlign: 'center', color: '#999' }}>
-          No conversations yet.
+          {m.noConversations}
         </div>
       )}
 

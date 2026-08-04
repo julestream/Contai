@@ -4,15 +4,11 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Send, X } from 'lucide-react'
 import Price from '@/components/ui/Price'
-
-const SAFETY_COPY: Record<string, string> = {
-  hu: 'Tartsd a beszélgetést és a fizetést a Contain belül. Ha az appon kívül fizetsz vagy adsz meg elérhetőséget, a Contai Garancia nem véd, ha valami probléma adódik.',
-  en: 'Keep your chat and payment on Contai. If you pay or share contact details outside the app, the Contai Guarantee can\'t protect you if something goes wrong.',
-  ro: 'Păstrează conversația și plata în Contai. Dacă plătești sau oferi date de contact în afara aplicației, Garanția Contai nu te poate proteja dacă apare o problemă.',
-}
+import { useLang } from '@/i18n/LanguageProvider'
 
 export default function MessageThread({ conversation, initialMessages, initialOffers, currentUserId }: any) {
   const router = useRouter()
+  const { t } = useLang()
   const autoOffer = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('makeOffer') === '1'
 
   const [messages, setMessages] = useState(initialMessages)
@@ -24,10 +20,6 @@ export default function MessageThread({ conversation, initialMessages, initialOf
   const [working, setWorking] = useState(false)
   const [showSafety, setShowSafety] = useState(true)
   const bottomRef = useRef<HTMLDivElement>(null)
-
-  // Pick the safety copy by saved language (falls back to Hungarian)
-  const lang = (typeof document !== 'undefined' && document.cookie.match(/contai_lang=(\w+)/)?.[1]) || 'hu'
-  const safetyText = SAFETY_COPY[lang] || SAFETY_COPY.hu
 
   const artwork = conversation.artworks
   const images = artwork?.images as string[]
@@ -150,42 +142,42 @@ export default function MessageThread({ conversation, initialMessages, initialOf
               <div key={'o' + offer.id} style={{ display: 'flex', justifyContent: 'center', margin: '8px 0' }}>
                 <div style={{ width: '85%', border: '1px solid #d8d4cc', borderRadius: '14px', padding: '14px', background: '#fff' }}>
                   <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                    {offer.proposed_by === 'buyer' ? 'Buyer offer' : 'Artist counter'}
+                    {offer.proposed_by === 'buyer' ? t('messages.buyerOffer') : t('messages.artistCounter')}
                   </p>
                   <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '22px', margin: '4px 0' }}>
                     <Price huf={offer.amount_huf} />
                   </p>
-                  <p style={{ fontSize: '12px', color: '#999' }}>Reservation fee (8%): {fee.toLocaleString()} HUF</p>
+                  <p style={{ fontSize: '12px', color: '#999' }}>{t('messages.reservationFeeLine')} {fee.toLocaleString()} HUF</p>
 
-                  {offer.status === 'accepted' && <p style={{ fontSize: '13px', color: '#2d6a4f', fontWeight: 600, marginTop: '8px' }}>Accepted</p>}
-                  {offer.status === 'declined' && <p style={{ fontSize: '13px', color: '#b94040', fontWeight: 600, marginTop: '8px' }}>Declined</p>}
-                  {offer.status === 'countered' && <p style={{ fontSize: '13px', color: '#999', marginTop: '8px' }}>Countered</p>}
+                  {offer.status === 'accepted' && <p style={{ fontSize: '13px', color: '#2d6a4f', fontWeight: 600, marginTop: '8px' }}>{t('messages.accepted')}</p>}
+                  {offer.status === 'declined' && <p style={{ fontSize: '13px', color: '#b94040', fontWeight: 600, marginTop: '8px' }}>{t('messages.declined')}</p>}
+                  {offer.status === 'countered' && <p style={{ fontSize: '13px', color: '#999', marginTop: '8px' }}>{t('messages.countered')}</p>}
 
                   {isLatest && offer.status === 'pending' && !fromMe && (
                     <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
                       <button onClick={() => respondToOffer(offer.id, 'accepted')} disabled={working}
                         style={{ flex: 1, padding: '10px', borderRadius: '999px', border: 'none', background: '#0a0a0a', color: '#fff', fontSize: '14px', cursor: 'pointer' }}>
-                        Accept
+                        {t('messages.accept')}
                       </button>
                       <button onClick={() => { setShowOfferInput(true); setOfferAmount(String(offer.amount_huf)) }} disabled={working}
                         style={{ flex: 1, padding: '10px', borderRadius: '999px', border: '1px solid #0a0a0a', background: '#fff', color: '#0a0a0a', fontSize: '14px', cursor: 'pointer' }}>
-                        Counter
+                        {t('messages.counter')}
                       </button>
                       <button onClick={() => respondToOffer(offer.id, 'declined')} disabled={working}
                         style={{ width: '100%', padding: '8px', borderRadius: '999px', border: 'none', background: 'transparent', color: '#b94040', fontSize: '13px', cursor: 'pointer' }}>
-                        Decline
+                        {t('messages.decline')}
                       </button>
                     </div>
                   )}
 
                   {isLatest && offer.status === 'pending' && fromMe && (
-                    <p style={{ fontSize: '12px', color: '#999', marginTop: '10px' }}>Waiting for a response...</p>
+                    <p style={{ fontSize: '12px', color: '#999', marginTop: '10px' }}>{t('messages.waitingResponse')}</p>
                   )}
 
                   {isLatest && offer.status === 'accepted' && isBuyer && (
                     <button onClick={() => router.push(`/reserve/${artwork.id}?offer=${offer.id}`)}
                       style={{ width: '100%', marginTop: '12px', padding: '12px', borderRadius: '999px', border: 'none', background: '#0a0a0a', color: '#fff', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>
-                      Reserve at {offer.amount_huf.toLocaleString()} HUF
+                      {t('messages.reserveAt')} {offer.amount_huf.toLocaleString()} HUF
                     </button>
                   )}
                 </div>
@@ -199,7 +191,7 @@ export default function MessageThread({ conversation, initialMessages, initialOf
       {/* Safety notice */}
       {showSafety && (
         <div style={{ flexShrink: 0, padding: '10px 14px', background: '#fbf3e2', borderTop: '1px solid #f0e2c4', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-          <p style={{ fontSize: '12px', color: '#7a5d1e', lineHeight: 1.45, flex: 1, margin: 0 }}>{safetyText}</p>
+          <p style={{ fontSize: '12px', color: '#7a5d1e', lineHeight: 1.45, flex: 1, margin: 0 }}>{t('messages.safety')}</p>
           <button onClick={() => setShowSafety(false)} aria-label="Dismiss" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b89b5e', flexShrink: 0, padding: 0, display: 'flex' }}>
             <X size={16} />
           </button>
@@ -212,17 +204,17 @@ export default function MessageThread({ conversation, initialMessages, initialOf
           <input
             value={offerAmount}
             onChange={e => setOfferAmount(e.target.value)}
-            placeholder="Your price in HUF"
+            placeholder={t('messages.yourPriceHuf')}
             inputMode="numeric"
             style={{ flex: 1, padding: '12px', borderRadius: '999px', border: '1px solid #e0dcd3', fontSize: '15px', outline: 'none' }}
           />
           <button onClick={() => submitOffer(isArtist ? 'artist' : 'buyer')} disabled={working}
             style={{ padding: '12px 18px', borderRadius: '999px', border: 'none', background: '#0a0a0a', color: '#fff', fontSize: '14px', cursor: 'pointer' }}>
-            Send
+            {t('messages.send')}
           </button>
           <button onClick={() => { setShowOfferInput(false); setOfferAmount('') }}
             style={{ background: 'none', border: 'none', color: '#999', cursor: 'pointer', fontSize: '13px' }}>
-            Cancel
+            {t('messages.cancel')}
           </button>
         </div>
       )}
@@ -232,17 +224,17 @@ export default function MessageThread({ conversation, initialMessages, initialOf
         {!showOfferInput && (
           <button onClick={() => setShowOfferInput(true)}
             style={{ padding: '10px 14px', borderRadius: '999px', border: '1px solid #0a0a0a', background: '#fff', color: '#0a0a0a', fontSize: '13px', cursor: 'pointer', flexShrink: 0 }}>
-            Offer
+            {t('messages.offer')}
           </button>
         )}
         <input
           value={content}
           onChange={e => setContent(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') sendMessage() }}
-          placeholder="Message..."
+          placeholder={t('messages.messagePlaceholder')}
           style={{ flex: 1, padding: '12px', borderRadius: '999px', border: '1px solid #e0dcd3', fontSize: '15px', outline: 'none' }}
         />
-        <button onClick={sendMessage} disabled={sending} aria-label="Send"
+        <button onClick={sendMessage} disabled={sending} aria-label={t('messages.send')}
           style={{ padding: '12px', borderRadius: '999px', border: 'none', background: '#0a0a0a', color: '#fff', cursor: 'pointer', display: 'flex' }}>
           <Send size={18} />
         </button>
