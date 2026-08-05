@@ -5,6 +5,8 @@ import Button from '@/components/ui/Button'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/i18n/LanguageProvider'
+import { useCurrency, Currency } from '@/currency/CurrencyProvider'
+
 const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Drawing', 'Print', 'Linocut', 'Mixed Media', 'Sculpture', 'Photography', 'Other']
 const TYPES = ['Painting', 'Print', 'Photography', 'Graphic Art', 'Sculpture']
 const MOODS = ['Joy', 'Harmony', 'Self-reflection', 'Inspiration', 'Intrigue']
@@ -32,10 +34,21 @@ const COLOURS = [
   { name: 'Gold', hex: '#c8a24a' },
   { name: 'Silver', hex: '#c0c5cc' },
 ]
+
+// Minimum reservation fee, per currency. Roughly equivalent values.
+const MIN_FEE: Record<Currency, number> = { HUF: 500, EUR: 2, RON: 10 }
+const CURRENCIES: { value: Currency; label: string }[] = [
+  { value: 'HUF', label: 'Ft' },
+  { value: 'RON', label: 'lei' },
+  { value: 'EUR', label: '€' },
+]
+
 export default function UploadPage() {
   const router = useRouter()
   const { t } = useLang()
+  const { toHuf } = useCurrency()
   const u = (k: string) => t(`upload.${k}`)
+  const c = (k: string) => t(`common.${k}`)
   const labels = (map: string, key: string) => {
     const m = t(`upload.${map}`) as any
     return (m && m[key]) || key
@@ -59,6 +72,7 @@ export default function UploadPage() {
   const [signed, setSigned] = useState(false)
   const [originalOrPrint, setOriginalOrPrint] = useState<'original' | 'print'>('original')
   const [price, setPrice] = useState('')
+  const [priceCurrency, setPriceCurrency] = useState<Currency>('HUF')
   const [country, setCountry] = useState('')
   const [city, setCity] = useState('')
   const [pickupArea, setPickupArea] = useState('')
@@ -70,7 +84,19 @@ export default function UploadPage() {
   const [style, setStyle] = useState('')
   const [certificatePath, setCertificatePath] = useState('')
   const [certUploading, setCertUploading] = useState(false)
-  const reservationFee = price ? Math.max(500, Math.round(parseFloat(price) * 0.08)) : 0
+
+  const priceNum = price ? parseFloat(price) : 0
+  const reservationFee = priceNum > 0
+    ? Math.max(MIN_FEE[priceCurrency], Math.round(priceNum * 0.08))
+    : 0
+
+  function money(n: number) {
+    const s = Math.round(n).toLocaleString()
+    if (priceCurrency === 'EUR') return `€${s}`
+    if (priceCurrency === 'RON') return `${s} lei`
+    return `${s} Ft`
+  }
+
   useEffect(() => {
     async function checkId() {
       const supabase = createClient()
@@ -86,9 +112,11 @@ export default function UploadPage() {
     }
     checkId()
   }, [])
+
   function toggleColour(name: string) {
     setColours(prev => prev.includes(name) ? prev.filter(x => x !== name) : [...prev, name])
   }
+
   function next() {
     setError('')
     if (step === 1 && images.length === 0) { setError(u('errPhoto')); return }
@@ -104,6 +132,7 @@ export default function UploadPage() {
     }
     setStep(s => s + 1)
   }
+
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -128,6 +157,7 @@ export default function UploadPage() {
     setImages(prev => [...prev, ...newImages])
     setUploading(false)
   }
+
   async function handleCertUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -147,6 +177,7 @@ export default function UploadPage() {
     setCertificatePath(path)
     setCertUploading(false)
   }
+
   async function handleSubmit() {
     setError('')
     if (!hasId) { setError(u('errId')); return }
@@ -168,8 +199,13 @@ export default function UploadPage() {
       framed,
       signed,
       original_or_print: originalOrPrint,
-      price_huf: parseFloat(price),
-      reservation_fee_huf: reservationFee,
+      // Authoritative: what the artist asked for, in their currency
+      price_amount: priceNum,
+      price_currency: priceCurrency,
+      reservation_fee_amount: reservationFee,
+      // Approximate, for browse filtering and sorting only
+      price_huf: toHuf(priceNum, priceCurrency),
+      reservation_fee_huf: toHuf(reservationFee, priceCurrency),
       images: images,
       country,
       city,
@@ -187,6 +223,7 @@ export default function UploadPage() {
     if (insertError) { setError(insertError.message); setLoading(false); return }
     router.push('/dashboard')
   }
+
   const steps = [u('stepPhotos'), u('stepDetails'), u('stepPricing'), u('stepLocation'), u('stepColours')]
   const inputStyle: React.CSSProperties = { padding: '12px', borderRadius: '8px', border: '1px solid #e8e8e8', fontSize: '16px', outline: 'none' }
   const chip = (active: boolean): React.CSSProperties => ({
@@ -196,6 +233,7 @@ export default function UploadPage() {
     color: active ? 'white' : '#0a0a0a',
     cursor: 'pointer', fontSize: '14px',
   })
+
   return (
     <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
       <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px', marginBottom: '1rem' }}>{u('listArtwork')}</h1>
@@ -281,12 +319,27 @@ export default function UploadPage() {
         </div>
       )}
       {step === 3 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <input placeholder={u('priceInHuf')} value={price} onChange={e => setPrice(e.target.value)} style={inputStyle} />
-          {price && !isNaN(parseFloat(price)) && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '8px' }}>{c('currency')}</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {CURRENCIES.map(o => (
+                <button key={o.value} onClick={() => setPriceCurrency(o.value)}
+                  style={{ ...chip(priceCurrency === o.value), flex: 1 }}>
+                  {o.label}
+                </button>
+              ))}
+            </div>
+            <p style={{ fontSize: '12px', color: '#999', marginTop: '6px' }}>{c('currencyHelp')}</p>
+          </div>
+          <div>
+            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{c('priceLabel')}</label>
+            <input placeholder={c('priceLabel')} value={price} onChange={e => setPrice(e.target.value)} style={{ ...inputStyle, width: '100%' }} inputMode="numeric" />
+          </div>
+          {priceNum > 0 && (
             <div style={{ padding: '16px', backgroundColor: '#f5f3ef', borderRadius: '8px', fontSize: '14px' }}>
-              <p>{u('artworkPriceLine')}: {parseInt(price).toLocaleString()} HUF</p>
-              <p>{u('reservationFeeLine')}: {reservationFee.toLocaleString()} HUF</p>
+              <p>{u('artworkPriceLine')}: {money(priceNum)}</p>
+              <p>{u('reservationFeeLine')}: {money(reservationFee)}</p>
               <p style={{ color: '#999', marginTop: '8px' }}>{u('feeExplain')}</p>
             </div>
           )}
@@ -298,7 +351,7 @@ export default function UploadPage() {
             <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{u('country')}</label>
             <select value={country} onChange={e => { setCountry(e.target.value); setCity('') }} style={{ ...inputStyle, width: '100%' }}>
               <option value="">{u('selectCountry')}</option>
-              {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+              {COUNTRIES.map(x => <option key={x} value={x}>{x}</option>)}
             </select>
           </div>
           {country && (
@@ -306,7 +359,7 @@ export default function UploadPage() {
               <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{u('city')}</label>
               <select value={city} onChange={e => setCity(e.target.value)} style={{ ...inputStyle, width: '100%' }}>
                 <option value="">{u('selectCity')}</option>
-                {CITIES[country]?.map(c => <option key={c} value={c}>{c}</option>)}
+                {CITIES[country]?.map(x => <option key={x} value={x}>{x}</option>)}
               </select>
             </div>
           )}
@@ -334,13 +387,13 @@ export default function UploadPage() {
             <p style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>{u('coloursHelp')}</p>
             <button onClick={() => setMulticolour(v => !v)} style={{ ...chip(multicolour), marginBottom: '12px' }}>{u('multicolour')}</button>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-              {COLOURS.map(c => {
-                const active = colours.includes(c.name)
+              {COLOURS.map(col => {
+                const active = colours.includes(col.name)
                 return (
-                  <button key={c.name} onClick={() => toggleColour(c.name)} title={labels('colourLabels', c.name)}
+                  <button key={col.name} onClick={() => toggleColour(col.name)} title={labels('colourLabels', col.name)}
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', background: 'none', border: 'none', cursor: 'pointer' }}>
-                    <span style={{ width: '34px', height: '34px', borderRadius: '999px', backgroundColor: c.hex, border: active ? '3px solid #0a0a0a' : '1px solid #d8d4cc' }} />
-                    <span style={{ fontSize: '10px', color: active ? '#0a0a0a' : '#999' }}>{labels('colourLabels', c.name)}</span>
+                    <span style={{ width: '34px', height: '34px', borderRadius: '999px', backgroundColor: col.hex, border: active ? '3px solid #0a0a0a' : '1px solid #d8d4cc' }} />
+                    <span style={{ fontSize: '10px', color: active ? '#0a0a0a' : '#999' }}>{labels('colourLabels', col.name)}</span>
                   </button>
                 )
               })}

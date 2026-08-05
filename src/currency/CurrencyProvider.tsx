@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 
 export type Currency = 'HUF' | 'EUR' | 'RON'
 
+// Rates are expressed as "1 HUF = x", so HUF is always 1.
 const FALLBACK: Record<Currency, number> = { HUF: 1, EUR: 0.0025, RON: 0.0125 }
 const CACHE_KEY = 'contai_rates'
 const CACHE_TTL = 12 * 60 * 60 * 1000 // 12 hours
@@ -10,10 +11,23 @@ const CACHE_TTL = 12 * 60 * 60 * 1000 // 12 hours
 type Ctx = {
   currency: Currency
   setCurrency: (c: Currency) => void
+  /** Format a HUF amount into the viewer's currency. */
   format: (huf: number | null | undefined) => string
+  /** Format an amount held in any currency into the viewer's currency. */
+  formatFrom: (amount: number | null | undefined, from: Currency) => string
+  /** Convert any amount into HUF — used for the approximate filter column. */
+  toHuf: (amount: number | null | undefined, from: Currency) => number
 }
 
 const CurrencyContext = createContext<Ctx | null>(null)
+
+function render(amount: number, cur: Currency, approx: boolean): string {
+  const n = amount.toLocaleString(undefined, { maximumFractionDigits: 0 })
+  const prefix = approx ? '≈ ' : ''
+  if (cur === 'EUR') return `${prefix}€${n}`
+  if (cur === 'RON') return `${prefix}${n} lei`
+  return `${prefix}${n} Ft`
+}
 
 export function CurrencyProvider({
   children,
@@ -52,16 +66,29 @@ export function CurrencyProvider({
     document.cookie = `contai_currency=${c}; path=/; max-age=${60 * 60 * 24 * 365}`
   }
 
+  function rate(c: Currency): number {
+    return rates[c] || FALLBACK[c]
+  }
+
+  function toHuf(amount: number | null | undefined, from: Currency): number {
+    if (amount == null || isNaN(amount as number)) return 0
+    return Math.round(amount / rate(from))
+  }
+
+  function formatFrom(amount: number | null | undefined, from: Currency): string {
+    if (amount == null || isNaN(amount as number)) return ''
+    // Same currency as the viewer's — exact, no approximation marker.
+    if (from === currency) return render(Math.round(amount), currency, false)
+    const inHuf = amount / rate(from)
+    return render(inHuf * rate(currency), currency, true)
+  }
+
   function format(huf: number | null | undefined): string {
-    if (huf == null || isNaN(huf as number)) return ''
-    if (currency === 'HUF') return `${Math.round(huf).toLocaleString()} Ft`
-    const converted = huf * (rates[currency] || FALLBACK[currency])
-    if (currency === 'EUR') return `≈ €${converted.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
-    return `≈ ${converted.toLocaleString(undefined, { maximumFractionDigits: 0 })} lei`
+    return formatFrom(huf, 'HUF')
   }
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, format }}>
+    <CurrencyContext.Provider value={{ currency, setCurrency, format, formatFrom, toHuf }}>
       {children}
     </CurrencyContext.Provider>
   )
@@ -74,6 +101,8 @@ export function useCurrency(): Ctx {
       currency: 'HUF',
       setCurrency: () => {},
       format: (huf) => (huf == null ? '' : `${Math.round(huf).toLocaleString()} Ft`),
+      formatFrom: (amount) => (amount == null ? '' : `${Math.round(amount).toLocaleString()} Ft`),
+      toHuf: (amount) => (amount == null ? 0 : Math.round(amount)),
     }
   }
   return ctx
