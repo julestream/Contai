@@ -5,10 +5,15 @@ import { useRouter } from 'next/navigation'
 import { Send, X } from 'lucide-react'
 import Price from '@/components/ui/Price'
 import { useLang } from '@/i18n/LanguageProvider'
+import { useCurrency } from '@/currency/CurrencyProvider'
+import { reservationFee, normaliseCurrency } from '@/lib/fees'
+
+const SYMBOL: Record<string, string> = { HUF: 'Ft', EUR: '€', RON: 'lei' }
 
 export default function MessageThread({ conversation, initialMessages, initialOffers, currentUserId }: any) {
   const router = useRouter()
   const { t } = useLang()
+  const { currency: viewerCurrency } = useCurrency()
   const autoOffer = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('makeOffer') === '1'
 
   const [messages, setMessages] = useState(initialMessages)
@@ -26,7 +31,18 @@ export default function MessageThread({ conversation, initialMessages, initialOf
   const isArtist = currentUserId === conversation.artist_id
   const isBuyer = currentUserId === conversation.buyer_id
 
+  // Offers are always denominated in the artist's currency.
+  const currency = normaliseCurrency(artwork?.price_currency)
+  const artworkPrice = artwork?.price_amount ?? artwork?.price_huf
+
   const latestOffer = offers.length > 0 ? offers[offers.length - 1] : null
+
+  function offerValue(o: any) {
+    return o.amount ?? o.amount_huf
+  }
+  function offerCurrency(o: any) {
+    return normaliseCurrency(o.currency)
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -64,7 +80,7 @@ export default function MessageThread({ conversation, initialMessages, initialOf
   }
 
   async function submitOffer(proposedBy: 'buyer' | 'artist') {
-    const amount = parseInt(offerAmount)
+    const amount = parseFloat(offerAmount)
     if (!amount || amount <= 0) return
     setWorking(true)
     const supabase = createClient()
@@ -77,7 +93,11 @@ export default function MessageThread({ conversation, initialMessages, initialOf
       artwork_id: artwork.id,
       buyer_id: conversation.buyer_id,
       artist_id: conversation.artist_id,
-      amount_huf: amount,
+      // Authoritative
+      amount,
+      currency,
+      // Legacy column — only meaningful for forint deals
+      amount_huf: currency === 'HUF' ? Math.round(amount) : null,
       status: 'pending',
       proposed_by: proposedBy,
     }).select('*').single()
@@ -109,9 +129,11 @@ export default function MessageThread({ conversation, initialMessages, initialOf
         {images?.length > 0 && (
           <img src={images[0]} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} />
         )}
-        <div>
+        <div style={{ minWidth: 0 }}>
           <p style={{ fontWeight: 600, fontSize: '14px' }}>{artwork?.title}</p>
-          <p style={{ fontSize: '12px', color: '#999' }}>{artwork?.price_huf ? <Price huf={artwork.price_huf} /> : null}</p>
+          <p style={{ fontSize: '12px', color: '#999' }}>
+            {artworkPrice ? <Price amount={artworkPrice} currency={currency} native /> : null}
+          </p>
         </div>
       </div>
 
@@ -135,7 +157,10 @@ export default function MessageThread({ conversation, initialMessages, initialOf
             )
           } else {
             const offer = item.data
-            const fee = Math.max(500, Math.round(offer.amount_huf * 0.08))
+            const oValue = offerValue(offer)
+            const oCurrency = offerCurrency(offer)
+            const fee = reservationFee(oValue, oCurrency)
+            const showConverted = viewerCurrency !== oCurrency
             const isLatest = latestOffer && offer.id === latestOffer.id
             const fromMe = (offer.proposed_by === 'buyer' && isBuyer) || (offer.proposed_by === 'artist' && isArtist)
             return (
@@ -144,10 +169,17 @@ export default function MessageThread({ conversation, initialMessages, initialOf
                   <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                     {offer.proposed_by === 'buyer' ? t('messages.buyerOffer') : t('messages.artistCounter')}
                   </p>
-                  <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '22px', margin: '4px 0' }}>
-                    <Price huf={offer.amount_huf} />
+                  <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '22px', margin: '4px 0 0' }}>
+                    <Price amount={oValue} currency={oCurrency} native />
                   </p>
-                  <p style={{ fontSize: '12px', color: '#999' }}>{t('messages.reservationFeeLine')} {fee.toLocaleString()} HUF</p>
+                  {showConverted && (
+                    <p style={{ fontSize: '12px', color: '#999', margin: '2px 0 4px' }}>
+                      <Price amount={oValue} currency={oCurrency} />
+                    </p>
+                  )}
+                  <p style={{ fontSize: '12px', color: '#999', marginTop: showConverted ? 0 : '4px' }}>
+                    {t('messages.reservationFeeLine')} <Price amount={fee} currency={oCurrency} native />
+                  </p>
 
                   {offer.status === 'accepted' && <p style={{ fontSize: '13px', color: '#2d6a4f', fontWeight: 600, marginTop: '8px' }}>{t('messages.accepted')}</p>}
                   {offer.status === 'declined' && <p style={{ fontSize: '13px', color: '#b94040', fontWeight: 600, marginTop: '8px' }}>{t('messages.declined')}</p>}
@@ -159,7 +191,7 @@ export default function MessageThread({ conversation, initialMessages, initialOf
                         style={{ flex: 1, padding: '10px', borderRadius: '999px', border: 'none', background: '#0a0a0a', color: '#fff', fontSize: '14px', cursor: 'pointer' }}>
                         {t('messages.accept')}
                       </button>
-                      <button onClick={() => { setShowOfferInput(true); setOfferAmount(String(offer.amount_huf)) }} disabled={working}
+                      <button onClick={() => { setShowOfferInput(true); setOfferAmount(String(oValue)) }} disabled={working}
                         style={{ flex: 1, padding: '10px', borderRadius: '999px', border: '1px solid #0a0a0a', background: '#fff', color: '#0a0a0a', fontSize: '14px', cursor: 'pointer' }}>
                         {t('messages.counter')}
                       </button>
@@ -177,7 +209,7 @@ export default function MessageThread({ conversation, initialMessages, initialOf
                   {isLatest && offer.status === 'accepted' && isBuyer && (
                     <button onClick={() => router.push(`/reserve/${artwork.id}?offer=${offer.id}`)}
                       style={{ width: '100%', marginTop: '12px', padding: '12px', borderRadius: '999px', border: 'none', background: '#0a0a0a', color: '#fff', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>
-                      {t('messages.reserveAt')} {offer.amount_huf.toLocaleString()} HUF
+                      {t('messages.reserveAt')} <Price amount={oValue} currency={oCurrency} native />
                     </button>
                   )}
                 </div>
@@ -192,7 +224,7 @@ export default function MessageThread({ conversation, initialMessages, initialOf
       {showSafety && (
         <div style={{ flexShrink: 0, padding: '10px 14px', background: '#fbf3e2', borderTop: '1px solid #f0e2c4', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
           <p style={{ fontSize: '12px', color: '#7a5d1e', lineHeight: 1.45, flex: 1, margin: 0 }}>{t('messages.safety')}</p>
-          <button onClick={() => setShowSafety(false)} aria-label="Dismiss" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b89b5e', flexShrink: 0, padding: 0, display: 'flex' }}>
+          <button onClick={() => setShowSafety(false)} aria-label={t('messages.cancel')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b89b5e', flexShrink: 0, padding: 0, display: 'flex' }}>
             <X size={16} />
           </button>
         </div>
@@ -201,19 +233,22 @@ export default function MessageThread({ conversation, initialMessages, initialOf
       {/* Offer composer */}
       {showOfferInput && (
         <div style={{ flexShrink: 0, padding: '12px 1rem', borderTop: '1px solid #e8e8e8', display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <input
-            value={offerAmount}
-            onChange={e => setOfferAmount(e.target.value)}
-            placeholder={t('messages.yourPriceHuf')}
-            inputMode="numeric"
-            style={{ flex: 1, padding: '12px', borderRadius: '999px', border: '1px solid #e0dcd3', fontSize: '15px', outline: 'none' }}
-          />
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #e0dcd3', borderRadius: '999px', padding: '0 14px' }}>
+            <input
+              value={offerAmount}
+              onChange={e => setOfferAmount(e.target.value)}
+              placeholder={t('common.priceLabel')}
+              inputMode="numeric"
+              style={{ flex: 1, minWidth: 0, padding: '12px 0', border: 'none', fontSize: '15px', outline: 'none', background: 'transparent' }}
+            />
+            <span style={{ fontSize: '14px', color: '#999', flexShrink: 0 }}>{SYMBOL[currency]}</span>
+          </div>
           <button onClick={() => submitOffer(isArtist ? 'artist' : 'buyer')} disabled={working}
-            style={{ padding: '12px 18px', borderRadius: '999px', border: 'none', background: '#0a0a0a', color: '#fff', fontSize: '14px', cursor: 'pointer' }}>
+            style={{ padding: '12px 18px', borderRadius: '999px', border: 'none', background: '#0a0a0a', color: '#fff', fontSize: '14px', cursor: 'pointer', flexShrink: 0 }}>
             {t('messages.send')}
           </button>
           <button onClick={() => { setShowOfferInput(false); setOfferAmount('') }}
-            style={{ background: 'none', border: 'none', color: '#999', cursor: 'pointer', fontSize: '13px' }}>
+            style={{ background: 'none', border: 'none', color: '#999', cursor: 'pointer', fontSize: '13px', flexShrink: 0 }}>
             {t('messages.cancel')}
           </button>
         </div>
@@ -232,10 +267,10 @@ export default function MessageThread({ conversation, initialMessages, initialOf
           onChange={e => setContent(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') sendMessage() }}
           placeholder={t('messages.messagePlaceholder')}
-          style={{ flex: 1, padding: '12px', borderRadius: '999px', border: '1px solid #e0dcd3', fontSize: '15px', outline: 'none' }}
+          style={{ flex: 1, minWidth: 0, padding: '12px', borderRadius: '999px', border: '1px solid #e0dcd3', fontSize: '15px', outline: 'none' }}
         />
         <button onClick={sendMessage} disabled={sending} aria-label={t('messages.send')}
-          style={{ padding: '12px', borderRadius: '999px', border: 'none', background: '#0a0a0a', color: '#fff', cursor: 'pointer', display: 'flex' }}>
+          style={{ padding: '12px', borderRadius: '999px', border: 'none', background: '#0a0a0a', color: '#fff', cursor: 'pointer', display: 'flex', flexShrink: 0 }}>
           <Send size={18} />
         </button>
       </div>

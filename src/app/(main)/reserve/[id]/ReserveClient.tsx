@@ -5,6 +5,7 @@ import Logo from '@/components/ui/Logo'
 import Button from '@/components/ui/Button'
 import Price from '@/components/ui/Price'
 import { useLang } from '@/i18n/LanguageProvider'
+import { reservationFee, normaliseCurrency } from '@/lib/fees'
 
 export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, agreedOffer: any }) {
   const { t } = useLang()
@@ -13,8 +14,14 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
   const [error, setError] = useState('')
   const router = useRouter()
 
-  const effectivePrice = agreedOffer ? agreedOffer.amount_huf : artwork.price_huf
-  const fee = agreedOffer ? Math.max(500, Math.round(agreedOffer.amount_huf * 0.08)) : artwork.reservation_fee_huf
+  // The artist's currency governs the transaction; an accepted offer inherits it.
+  const currency = normaliseCurrency(agreedOffer?.currency ?? artwork.price_currency)
+  const effectivePrice = agreedOffer
+    ? (agreedOffer.amount ?? agreedOffer.amount_huf)
+    : (artwork.price_amount ?? artwork.price_huf)
+  const fee = agreedOffer
+    ? reservationFee(effectivePrice, currency)
+    : (artwork.reservation_fee_amount ?? reservationFee(effectivePrice, currency))
   const remaining = effectivePrice - fee
 
   const offersDelivery = artwork.pickup_method === 'local_delivery'
@@ -58,7 +65,7 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
 
           {agreedOffer && (
             <div style={{ padding: '10px 14px', backgroundColor: '#eef2ee', borderRadius: '10px', marginBottom: '1.5rem', fontSize: '14px', color: '#3a5a44' }}>
-              {t('reserve.agreedPrice')} <Price huf={agreedOffer.amount_huf} />
+              {t('reserve.agreedPrice')} <Price amount={effectivePrice} currency={currency} />
             </div>
           )}
 
@@ -66,7 +73,7 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
             {(artwork.images as string[])?.length > 0 && (
               <img src={(artwork.images as string[])[0]} style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' }} />
             )}
-            <div>
+            <div style={{ minWidth: 0 }}>
               <p style={{ fontWeight: 600 }}>{artwork.title}</p>
               <p style={{ color: '#666', fontSize: '14px' }}>{(artwork as any).profiles?.full_name}</p>
             </div>
@@ -75,15 +82,15 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
           <div style={{ padding: '1rem', backgroundColor: '#f5f3ef', borderRadius: '12px', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span style={{ color: '#666', fontSize: '14px' }}>{t('reserve.artworkPrice')}</span>
-              <Price huf={effectivePrice} style={{ fontSize: '14px' }} />
+              <Price amount={effectivePrice} currency={currency} style={{ fontSize: '14px' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span style={{ color: '#666', fontSize: '14px' }}>{t('reserve.reservationFee')}</span>
-              <Price huf={fee} style={{ fontSize: '14px', fontWeight: 600 }} />
+              <Price amount={fee} currency={currency} style={{ fontSize: '14px', fontWeight: 600 }} />
             </div>
             <div style={{ borderTop: '1px solid #e8e8e8', paddingTop: '8px', display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: '#666', fontSize: '14px' }}>{t('reserve.remainingInPerson')}</span>
-              <Price huf={remaining} style={{ fontSize: '14px' }} />
+              <Price amount={remaining} currency={currency} style={{ fontSize: '14px' }} />
             </div>
           </div>
 
@@ -136,9 +143,9 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
             {(artwork.images as string[])?.length > 0 && (
               <img src={(artwork.images as string[])[0]} style={{ width: '56px', height: '56px', objectFit: 'cover', borderRadius: '8px' }} />
             )}
-            <div>
+            <div style={{ minWidth: 0 }}>
               <p style={{ fontWeight: 600 }}>{artwork.title}</p>
-              <Price huf={fee} style={{ display: 'block', fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', marginTop: '4px' }} />
+              <Price amount={fee} currency={currency} style={{ display: 'block', fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', marginTop: '4px' }} />
               <p style={{ fontSize: '12px', color: '#999', marginTop: '2px' }}>{deliveryChoice === 'delivery' ? t('reserve.localDelivery') : t('reserve.inPersonPickup')}</p>
             </div>
           </div>
@@ -150,7 +157,7 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
           {error && <p style={{ color: '#b94040', fontSize: '14px', marginBottom: '1rem' }}>{error}</p>}
 
           <Button full onClick={handlePay} loading={loading}>
-            {t('reserve.pay')} <Price huf={fee} />
+            {t('reserve.pay')} <Price amount={fee} currency={currency} />
           </Button>
           <Button full variant="ghost" onClick={() => setStep(1)}>{t('reserve.back')}</Button>
         </>

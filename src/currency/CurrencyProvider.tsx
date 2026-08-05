@@ -15,11 +15,18 @@ type Ctx = {
   format: (huf: number | null | undefined) => string
   /** Format an amount held in any currency into the viewer's currency. */
   formatFrom: (amount: number | null | undefined, from: Currency) => string
+  /** Format an amount in its own currency, with no conversion. */
+  formatIn: (amount: number | null | undefined, cur: Currency) => string
   /** Convert any amount into HUF — used for the approximate filter column. */
   toHuf: (amount: number | null | undefined, from: Currency) => number
 }
 
 const CurrencyContext = createContext<Ctx | null>(null)
+
+function normalise(c: string | null | undefined): Currency {
+  if (c === 'EUR' || c === 'RON' || c === 'HUF') return c
+  return 'HUF'
+}
 
 function render(amount: number, cur: Currency, approx: boolean): string {
   const n = amount.toLocaleString(undefined, { maximumFractionDigits: 0 })
@@ -72,14 +79,20 @@ export function CurrencyProvider({
 
   function toHuf(amount: number | null | undefined, from: Currency): number {
     if (amount == null || isNaN(amount as number)) return 0
-    return Math.round(amount / rate(from))
+    return Math.round(amount / rate(normalise(from)))
+  }
+
+  function formatIn(amount: number | null | undefined, cur: Currency): string {
+    if (amount == null || isNaN(amount as number)) return ''
+    return render(Math.round(amount), normalise(cur), false)
   }
 
   function formatFrom(amount: number | null | undefined, from: Currency): string {
     if (amount == null || isNaN(amount as number)) return ''
+    const src = normalise(from)
     // Same currency as the viewer's — exact, no approximation marker.
-    if (from === currency) return render(Math.round(amount), currency, false)
-    const inHuf = amount / rate(from)
+    if (src === currency) return render(Math.round(amount), currency, false)
+    const inHuf = amount / rate(src)
     return render(inHuf * rate(currency), currency, true)
   }
 
@@ -88,7 +101,7 @@ export function CurrencyProvider({
   }
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, format, formatFrom, toHuf }}>
+    <CurrencyContext.Provider value={{ currency, setCurrency, format, formatFrom, formatIn, toHuf }}>
       {children}
     </CurrencyContext.Provider>
   )
@@ -97,11 +110,13 @@ export function CurrencyProvider({
 export function useCurrency(): Ctx {
   const ctx = useContext(CurrencyContext)
   if (!ctx) {
+    const plain = (n: number | null | undefined) => (n == null ? '' : `${Math.round(n).toLocaleString()} Ft`)
     return {
       currency: 'HUF',
       setCurrency: () => {},
-      format: (huf) => (huf == null ? '' : `${Math.round(huf).toLocaleString()} Ft`),
-      formatFrom: (amount) => (amount == null ? '' : `${Math.round(amount).toLocaleString()} Ft`),
+      format: plain,
+      formatFrom: plain,
+      formatIn: plain,
       toHuf: (amount) => (amount == null ? 0 : Math.round(amount)),
     }
   }

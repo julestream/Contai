@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { reservationFee, normaliseCurrency } from '@/lib/fees'
 import Stripe from 'stripe'
 import { NextResponse } from 'next/server'
 
@@ -33,9 +34,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'You cannot reserve your own artwork' }, { status: 400 })
     }
 
-    // Determine price + fee — use accepted offer if provided and valid
-    let agreedPrice = artwork.price_huf
-    let fee = artwork.reservation_fee_huf
+    // The artist's currency governs the whole transaction.
+    let currency = normaliseCurrency(artwork.price_currency)
+    let agreedPrice = artwork.price_amount ?? artwork.price_huf
+    let fee = artwork.reservation_fee_amount ?? reservationFee(agreedPrice, currency)
+
     if (offerId) {
       const { data: offer } = await supabase
         .from('offers')
@@ -46,12 +49,18 @@ export async function POST(request: Request) {
         .eq('status', 'accepted')
         .single()
       if (offer) {
-        agreedPrice = offer.amount_huf
-        fee = Math.max(500, Math.round(offer.amount_huf * 0.08))
+        currency = normaliseCurrency(offer.currency ?? artwork.price_currency)
+        agreedPrice = offer.amount ?? offer.amount_huf
+        fee = reservationFee(agreedPrice, currency)
       }
     }
 
+    if (!fee || fee <= 0) {
+      return NextResponse.json({ error: 'Could not determine the reservation fee' }, { status: 400 })
+    }
+
     const adminSupabase = createAdminClient()
+    const isHuf = currency === 'HUF'
 
     // Create reservation
     const { data: reservation } = await adminSupabase
@@ -60,8 +69,13 @@ export async function POST(request: Request) {
         artwork_id: artworkId,
         buyer_id: user.id,
         status: 'reserved',
-        reservation_fee_huf: fee,
-        agreed_price_huf: agreedPrice,
+        // Authoritative
+        currency,
+        agreed_price: agreedPrice,
+        reservation_fee: fee,
+        // Legacy columns — only meaningful when the deal is in forints
+        reservation_fee_huf: isHuf ? fee : null,
+        agreed_price_huf: isHuf ? Math.round(agreedPrice) : null,
         delivery_choice: deliveryChoice === 'delivery' ? 'delivery' : 'pickup',
       })
       .select('id')
@@ -74,11 +88,12 @@ export async function POST(request: Request) {
     const session = await stripe.checkout.sessions.create({
       line_items: [{
         price_data: {
-          currency: 'huf',
+          currency: currency.toLowerCase(),
           product_data: {
             name: `Reservation fee — ${artwork.title}`,
             description: 'This fee is deducted from the total price when you meet the artist.',
           },
+          // HUF, EUR and RON are all two-decimal in Stripe's API.
           unit_amount: Math.round(fee * 100),
         },
         quantity: 1,
