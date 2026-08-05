@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { deleteArtwork } from './deleteArtwork'
+import { useLang } from '@/i18n/LanguageProvider'
 
 const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Gouache', 'Ink', 'Pastel', 'Charcoal', 'Pencil', 'Mixed Media', 'Digital', 'Photography', 'Other']
 
@@ -15,6 +16,13 @@ const CITIES: Record<string, string[]> = {
 
 export default function EditArtworkPage({ params }: { params: { id: string } }) {
   const router = useRouter()
+  const { t } = useLang()
+  const c = (k: string) => t(`common.${k}`)
+  const e = (k: string) => t(`editArtwork.${k}`)
+  const label = (map: string, key: string) => {
+    const m = t(map) as any
+    return (m && m[key]) || key
+  }
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -51,7 +59,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
         .eq('id', params.id)
         .single()
 
-      if (!art) { setError('Artwork not found.'); setLoading(false); return }
+      if (!art) { setError(e('notFound')); setLoading(false); return }
       if (art.artist_id !== session.user.id) { setDenied(true); setLoading(false); return }
 
       setTitle(art.title || '')
@@ -70,12 +78,13 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       setLoading(false)
     }
     load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id, router])
 
   async function handleSave() {
     setError('')
-    if (!title.trim()) { setError('Please enter a title.'); return }
-    if (!price || parseFloat(price) <= 0) { setError('Please enter a valid price.'); return }
+    if (!title.trim()) { setError(e('errTitle')); return }
+    if (!price || parseFloat(price) <= 0) { setError(e('errPrice')); return }
     setSaving(true)
     setSaved(false)
 
@@ -119,7 +128,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
     setError('')
     setDeleting(true)
     const result = await deleteArtwork(params.id)
-    if (!result.ok) { setError(result.error || 'Could not delete.'); setDeleting(false); return }
+    if (!result.ok) { setError(result.error || e('errDelete')); setDeleting(false); return }
     router.push('/dashboard')
   }
 
@@ -128,104 +137,104 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
     fontSize: '16px', outline: 'none', width: '100%', fontFamily: 'var(--font-instrument), sans-serif',
   }
 
-  if (loading) return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>Loading...</div>
-  if (denied) return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>You can only edit your own artwork. <Link href="/dashboard">Back to dashboard</Link></div>
+  if (loading) return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>{c('loading')}</div>
+  if (denied) return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>{e('denied')} <Link href="/dashboard">{e('backToDashboard')}</Link></div>
 
   const isHidden = status === 'hidden'
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', padding: '1.5rem', paddingBottom: '6rem' }}>
-      <Link href="/dashboard" style={{ fontSize: '14px', color: '#666', textDecoration: 'none' }}>Back to dashboard</Link>
-      <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px', margin: '1rem 0 1.5rem' }}>Edit artwork</h1>
+      <Link href="/dashboard" style={{ fontSize: '14px', color: '#666', textDecoration: 'none' }}>{e('backToDashboard')}</Link>
+      <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px', margin: '1rem 0 1.5rem' }}>{e('title')}</h1>
 
       {isHidden && (
         <div style={{ padding: '10px 14px', background: '#f5f3ef', borderRadius: '10px', marginBottom: '1rem', fontSize: '13px', color: '#8a857c' }}>
-          This artwork is currently hidden. Buyers can't see it until you unhide it.
+          {e('hiddenNotice')}
         </div>
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div>
-          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Title</label>
-          <input value={title} onChange={e => setTitle(e.target.value)} style={inputStyle} />
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('artworkTitle')}</label>
+          <input value={title} onChange={ev => setTitle(ev.target.value)} style={inputStyle} />
         </div>
         <div>
-          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Artist name (optional)</label>
-          <input value={artistName} onChange={e => setArtistName(e.target.value)} style={inputStyle} placeholder="Leave blank if this is your own work" />
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('artistName')}</label>
+          <input value={artistName} onChange={ev => setArtistName(ev.target.value)} style={inputStyle} placeholder={e('artistNamePlaceholder')} />
         </div>
         <div>
-          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Description (optional)</label>
-          <textarea value={description} onChange={e => setDescription(e.target.value.slice(0, 2000))} rows={4} style={{ ...inputStyle, resize: 'vertical' }} placeholder="Tell buyers about this piece…" />
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('description')}</label>
+          <textarea value={description} onChange={ev => setDescription(ev.target.value.slice(0, 2000))} rows={4} style={{ ...inputStyle, resize: 'vertical' }} placeholder={e('descriptionPlaceholder')} />
           <p style={{ fontSize: '12px', color: '#999', marginTop: '4px', textAlign: 'right' }}>{description.length}/2000</p>
         </div>
         <div>
-          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Price (HUF)</label>
-          <input value={price} onChange={e => setPrice(e.target.value)} style={inputStyle} inputMode="numeric" />
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('price')}</label>
+          <input value={price} onChange={ev => setPrice(ev.target.value)} style={inputStyle} inputMode="numeric" />
           {price && parseFloat(price) > 0 && (
             <p style={{ fontSize: '12px', color: '#999', marginTop: '6px' }}>
-              Reservation fee (8%): {Math.round(parseFloat(price) * 0.08).toLocaleString()} HUF
+              {e('reservationFeeLine')} {Math.round(parseFloat(price) * 0.08).toLocaleString()} HUF
             </p>
           )}
         </div>
         <div>
-          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Medium</label>
-          <select value={medium} onChange={e => setMedium(e.target.value)} style={inputStyle}>
-            <option value="">Select medium</option>
-            {MEDIUMS.map(m => <option key={m} value={m}>{m}</option>)}
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('medium')}</label>
+          <select value={medium} onChange={ev => setMedium(ev.target.value)} style={inputStyle}>
+            <option value="">{e('selectMedium')}</option>
+            {MEDIUMS.map(m => <option key={m} value={m}>{label('filters.mediumLabels', m)}</option>)}
           </select>
         </div>
         <div>
-          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Year</label>
-          <input value={year} onChange={e => setYear(e.target.value)} style={inputStyle} inputMode="numeric" />
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('year')}</label>
+          <input value={year} onChange={ev => setYear(ev.target.value)} style={inputStyle} inputMode="numeric" />
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Width (cm)</label>
-            <input value={width} onChange={e => setWidth(e.target.value)} style={inputStyle} inputMode="numeric" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('width')}</label>
+            <input value={width} onChange={ev => setWidth(ev.target.value)} style={inputStyle} inputMode="numeric" />
           </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Height (cm)</label>
-            <input value={height} onChange={e => setHeight(e.target.value)} style={inputStyle} inputMode="numeric" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('height')}</label>
+            <input value={height} onChange={ev => setHeight(ev.target.value)} style={inputStyle} inputMode="numeric" />
           </div>
         </div>
         <div>
-          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Country</label>
-          <select value={country} onChange={e => { setCountry(e.target.value); setCity('') }} style={inputStyle}>
-            <option value="">Select country</option>
-            {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{c('country')}</label>
+          <select value={country} onChange={ev => { setCountry(ev.target.value); setCity('') }} style={inputStyle}>
+            <option value="">{c('selectCountry')}</option>
+            {COUNTRIES.map(x => <option key={x} value={x}>{x}</option>)}
           </select>
         </div>
         {country && (
           <div>
-            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>City</label>
-            <select value={city} onChange={e => setCity(e.target.value)} style={inputStyle}>
-              <option value="">Select city</option>
-              {CITIES[country]?.map(c => <option key={c} value={c}>{c}</option>)}
+            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{c('city')}</label>
+            <select value={city} onChange={ev => setCity(ev.target.value)} style={inputStyle}>
+              <option value="">{c('selectCity')}</option>
+              {CITIES[country]?.map(x => <option key={x} value={x}>{x}</option>)}
             </select>
           </div>
         )}
         <div>
-          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Pickup area</label>
-          <input value={pickupArea} onChange={e => setPickupArea(e.target.value)} style={inputStyle} />
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('pickupArea')}</label>
+          <input value={pickupArea} onChange={ev => setPickupArea(ev.target.value)} style={inputStyle} />
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-          <input type="checkbox" checked={signed} onChange={e => setSigned(e.target.checked)} />
-          <span style={{ fontSize: '15px', color: '#0a0a0a' }}>Signed by the artist</span>
+          <input type="checkbox" checked={signed} onChange={ev => setSigned(ev.target.checked)} />
+          <span style={{ fontSize: '15px', color: '#0a0a0a' }}>{e('signedByArtist')}</span>
         </label>
       </div>
 
       {error && <p style={{ color: '#b94040', fontSize: '14px', marginTop: '1rem' }}>{error}</p>}
-      {saved && <p style={{ color: '#2d6a4f', fontSize: '14px', marginTop: '1rem' }}>Saved</p>}
+      {saved && <p style={{ color: '#2d6a4f', fontSize: '14px', marginTop: '1rem' }}>{c('saved')}</p>}
 
       <button onClick={handleSave} disabled={saving} style={{
         width: '100%', marginTop: '1.5rem', padding: '15px', borderRadius: '999px', border: 'none',
         background: '#0a0a0a', color: '#fff', fontSize: '16px', fontWeight: 600, cursor: 'pointer', opacity: saving ? 0.6 : 1,
       }}>
-        {saving ? 'Saving...' : 'Save changes'}
+        {saving ? c('saving') : e('saveChanges')}
       </button>
 
       <p style={{ fontSize: '12px', color: '#999', textAlign: 'center', marginTop: '12px' }}>
-        Changes go live immediately. No re-review needed.
+        {e('liveNote')}
       </p>
 
       <button onClick={handleToggleHide} disabled={hiding} style={{
@@ -233,10 +242,10 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
         border: '1px solid #0a0a0a', background: '#fff', color: '#0a0a0a',
         fontSize: '15px', fontWeight: 500, cursor: 'pointer', opacity: hiding ? 0.6 : 1,
       }}>
-        {hiding ? 'Updating...' : isHidden ? 'Unhide — make visible again' : 'Hide from buyers'}
+        {hiding ? e('updating') : isHidden ? e('unhide') : e('hide')}
       </button>
       <p style={{ fontSize: '12px', color: '#999', textAlign: 'center', marginTop: '8px' }}>
-        Hiding keeps the artwork but removes it from the marketplace. You can unhide anytime.
+        {e('hideNote')}
       </p>
 
       <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid #eee' }}>
@@ -246,26 +255,26 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
             border: '1px solid #e0c4c4', background: '#fff', color: '#b94040',
             fontSize: '15px', fontWeight: 500, cursor: 'pointer',
           }}>
-            Delete this artwork
+            {e('deleteArtwork')}
           </button>
         ) : (
           <div style={{ padding: '1rem', border: '1px solid #e0c4c4', borderRadius: '12px', background: '#fdf6f6' }}>
-            <p style={{ fontSize: '14px', color: '#b94040', fontWeight: 600, marginBottom: '4px' }}>Delete permanently?</p>
+            <p style={{ fontSize: '14px', color: '#b94040', fontWeight: 600, marginBottom: '4px' }}>{e('deletePermanently')}</p>
             <p style={{ fontSize: '13px', color: '#8a6060', lineHeight: 1.5, marginBottom: '14px' }}>
-              This removes the artwork for good. If it has past offers or reservations, those records are kept and the piece is archived instead. This can't be undone.
+              {e('deleteWarning')}
             </p>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={handleDelete} disabled={deleting} style={{
                 flex: 1, padding: '12px', borderRadius: '999px', border: 'none',
                 background: '#b94040', color: '#fff', fontSize: '14px', fontWeight: 600, cursor: 'pointer', opacity: deleting ? 0.6 : 1,
               }}>
-                {deleting ? 'Deleting...' : 'Yes, delete'}
+                {deleting ? e('deleting') : e('confirmDelete')}
               </button>
               <button onClick={() => setConfirmDelete(false)} disabled={deleting} style={{
                 flex: 1, padding: '12px', borderRadius: '999px', border: '1px solid #e0dcd3',
                 background: '#fff', color: '#0a0a0a', fontSize: '14px', cursor: 'pointer',
               }}>
-                Cancel
+                {c('cancel')}
               </button>
             </div>
           </div>

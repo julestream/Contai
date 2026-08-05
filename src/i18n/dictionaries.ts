@@ -251,6 +251,26 @@ export const dictionaries: Record<Lang, Dict> = {
       artistsTitle: 'Ismerd meg a művészeket',
       artistsBlurb: 'Ismerd meg a művészeket a Contain szereplő alkotások mögött.',
     },
+    badges: {
+      helpLabel: 'Mit jelent ez a jelvény?',
+      gotIt: 'Értem',
+      verified_artist: {
+        label: 'Ellenőrzött művész',
+        description: 'A Contai megerősítette a személyazonosságát. Ez a művész átment az ellenőrzési folyamatunkon.',
+      },
+      established_artist: {
+        label: 'Elismert művész',
+        description: 'Aktív művész, igazolt eladási múlttal és a Contai által ellenőrzött referenciákkal.',
+      },
+      curator_approved: {
+        label: 'Kurátori választás',
+        description: 'A Contai szerkesztői csapata választotta ki a kiemelkedő munkájáért.',
+      },
+      certificate: {
+        label: 'Tanúsítvány',
+        description: 'Ehhez a műalkotáshoz eredetiségi tanúsítvány tartozik.',
+      },
+    },
     handoff: {
       secureTitle: 'Biztonságos átadás ehhez a műhöz',
       secureBody: 'Mivel ez egy nagyobb értékű műalkotás, az átadás egy Contai galériában történik a nagyobb biztonság érdekében, és a Contai csapatának egy tagja — gyakran az alapítónk — jelen van, hogy segítse a cserét. A részleteket közvetlenül veled egyeztetjük.',
@@ -858,6 +878,26 @@ export const dictionaries: Record<Lang, Dict> = {
       artistsTitle: 'Meet the Artists',
       artistsBlurb: 'Get to know the artists behind the works on Contai.',
     },
+    badges: {
+      helpLabel: 'What does this badge mean?',
+      gotIt: 'Got it',
+      verified_artist: {
+        label: 'Verified Artist',
+        description: 'Identity confirmed by Contai. This artist has completed our verification process.',
+      },
+      established_artist: {
+        label: 'Established Artist',
+        description: 'An active artist with a proven track record of sales and reviewed credentials on Contai.',
+      },
+      curator_approved: {
+        label: 'Curator Pick',
+        description: 'Hand-selected by the Contai editorial team for exceptional work.',
+      },
+      certificate: {
+        label: 'Certificate',
+        description: 'A certificate of authenticity is on file for this artwork.',
+      },
+    },
     handoff: {
       secureTitle: 'Secure handoff for this piece',
       secureBody: 'Because this is a higher-value artwork, your handoff takes place at a Contai gallery for added security, and a member of the Contai team — often our founder — is present to support the exchange. We\'ll arrange the details with you directly.',
@@ -1464,6 +1504,26 @@ export const dictionaries: Record<Lang, Dict> = {
       backToDiscover: 'Înapoi la Descoperă',
       artistsTitle: 'Cunoaște artiștii',
       artistsBlurb: 'Cunoaște artiștii din spatele lucrărilor de pe Contai.',
+    },
+    badges: {
+      helpLabel: 'Ce înseamnă această insignă?',
+      gotIt: 'Am înțeles',
+      verified_artist: {
+        label: 'Artist verificat',
+        description: 'Identitate confirmată de Contai. Acest artist a parcurs procesul nostru de verificare.',
+      },
+      established_artist: {
+        label: 'Artist consacrat',
+        description: 'Un artist activ, cu un istoric dovedit de vânzări și cu acreditări verificate pe Contai.',
+      },
+      curator_approved: {
+        label: 'Alegerea curatorului',
+        description: 'Selectat personal de echipa editorială Contai pentru o lucrare excepțională.',
+      },
+      certificate: {
+        label: 'Certificat',
+        description: 'Pentru această lucrare există un certificat de autenticitate.',
+      },
     },
     handoff: {
       secureTitle: 'Predare securizată pentru această lucrare',

@@ -4,11 +4,18 @@ import { createClient } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 import Logo from '@/components/ui/Logo'
 import { useRouter } from 'next/navigation'
+import { useLang } from '@/i18n/LanguageProvider'
 
 const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Drawing', 'Print', 'Linocut', 'Mixed Media', 'Sculpture', 'Photography', 'Other']
 
 export default function OnboardingPage() {
   const router = useRouter()
+  const { t } = useLang()
+  const o = (k: string) => t(`onboarding.${k}`)
+  const label = (map: string, key: string) => {
+    const m = t(map) as any
+    return (m && m[key]) || key
+  }
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -28,10 +35,10 @@ export default function OnboardingPage() {
     setLoading(true)
     setError('')
     const supabase = createClient()
-    
+
     const { data: { session } } = await supabase.auth.getSession()
     if (!session?.user) {
-      setError('Not logged in. Please sign in again.')
+      setError(o('errNotLoggedIn'))
       setLoading(false)
       return
     }
@@ -57,7 +64,7 @@ export default function OnboardingPage() {
     router.push('/dashboard')
   }
 
-  const steps = ['Identity', 'About', 'Location', 'Practice', 'Review']
+  const steps = [o('stepIdentity'), o('stepAbout'), o('stepLocation'), o('stepPractice'), o('stepReview')]
 
   return (
     <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>
@@ -83,7 +90,7 @@ export default function OnboardingPage() {
       {step === 1 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <input
-            placeholder="Full name"
+            placeholder={o('fullName')}
             value={fullName}
             onChange={e => setFullName(e.target.value)}
             style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e8e8e8', fontSize: '16px', outline: 'none' }}
@@ -94,7 +101,7 @@ export default function OnboardingPage() {
       {step === 2 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <textarea
-            placeholder="Bio (max 500 characters)"
+            placeholder={o('bioPlaceholder')}
             value={bio}
             onChange={e => setBio(e.target.value.slice(0, 500))}
             rows={4}
@@ -102,7 +109,7 @@ export default function OnboardingPage() {
           />
           <span style={{ fontSize: '12px', color: '#999' }}>{bio.length}/500</span>
           <textarea
-            placeholder="Artist statement (max 300 characters)"
+            placeholder={o('statementPlaceholder')}
             value={statement}
             onChange={e => setStatement(e.target.value.slice(0, 300))}
             rows={3}
@@ -115,13 +122,13 @@ export default function OnboardingPage() {
       {step === 3 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <input
-            placeholder="City / district in Budapest"
+            placeholder={o('cityPlaceholder')}
             value={city}
             onChange={e => setCity(e.target.value)}
             style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e8e8e8', fontSize: '16px', outline: 'none' }}
           />
           <input
-            placeholder="Public pickup area (e.g. 7th district)"
+            placeholder={o('pickupAreaPlaceholder')}
             value={pickupArea}
             onChange={e => setPickupArea(e.target.value)}
             style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e8e8e8', fontSize: '16px', outline: 'none' }}
@@ -144,7 +151,7 @@ export default function OnboardingPage() {
                 cursor: 'pointer',
                 fontSize: '14px',
               }}
-            >{m}</button>
+            >{label('upload.mediumLabels', m)}</button>
           ))}
         </div>
       )}
@@ -152,11 +159,11 @@ export default function OnboardingPage() {
       {step === 5 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ padding: '16px', backgroundColor: '#f5f3ef', borderRadius: '8px' }}>
-            <p><strong>Name:</strong> {fullName}</p>
-            <p><strong>Bio:</strong> {bio}</p>
-            <p><strong>Location:</strong> {city}</p>
-            <p><strong>Pickup area:</strong> {pickupArea}</p>
-            <p><strong>Mediums:</strong> {mediums.join(', ')}</p>
+            <p><strong>{o('reviewName')}</strong> {fullName}</p>
+            <p><strong>{o('reviewBio')}</strong> {bio}</p>
+            <p><strong>{o('reviewLocation')}</strong> {city}</p>
+            <p><strong>{o('reviewPickup')}</strong> {pickupArea}</p>
+            <p><strong>{o('reviewMediums')}</strong> {mediums.map(m => label('upload.mediumLabels', m)).join(', ')}</p>
           </div>
           {error && <p style={{ color: '#b94040', fontSize: '14px' }}>{error}</p>}
         </div>
@@ -164,12 +171,12 @@ export default function OnboardingPage() {
 
       <div style={{ display: 'flex', gap: '12px', marginTop: '2rem' }}>
         {step > 1 && (
-          <Button variant="secondary" onClick={() => setStep(s => s - 1)}>Back</Button>
+          <Button variant="secondary" onClick={() => setStep(s => s - 1)}>{o('back')}</Button>
         )}
         {step < 5 ? (
-          <Button full onClick={() => setStep(s => s + 1)}>Continue</Button>
+          <Button full onClick={() => setStep(s => s + 1)}>{o('continue')}</Button>
         ) : (
-          <Button full onClick={handleFinish} loading={loading}>Finish</Button>
+          <Button full onClick={handleFinish} loading={loading}>{o('finish')}</Button>
         )}
       </div>
     </div>

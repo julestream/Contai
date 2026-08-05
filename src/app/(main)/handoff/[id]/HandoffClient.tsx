@@ -1,12 +1,15 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLang } from '@/i18n/LanguageProvider'
 
 // Pieces at or above this price get the secure gallery + Contai-present handoff.
 // Stored in HUF (≈ €1,500). Tune this number anytime as rates drift.
 const HIGH_VALUE_HUF = 600000
 
 export default function HandoffClient({ reservation, userId }: any) {
+  const { t } = useLang()
+  const h = (k: string) => t(`handoff.${k}`)
   const [address, setAddress] = useState<string | null>(null)
   const [timeLeft, setTimeLeft] = useState('')
   const [confirming, setConfirming] = useState(false)
@@ -28,12 +31,13 @@ export default function HandoffClient({ reservation, userId }: any) {
       const expires = new Date(reservation.reservation_expires_at).getTime()
       const now = Date.now()
       const diff = expires - now
-      if (diff <= 0) { setTimeLeft('Expired'); clearInterval(interval); return }
+      if (diff <= 0) { setTimeLeft(h('expired')); clearInterval(interval); return }
       const hours = Math.floor(diff / (1000 * 60 * 60))
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-      setTimeLeft(`${hours}h ${minutes}m remaining`)
+      setTimeLeft(h('remaining').replace('{h}', String(hours)).replace('{m}', String(minutes)))
     }, 1000)
     return () => clearInterval(interval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reservation.reservation_expires_at])
 
   useEffect(() => {
@@ -58,10 +62,10 @@ export default function HandoffClient({ reservation, userId }: any) {
         body: JSON.stringify({ reservationId: reservation.id }),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Could not confirm handoff.'); setConfirming(false); return }
+      if (!res.ok) { setError(data.error || h('errConfirm')); setConfirming(false); return }
       router.refresh()
     } catch {
-      setError('Could not confirm handoff.')
+      setError(h('errConfirm'))
     }
     setConfirming(false)
   }
@@ -80,10 +84,10 @@ export default function HandoffClient({ reservation, userId }: any) {
         }),
       })
       const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Could not submit issue.'); setSubmittingIssue(false); return }
+      if (!res.ok) { setError(data.error || h('errIssue')); setSubmittingIssue(false); return }
       setIssueSubmitted(true)
     } catch {
-      setError('Could not submit issue.')
+      setError(h('errIssue'))
     }
     setSubmittingIssue(false)
   }
@@ -98,7 +102,7 @@ export default function HandoffClient({ reservation, userId }: any) {
         {images?.length > 0 && (
           <img src={images[0]} style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px' }} />
         )}
-        <div>
+        <div style={{ minWidth: 0 }}>
           <p style={{ fontWeight: 600 }}>{artwork?.title}</p>
           <p style={{ color: '#666', fontSize: '14px' }}>{artwork?.profiles?.full_name}</p>
           <p style={{ color: '#666', fontSize: '14px' }}>{artwork?.pickup_area}</p>
@@ -109,21 +113,21 @@ export default function HandoffClient({ reservation, userId }: any) {
       {isHighValue && !isCompleted && (
         <div style={{ marginBottom: '1.5rem', padding: '1rem', borderRadius: '12px', background: '#f3efe6', border: '1px solid #e4d9c2' }}>
           <p style={{ fontWeight: 600, fontSize: '15px', color: '#0a0a0a', marginBottom: '6px' }}>
-            Secure handoff for this piece
+            {h('secureTitle')}
           </p>
           <p style={{ fontSize: '13.5px', color: '#5a5246', lineHeight: 1.6 }}>
-            Because this is a higher-value artwork, your handoff takes place at a Contai gallery for added security, and a member of the Contai team — often our founder — is present to support the exchange. We'll arrange the details with you directly.
+            {h('secureBody')}
           </p>
           <p style={{ fontSize: '12.5px', color: '#8a8170', lineHeight: 1.6, marginTop: '8px' }}>
-            Secure locations: Contai Gallery, Bucharest · Budapest (coming soon)
+            {h('secureLocations')}
           </p>
         </div>
       )}
 
       {isCompleted ? (
         <div style={{ padding: '1rem', backgroundColor: '#eef4f1', borderRadius: '12px', marginBottom: '1.5rem', textAlign: 'center' }}>
-          <p style={{ color: '#2d6a4f', fontWeight: 600, fontSize: '18px' }}>Handoff completed</p>
-          <p style={{ color: '#2d6a4f', fontSize: '14px', marginTop: '4px' }}>The artwork is yours.</p>
+          <p style={{ color: '#2d6a4f', fontWeight: 600, fontSize: '18px' }}>{h('completedTitle')}</p>
+          <p style={{ color: '#2d6a4f', fontSize: '14px', marginTop: '4px' }}>{h('completedBody')}</p>
         </div>
       ) : (
         <>
@@ -135,7 +139,7 @@ export default function HandoffClient({ reservation, userId }: any) {
 
           {isPaid && reservation.handoff_code && (
             <div style={{ marginBottom: '1.5rem' }}>
-              <p style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>Your handoff code:</p>
+              <p style={{ fontSize: '13px', color: '#666', marginBottom: '8px' }}>{h('yourCode')}</p>
               <div style={{
                 padding: '1.5rem', backgroundColor: '#f5f3ef', borderRadius: '12px',
                 textAlign: 'center', fontFamily: 'monospace', fontSize: '32px',
@@ -149,7 +153,7 @@ export default function HandoffClient({ reservation, userId }: any) {
           {address && (
             <div style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid #e8e8e8', borderRadius: '12px' }}>
               <p style={{ fontSize: '13px', color: '#666', marginBottom: '4px' }}>
-                {isHighValue ? 'Secure gallery location:' : 'Pickup address:'}
+                {isHighValue ? h('secureLocationLabel') : h('pickupAddressLabel')}
               </p>
               <p style={{ fontWeight: 600 }}>{address}</p>
             </div>
@@ -157,9 +161,9 @@ export default function HandoffClient({ reservation, userId }: any) {
 
           <div style={{ marginBottom: '1.5rem' }}>
             {[
-              { label: 'Fee paid', done: isPaid },
-              { label: 'Address revealed', done: !!address },
-              { label: 'Handoff confirmed', done: isCompleted },
+              { label: h('stepFeePaid'), done: isPaid },
+              { label: h('stepAddressRevealed'), done: !!address },
+              { label: h('stepHandoffConfirmed'), done: isCompleted },
             ].map((step, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 0' }}>
                 <div style={{
@@ -168,7 +172,7 @@ export default function HandoffClient({ reservation, userId }: any) {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: 'white', fontSize: '12px', flexShrink: 0,
                 }}>
-                  {step.done ? 'x' : i + 1}
+                  {step.done ? '✓' : i + 1}
                 </div>
                 <p style={{ fontSize: '14px', color: step.done ? '#0a0a0a' : '#999' }}>{step.label}</p>
               </div>
@@ -181,7 +185,7 @@ export default function HandoffClient({ reservation, userId }: any) {
               color: 'white', border: 'none', borderRadius: '999px',
               fontSize: '16px', fontWeight: 500, cursor: 'pointer', marginBottom: '12px',
             }}>
-              {confirming ? 'Confirming...' : 'I received the artwork'}
+              {confirming ? h('confirming') : h('receivedArtwork')}
             </button>
           )}
 
@@ -192,17 +196,17 @@ export default function HandoffClient({ reservation, userId }: any) {
               color: '#b94040', border: '1px solid #b94040', borderRadius: '999px',
               fontSize: '14px', cursor: 'pointer',
             }}>
-              Report an issue
+              {h('reportIssue')}
             </button>
           )}
 
           {showIssue && !issueSubmitted && (
             <div style={{ padding: '1rem', border: '1px solid #e8e8e8', borderRadius: '12px', marginTop: '12px' }}>
-              <p style={{ fontWeight: 600, marginBottom: '12px' }}>What went wrong?</p>
+              <p style={{ fontWeight: 600, marginBottom: '12px' }}>{h('whatWentWrong')}</p>
               {[
-                { key: 'artist_no_show', label: 'Artist did not show up' },
-                { key: 'buyer_no_show', label: 'Buyer did not show up' },
-                { key: 'not_as_described', label: 'Artwork not as described' },
+                { key: 'artist_no_show', label: h('issueArtistNoShow') },
+                { key: 'buyer_no_show', label: h('issueBuyerNoShow') },
+                { key: 'not_as_described', label: h('issueNotAsDescribed') },
               ].map(type => (
                 <button key={type.key} onClick={() => setIssueType(type.key)} style={{
                   display: 'block', width: '100%', padding: '10px 12px',
@@ -215,7 +219,7 @@ export default function HandoffClient({ reservation, userId }: any) {
                 </button>
               ))}
               <textarea
-                placeholder="Additional notes..."
+                placeholder={h('additionalNotes')}
                 value={issueNotes}
                 onChange={e => setIssueNotes(e.target.value)}
                 rows={3}
@@ -226,15 +230,15 @@ export default function HandoffClient({ reservation, userId }: any) {
                 color: 'white', border: 'none', borderRadius: '999px',
                 fontSize: '14px', cursor: 'pointer',
               }}>
-                {submittingIssue ? 'Submitting...' : 'Submit issue'}
+                {submittingIssue ? h('submitting') : h('submitIssue')}
               </button>
             </div>
           )}
 
           {issueSubmitted && (
             <div style={{ padding: '1rem', backgroundColor: '#fdf0f0', borderRadius: '12px', marginTop: '12px', textAlign: 'center' }}>
-              <p style={{ color: '#b94040', fontWeight: 600 }}>Issue reported</p>
-              <p style={{ color: '#b94040', fontSize: '14px', marginTop: '4px' }}>We'll respond within 24 hours.</p>
+              <p style={{ color: '#b94040', fontWeight: 600 }}>{h('issueReported')}</p>
+              <p style={{ color: '#b94040', fontSize: '14px', marginTop: '4px' }}>{h('issueResponse')}</p>
             </div>
           )}
 
