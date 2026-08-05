@@ -6,9 +6,12 @@ import Link from 'next/link'
 import { ChevronRight, HelpCircle } from 'lucide-react'
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
 import CurrencySwitcher from '@/components/ui/CurrencySwitcher'
+import { useLang } from '@/i18n/LanguageProvider'
 
 export default function MePage() {
   const router = useRouter()
+  const { t } = useLang()
+  const m = (k: string) => t(`me.${k}`)
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [vacation, setVacation] = useState(false)
@@ -51,6 +54,8 @@ export default function MePage() {
   }
 
   const role = profile?.role
+  const roleMap = (t('me.roleLabels') || {}) as Record<string, string>
+  const roleLabel = (role && roleMap[role]) || role || ''
 
   const sectionLabel: React.CSSProperties = { fontSize: '12px', letterSpacing: '0.08em', color: '#999', textTransform: 'uppercase', margin: '24px 0 4px' }
 
@@ -58,8 +63,8 @@ export default function MePage() {
     const inner = (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid #eee' }}>
         <span style={{ fontSize: '16px', color: soon ? '#bbb' : '#0a0a0a' }}>{label}</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {soon && <span style={{ fontSize: '11px', color: '#bbb' }}>coming soon</span>}
+        <span style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          {soon && <span style={{ fontSize: '11px', color: '#bbb' }}>{m('comingSoon')}</span>}
           <ChevronRight size={18} color="#ccc" />
         </span>
       </div>
@@ -69,58 +74,59 @@ export default function MePage() {
   }
 
   if (loading) {
-    return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>Loading…</div>
+    return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>{m('loading')}</div>
   }
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
       {/* Page title */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', fontWeight: 700 }}>Me</h1>
+        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', fontWeight: 700 }}>{m('title')}</h1>
       </div>
 
       <div style={{ padding: '0 1rem' }}>
         {/* Profile header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '8px 0 16px' }}>
-          <Link href={role === 'artist' || role === 'admin' ? '/dashboard/profile' : '/me/personal-info'} aria-label="Edit profile"
+          <Link href={role === 'artist' || role === 'admin' ? '/dashboard/profile' : '/me/personal-info'} aria-label={m('editProfile')}
             style={{ width: '64px', height: '64px', borderRadius: '999px', backgroundColor: '#f5f3ef', flexShrink: 0, overflow: 'hidden', display: 'block', position: 'relative' }}>
             {profile?.avatar_url
               ? <img src={profile.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontSize: '11px' }}>Edit</span>}
+              : <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontSize: '11px' }}>{m('edit')}</span>}
           </Link>
           <div>
-            <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px', color: '#0a0a0a' }}>{profile?.full_name || 'Your name'}</p>
-            <p style={{ fontSize: '14px', color: '#999', textTransform: 'capitalize' }}>{role}{profile?.city ? ` · ${profile.city}` : ''}</p>
+            <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px', color: '#0a0a0a' }}>{profile?.full_name || m('yourName')}</p>
+            <p style={{ fontSize: '14px', color: '#999' }}>{roleLabel}{profile?.city ? ` · ${profile.city}` : ''}</p>
           </div>
         </div>
 
         {/* Buying */}
-        <p style={sectionLabel}>Buying</p>
-        <Row label="Orders" href="/me/orders" />
-        <Row label="Saved searches" href="/me/saved-searches" />
-        <Row label="Favorites" href="/favorites" />
-        <Row label="Payment methods" soon />
+        <p style={sectionLabel}>{m('buying')}</p>
+        <Row label={m('orders')} href="/me/orders" />
+        <Row label={m('savedSearches')} href="/me/saved-searches" />
+        <Row label={m('favorites')} href="/favorites" />
+        <Row label={m('paymentMethods')} soon />
 
         {/* Selling — available to everyone */}
-        <p style={sectionLabel}>Selling</p>
-        <Row label="My listings" href="/dashboard" />
-        <Row label="Sales" href="/me/sales" />
-        <Row label="Get paid" href="/me/get-paid" />
+        <p style={sectionLabel}>{m('selling')}</p>
+        <Row label={m('myListings')} href="/dashboard" />
+        <Row label={m('sales')} href="/me/sales" />
+        <Row label={m('getPaid')} href="/me/get-paid" />
 
         {/* Vacation mode toggle */}
         <div style={{ padding: '16px 0', borderBottom: '1px solid #eee' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '16px', color: '#0a0a0a' }}>
-              Vacation mode
-              <button onClick={() => setShowVacInfo(v => !v)} aria-label="What is vacation mode?"
+              {m('vacationMode')}
+              <button onClick={() => setShowVacInfo(v => !v)} aria-label={m('vacationHelp')}
                 style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', color: '#bbb' }}>
                 <HelpCircle size={15} />
               </button>
             </span>
-            <button onClick={toggleVacation} disabled={savingVac} aria-label="Toggle vacation mode"
+            <button onClick={toggleVacation} disabled={savingVac} aria-label={m('vacationToggle')}
               style={{
                 width: '46px', height: '26px', borderRadius: '999px', border: 'none', cursor: 'pointer',
                 background: vacation ? '#0a0a0a' : '#d8d4cc', position: 'relative', transition: 'background 0.2s',
+                flexShrink: 0,
               }}>
               <span style={{
                 position: 'absolute', top: '3px', left: vacation ? '23px' : '3px',
@@ -130,37 +136,37 @@ export default function MePage() {
           </div>
           {showVacInfo && (
             <p style={{ fontSize: '13px', color: '#777', marginTop: '10px', lineHeight: 1.5 }}>
-              When vacation mode is on, your artworks stay visible and people can still favourite them, but buyers can't reserve or purchase until you turn it off. Use it when you're away and can't meet buyers.
+              {m('vacationInfo')}
             </p>
           )}
         </div>
 
-        <Row label="Verification" href="/dashboard/verification" />
+        <Row label={m('verification')} href="/dashboard/verification" />
 
         {/* Account */}
-        <p style={sectionLabel}>Account info</p>
-        <Row label="Personal info" href="/me/personal-info" />
-        <Row label="Notifications" href="/notifications" />
-        <Row label="Badges" href="/me/badges" />
+        <p style={sectionLabel}>{m('accountInfo')}</p>
+        <Row label={m('personalInfo')} href="/me/personal-info" />
+        <Row label={m('notifications')} href="/notifications" />
+        <Row label={m('badges')} href="/me/badges" />
 
         {/* Legal */}
-        <p style={sectionLabel}>Legal</p>
-        <Row label="Privacy Policy" href="/privacy" />
-        <Row label="Terms of Service" href="/terms" />
+        <p style={sectionLabel}>{m('legal')}</p>
+        <Row label={m('privacy')} href="/privacy" />
+        <Row label={m('terms')} href="/terms" />
 
         {/* Help */}
-        <p style={sectionLabel}>Help & support</p>
-        <Row label="Help centre" href="/me/help" />
-        <Row label="Contact us" href="/me/contact" />
+        <p style={sectionLabel}>{m('helpSupport')}</p>
+        <Row label={m('helpCentre')} href="/me/help" />
+        <Row label={m('contactUs')} href="/me/contact" />
 
         {/* Language */}
-        <p style={sectionLabel}>Language</p>
+        <p style={sectionLabel}>{m('language')}</p>
         <div style={{ padding: '12px 0' }}>
           <LanguageSwitcher />
         </div>
 
         {/* Currency */}
-        <p style={sectionLabel}>Currency</p>
+        <p style={sectionLabel}>{m('currency')}</p>
         <div style={{ padding: '12px 0' }}>
           <CurrencySwitcher />
         </div>
@@ -171,10 +177,10 @@ export default function MePage() {
           border: '1px solid #0a0a0a', background: '#0a0a0a', color: '#f5f3ef',
           fontSize: '16px', fontWeight: 600, cursor: 'pointer',
         }}>
-          Sign out
+          {m('signOut')}
         </button>
 
-        <p style={{ textAlign: 'center', color: '#ccc', fontSize: '12px', marginTop: '20px' }}>Contai · The Art Market</p>
+        <p style={{ textAlign: 'center', color: '#ccc', fontSize: '12px', marginTop: '20px' }}>{m('tagline')}</p>
       </div>
     </div>
   )

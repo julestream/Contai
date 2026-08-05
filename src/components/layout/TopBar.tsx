@@ -7,10 +7,12 @@ import { Bell, MessageCircle, Search, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { usePathname } from 'next/navigation'
 import CurrencySwitcher from '@/components/ui/CurrencySwitcher'
+import { useLang } from '@/i18n/LanguageProvider'
 
 export default function TopBar() {
   const router = useRouter()
   const pathname = usePathname()
+  const { t } = useLang()
   const [q, setQ] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
   const [hasUnread, setHasUnread] = useState(false)
@@ -72,17 +74,17 @@ export default function TopBar() {
   return (
     <div style={{ position: 'sticky', top: 0, zIndex: 40, background: '#0a0a0a', borderBottom: '1px solid #1c1c1c' }}>
       <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px' }}>
-        <Link href="/notifications" aria-label="Notifications" style={{ color: '#ffffff', flexShrink: 0 }}>
+        <Link href="/notifications" aria-label={t('nav.notifications')} style={{ color: '#ffffff', flexShrink: 0 }}>
           <Bell size={24} />
         </Link>
-        <form onSubmit={submit} style={{ flex: 1 }}>
+        <form onSubmit={submit} style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#1f1f1f', borderRadius: 999, padding: '9px 14px' }}>
-            <Search size={18} color="#888" />
+            <Search size={18} color="#888" style={{ flexShrink: 0 }} />
             <input
               value={q}
               onChange={e => setQ(e.target.value)}
-              placeholder="Search for items, members..."
-              style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 15, width: '100%', color: '#ffffff' }}
+              placeholder={t('nav.searchPlaceholder')}
+              style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 15, width: '100%', minWidth: 0, color: '#ffffff' }}
             />
           </div>
         </form>
@@ -90,11 +92,11 @@ export default function TopBar() {
           <CurrencySwitcher compact />
         </div>
         {isAdmin && (
-          <Link href="/admin" aria-label="Admin" style={{ color: '#c8a24a', flexShrink: 0 }}>
+          <Link href="/admin" aria-label={t('nav.admin')} style={{ color: '#c8a24a', flexShrink: 0 }}>
             <Shield size={24} />
           </Link>
         )}
-        <Link href="/messages" aria-label="Messages" style={{ position: 'relative', color: '#ffffff', flexShrink: 0 }}>
+        <Link href="/messages" aria-label={t('nav.messages')} style={{ position: 'relative', color: '#ffffff', flexShrink: 0 }}>
           <MessageCircle size={24} />
           {hasUnread && (
             <span style={{

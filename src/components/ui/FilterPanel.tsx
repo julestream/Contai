@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
+import { useLang } from '@/i18n/LanguageProvider'
 
 const MEDIUM_GROUPS: { type: string; mediums: string[] }[] = [
   { type: 'Painting', mediums: ['Oil', 'Acrylic', 'Watercolour', 'Gouache', 'Tempera', 'Fresco', 'Encaustic', 'Pastel', 'Enamel'] },
@@ -15,11 +16,7 @@ const COLOURS = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Pink', '
 const MATERIALS = ['Canvas', 'Paper', 'Wood', 'Metal', 'Glass', 'Ceramic', 'Fabric', 'Stone']
 const MOODS = ['Inspiration', 'Harmony', 'Intrigue', 'Joy', 'Self-reflection']
 const SIZES = ['Small', 'Medium', 'Large', 'Extra Large']
-const BADGES = [
-  { value: 'verified_artist', label: 'Verified Artist' },
-  { value: 'established_artist', label: 'Established Artist' },
-  { value: 'curator_approved', label: 'Curator Pick' },
-]
+const BADGE_VALUES = ['verified_artist', 'established_artist', 'curator_approved']
 
 const COUNTRIES = ['Hungary', 'Romania']
 const CITIES: Record<string, string[]> = {
@@ -36,6 +33,12 @@ export default function FilterPanel() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [open, setOpen] = useState(false)
+  const { t } = useLang()
+  const f = (k: string) => t(`filters.${k}`)
+  const label = (map: string, key: string) => {
+    const m = t(map) as any
+    return (m && m[key]) || key
+  }
 
   const [types, setTypes] = useState<string[]>(parseList(searchParams.get('type')))
   const [mediums, setMediums] = useState<string[]>(parseList(searchParams.get('medium')))
@@ -119,7 +122,7 @@ export default function FilterPanel() {
           background: '#fff', color: '#0a0a0a', fontSize: '13px', cursor: 'pointer', fontWeight: 500,
         }}
       >
-        Filters {activeCount > 0 && `(${activeCount})`}
+        {f('filters')} {activeCount > 0 && `(${activeCount})`}
       </button>
 
       {open && (
@@ -139,12 +142,12 @@ export default function FilterPanel() {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: '#fff', paddingBottom: '8px' }}>
-              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px' }}>Filters</h2>
-              <button onClick={() => setOpen(false)} style={{ border: 'none', background: 'none', fontSize: '22px', cursor: 'pointer', color: '#999' }}>×</button>
+              <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px' }}>{f('filters')}</h2>
+              <button onClick={() => setOpen(false)} aria-label={f('close')} style={{ border: 'none', background: 'none', fontSize: '22px', cursor: 'pointer', color: '#999' }}>×</button>
             </div>
 
             {/* Medium grouped by type */}
-            <div style={sectionLabel}>Type & Medium</div>
+            <div style={sectionLabel}>{f('typeAndMedium')}</div>
             {MEDIUM_GROUPS.map(g => (
               <div key={g.type}>
                 <div
@@ -158,71 +161,71 @@ export default function FilterPanel() {
                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                     color: '#fff', fontSize: '11px',
                   }}>{types.includes(g.type) ? '✓' : ''}</span>
-                  {g.type}
+                  {label('upload.typeLabels', g.type)}
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                   {g.mediums.map(m => (
-                    <span key={`${g.type}-${m}`} style={chip(mediums.includes(m))} onClick={() => toggle(mediums, setMediums, m)}>{m}</span>
+                    <span key={`${g.type}-${m}`} style={chip(mediums.includes(m))} onClick={() => toggle(mediums, setMediums, m)}>{label('filters.mediumLabels', m)}</span>
                   ))}
                 </div>
               </div>
             ))}
 
             {/* Mood */}
-            <div style={sectionLabel}>Mood</div>
+            <div style={sectionLabel}>{f('mood')}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {MOODS.map(m => <span key={m} style={chip(moods.includes(m))} onClick={() => toggle(moods, setMoods, m)}>{m}</span>)}
+              {MOODS.map(m => <span key={m} style={chip(moods.includes(m))} onClick={() => toggle(moods, setMoods, m)}>{t(`mood.${m}`)}</span>)}
             </div>
 
             {/* Colour */}
-            <div style={sectionLabel}>Colour</div>
+            <div style={sectionLabel}>{f('colour')}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {COLOURS.map(c => <span key={c} style={chip(colours.includes(c))} onClick={() => toggle(colours, setColours, c)}>{c}</span>)}
+              {COLOURS.map(x => <span key={x} style={chip(colours.includes(x))} onClick={() => toggle(colours, setColours, x)}>{label('upload.colourLabels', x)}</span>)}
             </div>
 
             {/* Material */}
-            <div style={sectionLabel}>Material</div>
+            <div style={sectionLabel}>{f('material')}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {MATERIALS.map(m => <span key={m} style={chip(materials.includes(m))} onClick={() => toggle(materials, setMaterials, m)}>{m}</span>)}
+              {MATERIALS.map(m => <span key={m} style={chip(materials.includes(m))} onClick={() => toggle(materials, setMaterials, m)}>{label('filters.materialLabels', m)}</span>)}
             </div>
 
             {/* Size */}
-            <div style={sectionLabel}>Size</div>
+            <div style={sectionLabel}>{f('size')}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {SIZES.map(s => <span key={s} style={chip(sizes.includes(s))} onClick={() => toggle(sizes, setSizes, s)}>{s}</span>)}
+              {SIZES.map(x => <span key={x} style={chip(sizes.includes(x))} onClick={() => toggle(sizes, setSizes, x)}>{label('filters.sizeLabels', x)}</span>)}
             </div>
 
             {/* Artist */}
-            <div style={sectionLabel}>Artist</div>
+            <div style={sectionLabel}>{f('artist')}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {BADGES.map(b => <span key={b.value} style={chip(badges.includes(b.value))} onClick={() => toggle(badges, setBadges, b.value)}>{b.label}</span>)}
+              {BADGE_VALUES.map(v => <span key={v} style={chip(badges.includes(v))} onClick={() => toggle(badges, setBadges, v)}>{label('filters.badgeLabels', v)}</span>)}
             </div>
 
             {/* Framed */}
-            <div style={sectionLabel}>Framed</div>
+            <div style={sectionLabel}>{f('framedLabel')}</div>
             <div style={{ display: 'flex', gap: '6px' }}>
-              <span style={chip(framed === 'true')} onClick={() => setFramed(framed === 'true' ? '' : 'true')}>Framed</span>
-              <span style={chip(framed === 'false')} onClick={() => setFramed(framed === 'false' ? '' : 'false')}>Unframed</span>
+              <span style={chip(framed === 'true')} onClick={() => setFramed(framed === 'true' ? '' : 'true')}>{f('framed')}</span>
+              <span style={chip(framed === 'false')} onClick={() => setFramed(framed === 'false' ? '' : 'false')}>{f('unframed')}</span>
             </div>
 
             {/* Price */}
-            <div style={sectionLabel}>Price (Ft)</div>
+            <div style={sectionLabel}>{f('price')}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <input type="number" placeholder="Min" value={minPrice} onChange={e => setMinPrice(e.target.value)} style={input} />
+              <input type="number" placeholder={f('min')} value={minPrice} onChange={e => setMinPrice(e.target.value)} style={input} />
               <span style={{ color: '#999' }}>-</span>
-              <input type="number" placeholder="Max" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} style={input} />
+              <input type="number" placeholder={f('max')} value={maxPrice} onChange={e => setMaxPrice(e.target.value)} style={input} />
             </div>
 
             {/* Location */}
-            <div style={sectionLabel}>Location</div>
+            <div style={sectionLabel}>{f('location')}</div>
             <select value={country} onChange={e => { setCountry(e.target.value); setCity('') }} style={{ ...input, marginBottom: '8px' }}>
-              <option value="">Any country</option>
-              {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+              <option value="">{f('anyCountry')}</option>
+              {COUNTRIES.map(x => <option key={x} value={x}>{x}</option>)}
             </select>
             {country && (
               <select value={city} onChange={e => setCity(e.target.value)} style={input}>
-                <option value="">Any city</option>
-                {CITIES[country]?.map(c => <option key={c} value={c}>{c}</option>)}
+                <option value="">{f('anyCity')}</option>
+                {CITIES[country]?.map(x => <option key={x} value={x}>{x}</option>)}
               </select>
             )}
 
@@ -231,11 +234,11 @@ export default function FilterPanel() {
               <button onClick={clearAll} style={{
                 flex: 1, padding: '12px', borderRadius: '999px', border: '1px solid #e0dcd3',
                 background: '#fff', color: '#0a0a0a', fontSize: '14px', cursor: 'pointer',
-              }}>Clear all</button>
+              }}>{f('clearAll')}</button>
               <button onClick={apply} style={{
                 flex: 2, padding: '12px', borderRadius: '999px', border: 'none',
                 background: '#0a0a0a', color: '#fff', fontSize: '14px', cursor: 'pointer', fontWeight: 500,
-              }}>Show results</button>
+              }}>{f('showResults')}</button>
             </div>
           </div>
         </div>

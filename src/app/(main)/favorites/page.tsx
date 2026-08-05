@@ -1,15 +1,25 @@
 import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 import Link from 'next/link'
 import Price from '@/components/ui/Price'
+import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
+
+export const dynamic = 'force-dynamic'
 
 export default async function FavoritesPage() {
+  const lang = (cookies().get('contai_lang')?.value as Lang) || DEFAULT_LANG
+  const f = (getDict(lang) as any).favorites
+
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <p>Please <Link href="/signin">sign in</Link> to view favorites.</p>
+        <p>
+          <Link href="/signin" style={{ color: '#0a0a0a', fontWeight: 600 }}>{f.signInLink}</Link>{' '}
+          {f.signInSuffix}
+        </p>
       </div>
     )
   }
@@ -20,17 +30,21 @@ export default async function FavoritesPage() {
     .eq('profile_id', user.id)
     .order('created_at', { ascending: false })
 
+  const count = favorites?.length || 0
+
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
       <div style={{ padding: '1.5rem 1rem 1rem', borderBottom: '1px solid #e8e8e8' }}>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px' }}>Favorites</h1>
-        <p style={{ color: '#999', fontSize: '13px', marginTop: '4px' }}>{favorites?.length || 0} saved works</p>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px' }}>{f.title}</h1>
+        <p style={{ color: '#999', fontSize: '13px', marginTop: '4px' }}>
+          {count} {count === 1 ? f.savedWork : f.savedWorks}
+        </p>
       </div>
 
-      {favorites?.length === 0 && (
+      {count === 0 && (
         <div style={{ padding: '3rem', textAlign: 'center', color: '#999' }}>
-          <p>No favorites yet.</p>
-          <Link href="/browse" style={{ color: '#0a0a0a', fontWeight: 600 }}>Browse artworks</Link>
+          <p>{f.empty}</p>
+          <Link href="/browse" style={{ color: '#0a0a0a', fontWeight: 600 }}>{f.browseArtworks}</Link>
         </div>
       )}
 

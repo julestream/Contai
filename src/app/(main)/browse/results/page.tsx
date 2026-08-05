@@ -1,9 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 import Link from 'next/link'
 import ArtworkCard from '@/components/ui/ArtworkCard'
 import { Suspense } from 'react'
 import FilterPanel from '@/components/ui/FilterPanel'
 import SaveSearchButton from '@/components/ui/SaveSearchButton'
+import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
+
+export const dynamic = 'force-dynamic'
 
 function parseList(v?: string): string[] {
   if (!v) return []
@@ -19,6 +23,11 @@ export default async function BrowseResultsPage({
     min_price?: string; max_price?: string; country?: string; city?: string;
   }
 }) {
+  const lang = (cookies().get('contai_lang')?.value as Lang) || DEFAULT_LANG
+  const dict = getDict(lang) as any
+  const r = dict.results
+  const typeLabels = (dict.upload?.typeLabels || {}) as Record<string, string>
+
   const supabase = createClient()
 
   const types = parseList(searchParams.type)
@@ -62,7 +71,9 @@ export default async function BrowseResultsPage({
 
   const { data: artworks } = await query
 
-  const heading = types.length === 1 ? types[0] : (searchParams.q ? `"${searchParams.q}"` : 'All works')
+  const heading = types.length === 1
+    ? (typeLabels[types[0]] || types[0])
+    : (searchParams.q ? `"${searchParams.q}"` : r.allWorks)
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
@@ -80,15 +91,15 @@ export default async function BrowseResultsPage({
       </Suspense>
 
       <div style={{ padding: '4px 1rem 12px', color: '#999', fontSize: '13px' }}>
-        {artworks?.length || 0} works
+        {artworks?.length || 0} {r.works}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', padding: '0 1rem' }}>
-        {artworks?.map(a => <ArtworkCard key={a.id} artwork={a} />)}
+        {artworks?.map(x => <ArtworkCard key={x.id} artwork={x} />)}
       </div>
 
       {artworks?.length === 0 && (
-        <div style={{ padding: '3rem', textAlign: 'center', color: '#999' }}>No works match these filters.</div>
+        <div style={{ padding: '3rem', textAlign: 'center', color: '#999' }}>{r.noMatch}</div>
       )}
     </div>
   )

@@ -3,9 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, LayoutGrid, Plus, Heart, User } from 'lucide-react'
+import { useLang } from '@/i18n/LanguageProvider'
 
 export default function TabBar() {
   const pathname = usePathname()
+  const { t } = useLang()
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href)
 
@@ -16,6 +18,7 @@ export default function TabBar() {
         href={href}
         style={{
           flex: 1,
+          minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -27,7 +30,7 @@ export default function TabBar() {
         }}
       >
         <Icon size={22} strokeWidth={active ? 2.4 : 2} />
-        <span>{label}</span>
+        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{label}</span>
       </Link>
     )
   }
@@ -56,11 +59,11 @@ export default function TabBar() {
           padding: '8px 8px calc(8px + env(safe-area-inset-bottom))',
         }}
       >
-        {Item('/home', 'Home', Home)}
-        {Item('/browse', 'Browse', LayoutGrid)}
+        {Item('/home', t('nav.home'), Home)}
+        {Item('/browse', t('nav.browse'), LayoutGrid)}
         <Link
           href="/dashboard/upload"
-          aria-label="Sell"
+          aria-label={t('nav.sell')}
           style={{ flex: 1, display: 'flex', justifyContent: 'center' }}
         >
           <span
@@ -80,8 +83,8 @@ export default function TabBar() {
             <Plus size={26} strokeWidth={2.4} />
           </span>
         </Link>
-        {Item('/favorites', 'Favorites', Heart)}
-        {Item('/me', 'Me', User)}
+        {Item('/favorites', t('nav.favorites'), Heart)}
+        {Item('/me', t('nav.me'), User)}
       </div>
     </nav>
   )

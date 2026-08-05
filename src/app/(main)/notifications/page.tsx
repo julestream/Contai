@@ -1,8 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import Link from 'next/link'
+import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
+
+export const dynamic = 'force-dynamic'
 
 export default async function NotificationsPage() {
+  const lang = (cookies().get('contai_lang')?.value as Lang) || DEFAULT_LANG
+  const n = (getDict(lang) as any).notifications
+  const statusMessages = (n.statusMessages || {}) as Record<string, string>
+
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/signin')
@@ -20,34 +28,26 @@ export default async function NotificationsPage() {
     .order('last_message_at', { ascending: false })
 
   function getStatusMessage(status: string) {
-    const messages: Record<string, string> = {
-      reserved: 'Reservation created — complete payment to confirm',
-      reservation_paid: 'Payment received — address revealed',
-      handoff_completed: 'Handoff completed — artwork sold!',
-      reservation_expired: 'Reservation expired',
-      buyer_issue_reported: 'Issue reported — we will respond within 24h',
-      refunded: 'Refund processed',
-    }
-    return messages[status] || status
+    return statusMessages[status] || status
   }
 
   function timeAgo(date: string) {
     const diff = Date.now() - new Date(date).getTime()
     const hours = Math.floor(diff / (1000 * 60 * 60))
     const days = Math.floor(hours / 24)
-    if (days > 0) return `${days}d ago`
-    if (hours > 0) return `${hours}h ago`
-    return 'Just now'
+    if (days > 0) return n.daysAgo.replace('{n}', String(days))
+    if (hours > 0) return n.hoursAgo.replace('{n}', String(hours))
+    return n.justNow
   }
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
       <div style={{ padding: '1.5rem 1rem', borderBottom: '1px solid #e8e8e8' }}>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px' }}>Notifications</h1>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px' }}>{n.title}</h1>
       </div>
 
       <div style={{ padding: '1rem', borderBottom: '1px solid #e8e8e8' }}>
-        <p style={{ fontWeight: 600, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#999', marginBottom: '1rem' }}>Updates</p>
+        <p style={{ fontWeight: 600, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#999', marginBottom: '1rem' }}>{n.updates}</p>
 
         {buyerReservations?.map(res => {
           const artwork = (res as any).artworks
@@ -60,7 +60,7 @@ export default async function NotificationsPage() {
                 ) : (
                   <div style={{ width: '48px', height: '48px', backgroundColor: '#f5f3ef', borderRadius: '6px', flexShrink: 0 }} />
                 )}
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: '14px', color: '#0a0a0a' }}>{getStatusMessage(res.status)}</p>
                   <p style={{ fontSize: '13px', color: '#999', marginTop: '2px' }}>{artwork?.title}</p>
                 </div>
@@ -71,12 +71,12 @@ export default async function NotificationsPage() {
         })}
 
         {(!buyerReservations || buyerReservations.length === 0) && (
-          <p style={{ color: '#999', fontSize: '14px' }}>No updates yet.</p>
+          <p style={{ color: '#999', fontSize: '14px' }}>{n.noUpdates}</p>
         )}
       </div>
 
       <div style={{ padding: '1rem' }}>
-        <p style={{ fontWeight: 600, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#999', marginBottom: '1rem' }}>Messages</p>
+        <p style={{ fontWeight: 600, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#999', marginBottom: '1rem' }}>{n.messages}</p>
 
         {conversations?.map(conv => {
           const artwork = (conv as any).artworks
@@ -93,7 +93,7 @@ export default async function NotificationsPage() {
                 ) : (
                   <div style={{ width: '48px', height: '48px', backgroundColor: '#f5f3ef', borderRadius: '6px', flexShrink: 0 }} />
                 )}
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: '14px', color: '#0a0a0a', fontWeight: 600 }}>{otherPerson}</p>
                   <p style={{ fontSize: '13px', color: '#999', marginTop: '2px' }}>{artwork?.title}</p>
                 </div>
@@ -104,7 +104,7 @@ export default async function NotificationsPage() {
         })}
 
         {(!conversations || conversations.length === 0) && (
-          <p style={{ color: '#999', fontSize: '14px' }}>No messages yet.</p>
+          <p style={{ color: '#999', fontSize: '14px' }}>{n.noMessages}</p>
         )}
       </div>
     </div>

@@ -1,8 +1,13 @@
 import Logo from '@/components/ui/Logo'
 import Link from 'next/link'
 import { Hammer } from 'lucide-react'
+import { cookies } from 'next/headers'
+import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
 
 export default function ComingSoon({ title, blurb }: { title: string; blurb?: string }) {
+  const lang = (cookies().get('contai_lang')?.value as Lang) || DEFAULT_LANG
+  const cs = (getDict(lang) as any).comingSoon
+
   return (
     <div style={{
       maxWidth: '430px', margin: '0 auto', minHeight: '80vh',
@@ -19,13 +24,13 @@ export default function ComingSoon({ title, blurb }: { title: string; blurb?: st
       </div>
 
       <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', marginTop: '1.5rem' }}>{title}</h1>
-      <p style={{ fontSize: '12px', color: '#999', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: '8px' }}>Coming soon</p>
+      <p style={{ fontSize: '12px', color: '#999', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: '8px' }}>{cs.label}</p>
 
       {blurb && <p style={{ fontSize: '15px', color: '#666', lineHeight: 1.6, marginTop: '1rem', maxWidth: '320px' }}>{blurb}</p>}
 
       <Link href="/home" style={{ textDecoration: 'none', marginTop: '2.5rem' }}>
         <div style={{ padding: '13px 28px', border: '1px solid #0a0a0a', borderRadius: '999px', fontSize: '15px', color: '#0a0a0a' }}>
-          Back to Discover
+          {cs.backToDiscover}
         </div>
       </Link>
     </div>

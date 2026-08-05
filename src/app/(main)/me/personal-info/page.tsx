@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useLang } from '@/i18n/LanguageProvider'
 
 const COUNTRIES = ['Hungary', 'Romania']
 const CITIES: Record<string, string[]> = {
@@ -12,6 +13,9 @@ const CITIES: Record<string, string[]> = {
 
 export default function PersonalInfoPage() {
   const router = useRouter()
+  const { t } = useLang()
+  const c = (k: string) => t(`common.${k}`)
+  const p = (k: string) => t(`mePages.personalInfo.${k}`)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -56,7 +60,7 @@ export default function PersonalInfoPage() {
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
     const path = `avatars/${session.user.id}-${Date.now()}-${safeName}`
     const { error: upErr } = await supabase.storage.from('artwork-images').upload(path, file, { upsert: true })
-    if (upErr) { setError('Photo upload failed: ' + upErr.message); setUploadingAvatar(false); return }
+    if (upErr) { setError(c('photoUploadFailed') + ' ' + upErr.message); setUploadingAvatar(false); return }
     const { data } = supabase.storage.from('artwork-images').getPublicUrl(path)
     setAvatarUrl(data.publicUrl)
     setUploadingAvatar(false)
@@ -68,7 +72,7 @@ export default function PersonalInfoPage() {
     setError('')
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) { setError('Not signed in'); setSaving(false); return }
+    if (!session) { setError(c('notSignedIn')); setSaving(false); return }
     const { error: updErr } = await supabase.from('profiles').update({
       full_name: fullName,
       country: country || null,
@@ -85,13 +89,13 @@ export default function PersonalInfoPage() {
     fontSize: '16px', outline: 'none', width: '100%', fontFamily: 'var(--font-instrument), sans-serif',
   }
 
-  if (loading) return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>Loading...</div>
+  if (loading) return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>{c('loading')}</div>
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', padding: '1.5rem', paddingBottom: '6rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.5rem' }}>
         <Link href="/me" style={{ textDecoration: 'none', color: '#0a0a0a', fontSize: '20px' }}>←</Link>
-        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px' }}>Personal info</h1>
+        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px' }}>{p('title')}</h1>
       </div>
 
       {/* Avatar */}
@@ -102,51 +106,51 @@ export default function PersonalInfoPage() {
         <label style={{ cursor: 'pointer' }}>
           <input type="file" accept="image/*" onChange={handleAvatar} style={{ display: 'none' }} />
           <span style={{ padding: '8px 16px', borderRadius: '999px', border: '1px solid #0a0a0a', fontSize: '14px' }}>
-            {uploadingAvatar ? 'Uploading...' : avatarUrl ? 'Change photo' : 'Add photo'}
+            {uploadingAvatar ? c('uploading') : avatarUrl ? c('changePhoto') : c('addPhoto')}
           </span>
         </label>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div>
-          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Name</label>
-          <input value={fullName} onChange={e => setFullName(e.target.value)} style={inputStyle} placeholder="Your name" />
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{c('name')}</label>
+          <input value={fullName} onChange={e => setFullName(e.target.value)} style={inputStyle} placeholder={c('yourName')} />
         </div>
 
         <div>
-          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Country</label>
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{c('country')}</label>
           <select value={country} onChange={e => { setCountry(e.target.value); setCity('') }} style={inputStyle}>
-            <option value="">Select country</option>
-            {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+            <option value="">{c('selectCountry')}</option>
+            {COUNTRIES.map(x => <option key={x} value={x}>{x}</option>)}
           </select>
         </div>
 
         {country && (
           <div>
-            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>City</label>
+            <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{c('city')}</label>
             <select value={city} onChange={e => setCity(e.target.value)} style={inputStyle}>
-              <option value="">Select city</option>
-              {CITIES[country]?.map(c => <option key={c} value={c}>{c}</option>)}
+              <option value="">{c('selectCity')}</option>
+              {CITIES[country]?.map(x => <option key={x} value={x}>{x}</option>)}
             </select>
-            <p style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>We use this to show you artworks you can pick up nearby.</p>
+            <p style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>{p('cityHelp')}</p>
           </div>
         )}
 
         <div>
-          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>Email</label>
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{p('email')}</label>
           <input value={email} disabled style={{ ...inputStyle, background: '#f5f3ef', color: '#999' }} />
-          <p style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>Email cannot be changed here.</p>
+          <p style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>{p('emailHelp')}</p>
         </div>
       </div>
 
       {error && <p style={{ color: '#b94040', fontSize: '14px', marginTop: '1rem' }}>{error}</p>}
-      {saved && <p style={{ color: '#2d6a4f', fontSize: '14px', marginTop: '1rem' }}>Saved</p>}
+      {saved && <p style={{ color: '#2d6a4f', fontSize: '14px', marginTop: '1rem' }}>{c('saved')}</p>}
 
       <button onClick={handleSave} disabled={saving} style={{
         width: '100%', marginTop: '1.5rem', padding: '15px', borderRadius: '999px', border: 'none',
         background: '#0a0a0a', color: '#fff', fontSize: '16px', fontWeight: 600, cursor: 'pointer', opacity: saving ? 0.6 : 1,
       }}>
-        {saving ? 'Saving...' : 'Save'}
+        {saving ? c('saving') : c('save')}
       </button>
     </div>
   )

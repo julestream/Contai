@@ -1,9 +1,14 @@
 import Link from 'next/link'
 import Price from '@/components/ui/Price'
+import { cookies } from 'next/headers'
+import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
 
 export default function ArtworkCard({ artwork }: { artwork: any }) {
+  const lang = (cookies().get('contai_lang')?.value as Lang) || DEFAULT_LANG
+  const fallback = (getDict(lang) as any).card.artistFallback
+
   const img = (artwork.images as string[])?.[0]
-  const displayArtist = artwork.artist_name || artwork.profiles?.full_name || 'Artist'
+  const displayArtist = artwork.artist_name || artwork.profiles?.full_name || fallback
   return (
     <Link href={`/artwork/${artwork.id}`} style={{ textDecoration: 'none' }}>
       <div style={{ width: '100%' }}>

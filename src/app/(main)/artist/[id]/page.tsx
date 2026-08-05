@@ -1,9 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import Link from 'next/link'
 import Badge from '@/components/ui/Badge'
+import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
+
+export const dynamic = 'force-dynamic'
 
 export default async function ArtistProfilePage({ params }: { params: { id: string } }) {
+  const lang = (cookies().get('contai_lang')?.value as Lang) || DEFAULT_LANG
+  const a = (getDict(lang) as any).artistPage
+
   const supabase = createClient()
 
   const { data: artist } = await supabase
@@ -37,7 +44,7 @@ export default async function ArtistProfilePage({ params }: { params: { id: stri
         <div style={{ width: '96px', height: '96px', borderRadius: '999px', backgroundColor: '#f5f3ef', overflow: 'hidden', margin: '0 auto 1rem' }}>
           {artist.avatar_url && <img src={artist.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
         </div>
-        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px' }}>{artist.full_name || 'Artist'}</h1>
+        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px' }}>{artist.full_name || a.artistFallback}</h1>
         {artist.city && <p style={{ color: '#999', fontSize: '14px', marginTop: '4px' }}>{artist.city}</p>}
 
         {/* Badges */}
@@ -67,10 +74,10 @@ export default async function ArtistProfilePage({ params }: { params: { id: stri
 
       {/* Available works */}
       <div style={{ padding: '1.5rem 1rem 0.5rem' }}>
-        <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px' }}>Available works</h2>
+        <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px' }}>{a.availableWorks}</h2>
       </div>
       {available.length === 0 ? (
-        <p style={{ padding: '0 1.5rem 1.5rem', color: '#999', fontSize: '14px' }}>No works available right now.</p>
+        <p style={{ padding: '0 1.5rem 1.5rem', color: '#999', fontSize: '14px' }}>{a.noWorks}</p>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', backgroundColor: '#eee' }}>
           {available.map(w => {
@@ -96,7 +103,7 @@ export default async function ArtistProfilePage({ params }: { params: { id: stri
       {sold.length > 0 && (
         <>
           <div style={{ padding: '2rem 1rem 0.5rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px' }}>Sold works</h2>
+            <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px' }}>{a.soldWorks}</h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', backgroundColor: '#eee' }}>
             {sold.map(w => {
@@ -108,7 +115,7 @@ export default async function ArtistProfilePage({ params }: { params: { id: stri
                   ) : (
                     <div style={{ width: '100%', aspectRatio: '1', backgroundColor: '#f5f3ef', borderRadius: '4px', marginBottom: '8px' }} />
                   )}
-                  <span style={{ position: 'absolute', top: '20px', left: '20px', background: '#0a0a0a', color: '#fff', fontSize: '11px', padding: '3px 10px', borderRadius: '999px' }}>Sold</span>
+                  <span style={{ position: 'absolute', top: '20px', left: '20px', background: '#0a0a0a', color: '#fff', fontSize: '11px', padding: '3px 10px', borderRadius: '999px' }}>{a.sold}</span>
                   <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '14px' }}>{w.title}</p>
                 </div>
               )
