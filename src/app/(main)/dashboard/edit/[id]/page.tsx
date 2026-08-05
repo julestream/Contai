@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { deleteArtwork } from './deleteArtwork'
 import { useLang } from '@/i18n/LanguageProvider'
+import { useCurrency, Currency } from '@/currency/CurrencyProvider'
 
 const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Gouache', 'Ink', 'Pastel', 'Charcoal', 'Pencil', 'Mixed Media', 'Digital', 'Photography', 'Other']
 
@@ -14,9 +15,18 @@ const CITIES: Record<string, string[]> = {
   Romania: ['Bucharest (București)', 'Cluj-Napoca', 'Timișoara', 'Iași', 'Constanța', 'Craiova', 'Brașov', 'Galați', 'Oradea', 'Sibiu', 'Târgu Mureș', 'Other'],
 }
 
+// Minimum reservation fee, per currency. Keep in sync with the upload form.
+const MIN_FEE: Record<Currency, number> = { HUF: 500, EUR: 2, RON: 10 }
+const CURRENCIES: { value: Currency; label: string }[] = [
+  { value: 'HUF', label: 'Ft' },
+  { value: 'RON', label: 'lei' },
+  { value: 'EUR', label: '€' },
+]
+
 export default function EditArtworkPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { t } = useLang()
+  const { toHuf } = useCurrency()
   const c = (k: string) => t(`common.${k}`)
   const e = (k: string) => t(`editArtwork.${k}`)
   const label = (map: string, key: string) => {
@@ -37,6 +47,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
   const [width, setWidth] = useState('')
   const [height, setHeight] = useState('')
   const [price, setPrice] = useState('')
+  const [priceCurrency, setPriceCurrency] = useState<Currency>('HUF')
   const [country, setCountry] = useState('')
   const [city, setCity] = useState('')
   const [pickupArea, setPickupArea] = useState('')
@@ -46,6 +57,18 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
   const [hiding, setHiding] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  const priceNum = price ? parseFloat(price) : 0
+  const reservationFee = priceNum > 0
+    ? Math.max(MIN_FEE[priceCurrency], Math.round(priceNum * 0.08))
+    : 0
+
+  function money(n: number) {
+    const s = Math.round(n).toLocaleString()
+    if (priceCurrency === 'EUR') return `€${s}`
+    if (priceCurrency === 'RON') return `${s} lei`
+    return `${s} Ft`
+  }
 
   useEffect(() => {
     async function load() {
@@ -69,7 +92,9 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       setYear(art.year ? String(art.year) : '')
       setWidth(art.width_cm ? String(art.width_cm) : '')
       setHeight(art.height_cm ? String(art.height_cm) : '')
-      setPrice(art.price_huf ? String(art.price_huf) : '')
+      // Prefer the artist's own currency; fall back to legacy HUF rows.
+      setPrice(art.price_amount != null ? String(art.price_amount) : (art.price_huf ? String(art.price_huf) : ''))
+      setPriceCurrency((art.price_currency as Currency) || 'HUF')
       setCountry(art.country || '')
       setCity(art.city || '')
       setPickupArea(art.pickup_area || '')
@@ -84,12 +109,11 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
   async function handleSave() {
     setError('')
     if (!title.trim()) { setError(e('errTitle')); return }
-    if (!price || parseFloat(price) <= 0) { setError(e('errPrice')); return }
+    if (!priceNum || priceNum <= 0) { setError(e('errPrice')); return }
     setSaving(true)
     setSaved(false)
 
     const supabase = createClient()
-    const priceNum = parseFloat(price)
     const { error: updErr } = await supabase.from('artworks').update({
       title,
       artist_name: artistName.trim() || null,
@@ -98,8 +122,13 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       year: year ? parseInt(year) : null,
       width_cm: width ? parseFloat(width) : null,
       height_cm: height ? parseFloat(height) : null,
-      price_huf: priceNum,
-      reservation_fee_huf: Math.round(priceNum * 0.08),
+      // Authoritative: the artist's own currency
+      price_amount: priceNum,
+      price_currency: priceCurrency,
+      reservation_fee_amount: reservationFee,
+      // Approximate, for browse filtering and sorting only
+      price_huf: toHuf(priceNum, priceCurrency),
+      reservation_fee_huf: toHuf(reservationFee, priceCurrency),
       country: country || null,
       city: city || null,
       pickup_area: pickupArea,
@@ -136,6 +165,12 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
     padding: '12px', borderRadius: '8px', border: '1px solid #e0dcd3',
     fontSize: '16px', outline: 'none', width: '100%', fontFamily: 'var(--font-instrument), sans-serif',
   }
+  const chip = (active: boolean): React.CSSProperties => ({
+    padding: '8px 14px', borderRadius: '999px',
+    border: active ? '2px solid #0a0a0a' : '1px solid #e0dcd3',
+    background: active ? '#0a0a0a' : '#fff', color: active ? '#fff' : '#0a0a0a',
+    cursor: 'pointer', fontSize: '13px',
+  })
 
   if (loading) return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>{c('loading')}</div>
   if (denied) return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>{e('denied')} <Link href="/dashboard">{e('backToDashboard')}</Link></div>
@@ -167,15 +202,30 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
           <textarea value={description} onChange={ev => setDescription(ev.target.value.slice(0, 2000))} rows={4} style={{ ...inputStyle, resize: 'vertical' }} placeholder={e('descriptionPlaceholder')} />
           <p style={{ fontSize: '12px', color: '#999', marginTop: '4px', textAlign: 'right' }}>{description.length}/2000</p>
         </div>
+
         <div>
-          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('price')}</label>
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '8px' }}>{c('currency')}</label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {CURRENCIES.map(o => (
+              <button key={o.value} onClick={() => setPriceCurrency(o.value)}
+                style={{ ...chip(priceCurrency === o.value), flex: 1 }}>
+                {o.label}
+              </button>
+            ))}
+          </div>
+          <p style={{ fontSize: '12px', color: '#999', marginTop: '6px' }}>{c('currencyHelp')}</p>
+        </div>
+
+        <div>
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{c('priceLabel')}</label>
           <input value={price} onChange={ev => setPrice(ev.target.value)} style={inputStyle} inputMode="numeric" />
-          {price && parseFloat(price) > 0 && (
+          {priceNum > 0 && (
             <p style={{ fontSize: '12px', color: '#999', marginTop: '6px' }}>
-              {e('reservationFeeLine')} {Math.round(parseFloat(price) * 0.08).toLocaleString()} HUF
+              {e('reservationFeeLine')} {money(reservationFee)}
             </p>
           )}
         </div>
+
         <div>
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('medium')}</label>
           <select value={medium} onChange={ev => setMedium(ev.target.value)} style={inputStyle}>
