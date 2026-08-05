@@ -1,7 +1,7 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
-import { Lang, DEFAULT_LANG, getDict, LANGUAGES } from './dictionaries'
+import { createContext, useContext, useState } from 'react'
+import { Lang, DEFAULT_LANG, getDict } from './dictionaries'
 
 type LangContext = {
   lang: Lang
@@ -11,21 +11,14 @@ type LangContext = {
 
 const Ctx = createContext<LangContext | null>(null)
 
-function readCookie(name: string): string | null {
-  if (typeof document === 'undefined') return null
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
-  return match ? decodeURIComponent(match[2]) : null
-}
-
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(DEFAULT_LANG)
-
-  useEffect(() => {
-    const saved = readCookie('contai_lang') as Lang | null
-    if (saved && LANGUAGES.some(l => l.code === saved)) {
-      setLangState(saved)
-    }
-  }, [])
+export function LanguageProvider({
+  children,
+  initialLang,
+}: {
+  children: React.ReactNode
+  initialLang?: Lang
+}) {
+  const [lang, setLangState] = useState<Lang>(initialLang || DEFAULT_LANG)
 
   function setLang(l: Lang) {
     setLangState(l)

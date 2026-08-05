@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Fraunces, Instrument_Sans } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { LanguageProvider } from "@/i18n/LanguageProvider";
 import { CurrencyProvider } from "@/currency/CurrencyProvider";
+import { DEFAULT_LANG, Lang } from "@/i18n/dictionaries";
+import { Currency } from "@/currency/CurrencyProvider";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -29,11 +32,22 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const jar = cookies();
+  const langCookie = jar.get("contai_lang")?.value;
+  const lang: Lang = (langCookie === "hu" || langCookie === "en" || langCookie === "ro")
+    ? langCookie
+    : DEFAULT_LANG;
+
+  const curCookie = jar.get("contai_currency")?.value;
+  const currency: Currency = (curCookie === "HUF" || curCookie === "EUR" || curCookie === "RON")
+    ? curCookie
+    : "HUF";
+
   return (
-    <html lang="hu" className={`${fraunces.variable} ${instrumentSans.variable}`}>
+    <html lang={lang} className={`${fraunces.variable} ${instrumentSans.variable}`}>
       <body>
-        <LanguageProvider>
-          <CurrencyProvider>{children}</CurrencyProvider>
+        <LanguageProvider initialLang={lang}>
+          <CurrencyProvider initialCurrency={currency}>{children}</CurrencyProvider>
         </LanguageProvider>
       </body>
     </html>

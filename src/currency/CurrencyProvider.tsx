@@ -15,20 +15,15 @@ type Ctx = {
 
 const CurrencyContext = createContext<Ctx | null>(null)
 
-function readCookie(name: string): string | null {
-  if (typeof document === 'undefined') return null
-  const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'))
-  return m ? decodeURIComponent(m[1]) : null
-}
-
-export function CurrencyProvider({ children }: { children: React.ReactNode }) {
-  const [currency, setCurrencyState] = useState<Currency>('HUF')
+export function CurrencyProvider({
+  children,
+  initialCurrency,
+}: {
+  children: React.ReactNode
+  initialCurrency?: Currency
+}) {
+  const [currency, setCurrencyState] = useState<Currency>(initialCurrency || 'HUF')
   const [rates, setRates] = useState<Record<Currency, number>>(FALLBACK)
-
-  useEffect(() => {
-    const saved = readCookie('contai_currency') as Currency | null
-    if (saved === 'HUF' || saved === 'EUR' || saved === 'RON') setCurrencyState(saved)
-  }, [])
 
   useEffect(() => {
     try {
