@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
+import Price from '@/components/ui/Price'
 import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
 
 export const dynamic = 'force-dynamic'
@@ -59,6 +60,9 @@ export default async function SalesPage() {
           const artwork = (sale as any).artworks
           const img = (artwork?.images as string[])?.[0]
           const status = sale.status as string
+          const currency = sale.currency || 'HUF'
+          const fee = sale.reservation_fee ?? sale.reservation_fee_huf
+          const agreed = sale.agreed_price ?? sale.agreed_price_huf
           return (
             <Link key={sale.id} href={`/handoff/${sale.id}`} style={{ textDecoration: 'none' }}>
               <div style={{ display: 'flex', gap: '12px', padding: '1rem 0', borderBottom: '1px solid #eee', alignItems: 'center' }}>
@@ -70,11 +74,11 @@ export default async function SalesPage() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: '15px', color: '#0a0a0a', fontWeight: 500 }}>{artwork?.title || mp.orders.artworkFallback}</p>
                   <p style={{ fontSize: '13px', color: '#666', marginTop: '2px' }}>
-                    {mp.orders.reservationFee} {sale.reservation_fee_huf?.toLocaleString()} Ft
+                    {mp.orders.reservationFee} <Price amount={fee} currency={currency} native />
                   </p>
-                  {sale.agreed_price_huf ? (
+                  {agreed ? (
                     <p style={{ fontSize: '13px', color: '#666' }}>
-                      {mp.orders.agreedPrice} {sale.agreed_price_huf?.toLocaleString()} Ft
+                      {mp.orders.agreedPrice} <Price amount={agreed} currency={currency} native />
                     </p>
                   ) : null}
                   <span style={{ fontSize: '12px', color: STATUS_COLOR[status] || '#666', fontWeight: 600 }}>
