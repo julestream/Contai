@@ -6,6 +6,7 @@ import { Suspense } from 'react'
 import FilterPanel from '@/components/ui/FilterPanel'
 import SaveSearchButton from '@/components/ui/SaveSearchButton'
 import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
+import { pageWrap, innerWrap, headerWrap, headingStyle, countStyle, GRID, emptyStyle } from '@/lib/browseStyle'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,31 +77,31 @@ export default async function BrowseResultsPage({
     : (searchParams.q ? `"${searchParams.q}"` : r.allWorks)
 
   return (
-    <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
-      <div style={{ padding: '1.25rem 1rem 0.5rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <Link href="/browse" style={{ textDecoration: 'none', color: '#0a0a0a', fontSize: '20px' }}>←</Link>
-        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '22px' }}>{heading}</h1>
+    <div style={pageWrap}>
+      <div style={innerWrap}>
+        <div style={headerWrap}>
+          <Link href="/browse" style={{ textDecoration: 'none', color: '#1a1a1a', fontSize: '20px' }}>←</Link>
+          <h1 style={headingStyle}>{heading}</h1>
+        </div>
+
+        <Suspense>
+          <FilterPanel />
+        </Suspense>
+
+        <Suspense>
+          <SaveSearchButton />
+        </Suspense>
+
+        <div style={countStyle}>
+          {artworks?.length || 0} {r.works}
+        </div>
+
+        <div style={GRID}>
+          {artworks?.map(x => <ArtworkCard key={x.id} artwork={x} />)}
+        </div>
+
+        {artworks?.length === 0 && <div style={emptyStyle}>{r.noMatch}</div>}
       </div>
-
-      <Suspense>
-        <FilterPanel />
-      </Suspense>
-
-      <Suspense>
-        <SaveSearchButton />
-      </Suspense>
-
-      <div style={{ padding: '4px 1rem 12px', color: '#999', fontSize: '13px' }}>
-        {artworks?.length || 0} {r.works}
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', padding: '0 1rem' }}>
-        {artworks?.map(x => <ArtworkCard key={x.id} artwork={x} />)}
-      </div>
-
-      {artworks?.length === 0 && (
-        <div style={{ padding: '3rem', textAlign: 'center', color: '#999' }}>{r.noMatch}</div>
-      )}
     </div>
   )
 }
