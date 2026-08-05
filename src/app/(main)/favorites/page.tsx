@@ -65,7 +65,11 @@ export default async function FavoritesPage() {
                   {artwork.profiles?.full_name}
                 </p>
                 <p style={{ fontFamily: 'Georgia, serif', fontSize: '14px', marginTop: '2px' }}>{artwork.title}</p>
-                <Price huf={artwork.price_huf} style={{ display: 'block', fontSize: '13px', color: '#444', marginTop: '4px' }} />
+                <Price
+                  amount={artwork.price_amount ?? artwork.price_huf}
+                  currency={artwork.price_currency || 'HUF'}
+                  style={{ display: 'block', fontSize: '13px', color: '#444', marginTop: '4px' }}
+                />
               </div>
             </Link>
           )

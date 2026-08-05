@@ -12,6 +12,7 @@ import Price from '@/components/ui/Price'
 import ArtworkGallery from '@/components/ui/ArtworkGallery'
 import HighValueNotice from '@/components/ui/HighValueNotice'
 
+// Compared against the normalised HUF figure so the threshold works across currencies.
 const HIGH_VALUE_HUF = 600000
 
 export default async function ArtworkPage({ params }: { params: { id: string } }) {
@@ -37,6 +38,11 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
   const isOwner = user?.id === artwork.artist_id
   const hasCertificate = artwork.certificate_status === 'approved'
   const isHighValue = (artwork.price_huf || 0) >= HIGH_VALUE_HUF
+
+  // The artist's own currency is authoritative; fall back to legacy HUF rows.
+  const priceCurrency = artwork.price_currency || 'HUF'
+  const priceAmount = artwork.price_amount ?? artwork.price_huf
+  const feeAmount = artwork.reservation_fee_amount ?? artwork.reservation_fee_huf
 
   const city = artwork.city || artist?.city || null
   const country = artwork.country || artist?.country || null
@@ -68,7 +74,11 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
         </div>
 
         <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', marginTop: '4px' }}>{artwork.title}</h1>
-        <Price huf={artwork.price_huf} style={{ display: 'block', fontFamily: 'var(--font-instrument), sans-serif', fontSize: '22px', marginTop: '8px' }} />
+        <Price
+          amount={priceAmount}
+          currency={priceCurrency}
+          style={{ display: 'block', fontFamily: 'var(--font-instrument), sans-serif', fontSize: '22px', marginTop: '8px' }}
+        />
 
         {/* Location line — prominent for pickup-only */}
         {(city || country) && (
@@ -122,7 +132,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
               marginTop: '1.5rem', padding: '16px', backgroundColor: '#0a0a0a', color: 'white',
               borderRadius: '999px', textAlign: 'center', fontSize: '16px', fontWeight: 500,
             }}>
-              {a.reserve} · <Price huf={artwork.reservation_fee_huf} />
+              {a.reserve} · <Price amount={feeAmount} currency={priceCurrency} />
             </div>
           </Link>
         )}

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import Badge from '@/components/ui/Badge'
+import Price from '@/components/ui/Price'
 import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
 
 export const dynamic = 'force-dynamic'
@@ -91,7 +92,11 @@ export default async function ArtistProfilePage({ params }: { params: { id: stri
                     <div style={{ width: '100%', aspectRatio: '1', backgroundColor: '#f5f3ef', borderRadius: '4px', marginBottom: '8px' }} />
                   )}
                   <p style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '14px' }}>{w.title}</p>
-                  <p style={{ fontSize: '13px', color: '#444', marginTop: '4px' }}>{w.price_huf?.toLocaleString()} HUF</p>
+                  <Price
+                    amount={w.price_amount ?? w.price_huf}
+                    currency={w.price_currency || 'HUF'}
+                    style={{ display: 'block', fontSize: '13px', color: '#444', marginTop: '4px' }}
+                  />
                 </div>
               </Link>
             )

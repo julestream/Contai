@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import ConnectButton from './ConnectButton'
+import Price from '@/components/ui/Price'
 import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
 
 export const dynamic = 'force-dynamic'
@@ -125,7 +126,11 @@ export default async function DashboardPage() {
                   )}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontWeight: 600, fontSize: '14px' }}>{artwork.title}</p>
-                    <p style={{ fontSize: '13px', color: '#666', marginTop: '2px' }}>{artwork.price_huf?.toLocaleString()} HUF</p>
+                    <Price
+                      amount={artwork.price_amount ?? artwork.price_huf}
+                      currency={artwork.price_currency || 'HUF'}
+                      style={{ display: 'block', fontSize: '13px', color: '#666', marginTop: '2px' }}
+                    />
                   </div>
                   <span style={{
                     padding: '4px 10px', borderRadius: '999px', fontSize: '11px', fontWeight: 600,
