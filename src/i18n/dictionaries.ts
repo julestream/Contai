@@ -262,6 +262,9 @@ export const dictionaries: Record<Lang, Dict> = {
       noArtworks: 'Még nincs feltöltött műved. Töltsd fel az elsőt!',
       payouts: 'Kifizetés bankszámlára',
       payoutsSoon: 'Hamarosan — helyi, személyes átadásnál nem szükséges.',
+      bankConnected: 'Bankszámla csatlakoztatva',
+      connecting: 'Csatlakozás…',
+      connectBank: 'Bankszámla csatlakoztatása (hamarosan)',
       statusLabels: {
         live: 'Élő',
         under_review: 'Ellenőrzés alatt',
@@ -561,6 +564,9 @@ export const dictionaries: Record<Lang, Dict> = {
       noArtworks: 'No artworks yet. List your first work!',
       payouts: 'Bank account payouts',
       payoutsSoon: 'Coming soon — not required for local handoff sales.',
+      bankConnected: 'Bank account connected',
+      connecting: 'Connecting…',
+      connectBank: 'Connect bank account (coming soon)',
       statusLabels: {
         live: 'Live',
         under_review: 'Under review',
@@ -860,6 +866,9 @@ export const dictionaries: Record<Lang, Dict> = {
       noArtworks: 'Nu ai încă lucrări. Adaugă prima ta lucrare!',
       payouts: 'Plăți în contul bancar',
       payoutsSoon: 'În curând — nu este necesar pentru vânzările cu predare locală.',
+      bankConnected: 'Cont bancar conectat',
+      connecting: 'Se conectează…',
+      connectBank: 'Conectează contul bancar (în curând)',
       statusLabels: {
         live: 'Activ',
         under_review: 'În verificare',
