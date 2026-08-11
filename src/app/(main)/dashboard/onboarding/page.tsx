@@ -16,6 +16,11 @@ export default function OnboardingPage() {
     const m = t(map) as any
     return (m && m[key]) || key
   }
+
+  // Intro gate — artists confirm the standard before they begin.
+  const [started, setStarted] = useState(false)
+  const [accepted, setAccepted] = useState(false)
+
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -52,6 +57,7 @@ export default function OnboardingPage() {
         city,
         pickup_area: pickupArea,
         mediums,
+        artist_terms_accepted_at: new Date().toISOString(),
       })
       .eq('id', session.user.id)
 
@@ -66,6 +72,64 @@ export default function OnboardingPage() {
 
   const steps = [o('stepIdentity'), o('stepAbout'), o('stepLocation'), o('stepPractice'), o('stepReview')]
 
+  // ── Intro screen ──────────────────────────────────────────────
+  if (!started) {
+    return (
+      <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto', paddingBottom: '4rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <Logo />
+        </div>
+
+        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', lineHeight: 1.25, marginBottom: '1.25rem' }}>
+          {o('introTitle')}
+        </h1>
+
+        <p style={{ fontSize: '15px', lineHeight: 1.65, color: '#333', marginBottom: '1rem' }}>
+          {o('introLead')}
+        </p>
+
+        <p style={{ fontSize: '15px', lineHeight: 1.65, color: '#333', marginBottom: '1.25rem' }}>
+          {o('introStandard')}
+        </p>
+
+        <div style={{ padding: '14px 16px', background: '#f5f3ef', borderRadius: '12px', marginBottom: '1.75rem' }}>
+          <p style={{ fontSize: '13.5px', lineHeight: 1.6, color: '#5a5246', margin: 0 }}>
+            {o('introReview')}
+          </p>
+        </div>
+
+        <label style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', cursor: 'pointer', marginBottom: '1.75rem' }}>
+          <input
+            type="checkbox"
+            checked={accepted}
+            onChange={e => setAccepted(e.target.checked)}
+            style={{ marginTop: '3px', width: '18px', height: '18px', flexShrink: 0, cursor: 'pointer' }}
+          />
+          <span style={{ fontSize: '14px', lineHeight: 1.55, color: '#0a0a0a' }}>
+            {o('confirmLabel')}
+          </span>
+        </label>
+
+        <button
+          onClick={() => setStarted(true)}
+          disabled={!accepted}
+          style={{
+            width: '100%', padding: '15px', borderRadius: '999px', border: 'none',
+            background: accepted ? '#0a0a0a' : '#d8d4cc',
+            color: accepted ? '#f5f3ef' : '#fff',
+            fontSize: '16px', fontWeight: 600,
+            cursor: accepted ? 'pointer' : 'not-allowed',
+            fontFamily: 'var(--font-instrument), sans-serif',
+            transition: 'background 0.2s',
+          }}
+        >
+          {o('begin')}
+        </button>
+      </div>
+    )
+  }
+
+  // ── Onboarding steps ──────────────────────────────────────────
   return (
     <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
