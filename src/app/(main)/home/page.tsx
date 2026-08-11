@@ -127,8 +127,12 @@ export default async function HomePage() {
       .filter((a: any) => a && a.status === 'live')
   }
 
+  // Signed-in artists go straight to onboarding; everyone else signs up first.
+  const artistHref = user ? '/dashboard/onboarding' : '/signup'
+
   // Carousel cards, warm -> cold (text pulled from the dictionary)
   const news = [
+    { id: 0, eyebrow: h.artistsEyebrow, title: h.artistsTitle, emphasis: h.artistsEmphasis, tag: 'Artists', href: artistHref },
     { id: 1, eyebrow: h.aboutEyebrow, title: h.aboutTitle, emphasis: h.aboutEmphasis, tag: 'About', href: '/about' },
     { id: 2, eyebrow: h.storiesEyebrow, title: h.storiesTitle, emphasis: h.storiesEmphasis, tag: 'Stories', href: '/artists-feature' },
     { id: 3, eyebrow: h.quizEyebrow, title: h.quizTitle, emphasis: h.quizEmphasis, tag: 'Quiz', href: '/quiz' },
@@ -139,6 +143,7 @@ export default async function HomePage() {
 
   function cardBackground(tag: string): string {
     switch (tag) {
+      case 'Artists': return 'linear-gradient(150deg,#7a5c1e,#a08036)'
       case 'About': return 'linear-gradient(150deg,#5e2a38,#7c3a4a)'
       case 'Stories': return 'linear-gradient(150deg,#a8552c,#c06f3a)'
       case 'Quiz': return 'linear-gradient(150deg,#4e5a2f,#65733f)'

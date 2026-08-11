@@ -63,6 +63,9 @@ export const dictionaries: Record<Lang, Dict> = {
       guaranteeEyebrow: 'Garancia',
       guaranteeTitle: 'A Contai',
       guaranteeEmphasis: 'Garancia',
+      artistsEyebrow: 'Művészeknek',
+      artistsTitle: 'Mutasd meg a',
+      artistsEmphasis: 'műveidet',
     },
     me: {
       title: 'Fiókom',
@@ -699,6 +702,9 @@ export const dictionaries: Record<Lang, Dict> = {
       guaranteeEyebrow: 'Guarantee',
       guaranteeTitle: 'The Contai',
       guaranteeEmphasis: 'Guarantee',
+      artistsEyebrow: 'For artists',
+      artistsTitle: 'Show your',
+      artistsEmphasis: 'work',
     },
     me: {
       title: 'Me',
@@ -1335,6 +1341,9 @@ export const dictionaries: Record<Lang, Dict> = {
       guaranteeEyebrow: 'Garanție',
       guaranteeTitle: 'Garanția',
       guaranteeEmphasis: 'Contai',
+      artistsEyebrow: 'Pentru artiști',
+      artistsTitle: 'Arată-ți',
+      artistsEmphasis: 'lucrările',
     },
     me: {
       title: 'Contul meu',
