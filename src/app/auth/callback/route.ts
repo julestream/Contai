@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -8,29 +8,53 @@ export async function GET(request: NextRequest) {
   const roleParam = searchParams.get('role') // 'artist' or 'buyer', only present on sign-up
 
   // Behind Vercel's proxy, `origin` can resolve to an internal hostname.
-  // Redirecting there would set the session cookie on a host the browser
-  // never visits, so prefer the configured public URL.
   const forwardedHost = request.headers.get('x-forwarded-host')
   const forwardedProto = request.headers.get('x-forwarded-proto') ?? 'https'
   const base =
     process.env.NEXT_PUBLIC_APP_URL ||
     (forwardedHost ? `${forwardedProto}://${forwardedHost}` : origin)
 
-  if (!code) {
-    return NextResponse.redirect(`${base}/signin?error=nocode`)
+  function go(path: string) {
+    const response = NextResponse.redirect(`${base}${path}`)
+    // Attach the session cookies to the response we are actually sending.
+    // Writing them through next/headers does not survive a hand-built redirect.
+    pendingCookies.forEach(({ name, value, options }) =>
+      response.cookies.set(name, value, options)
+    )
+    return response
   }
 
-  const supabase = createClient()
+  const pendingCookies: { name: string; value: string; options: any }[] = []
+
+  if (!code) {
+    return go('/signin?error=nocode')
+  }
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          pendingCookies.push(...cookiesToSet)
+        },
+      },
+    }
+  )
+
   const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
   if (exchangeError) {
     console.error('[auth/callback] exchange failed:', exchangeError.message)
-    return NextResponse.redirect(`${base}/signin?error=exchange`)
+    return go('/signin?error=exchange')
   }
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     console.error('[auth/callback] no user after exchange')
-    return NextResponse.redirect(`${base}/signin?error=nouser`)
+    return go('/signin?error=nouser')
   }
 
   const { data: profile } = await supabase
@@ -48,20 +72,13 @@ export async function GET(request: NextRequest) {
     })
     if (insertError) {
       console.error('[auth/callback] profile insert failed:', insertError.message)
-      return NextResponse.redirect(`${base}/signin?error=profile`)
+      return go('/signin?error=profile')
     }
-    if (newRole === 'artist') {
-      return NextResponse.redirect(`${base}/dashboard/onboarding`)
-    }
-    return NextResponse.redirect(`${base}/welcome`)
+    return go(newRole === 'artist' ? '/dashboard/onboarding' : '/welcome')
   }
 
   // Existing user: route by their stored role
-  if (profile.role === 'admin') {
-    return NextResponse.redirect(`${base}/admin`)
-  }
-  if (profile.role === 'artist') {
-    return NextResponse.redirect(`${base}/dashboard`)
-  }
-  return NextResponse.redirect(`${base}/home`)
+  if (profile.role === 'admin') return go('/admin')
+  if (profile.role === 'artist') return go('/dashboard')
+  return go('/home')
 }
