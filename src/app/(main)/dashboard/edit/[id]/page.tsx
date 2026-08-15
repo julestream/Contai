@@ -51,6 +51,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
   const [country, setCountry] = useState('')
   const [city, setCity] = useState('')
   const [pickupArea, setPickupArea] = useState('')
+  const [pickupAddress, setPickupAddress] = useState('')
   const [signed, setSigned] = useState(false)
   const [status, setStatus] = useState('')
 
@@ -92,7 +93,6 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       setYear(art.year ? String(art.year) : '')
       setWidth(art.width_cm ? String(art.width_cm) : '')
       setHeight(art.height_cm ? String(art.height_cm) : '')
-      // Prefer the artist's own currency; fall back to legacy HUF rows.
       setPrice(art.price_amount != null ? String(art.price_amount) : (art.price_huf ? String(art.price_huf) : ''))
       setPriceCurrency((art.price_currency as Currency) || 'HUF')
       setCountry(art.country || '')
@@ -100,6 +100,15 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       setPickupArea(art.pickup_area || '')
       setSigned(!!art.signed)
       setStatus(art.status || '')
+
+      // The exact address lives in its own protected table.
+      const { data: addr } = await supabase
+        .from('artwork_addresses')
+        .select('pickup_address')
+        .eq('artwork_id', params.id)
+        .maybeSingle()
+      setPickupAddress(addr?.pickup_address || '')
+
       setLoading(false)
     }
     load()
@@ -122,11 +131,9 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       year: year ? parseInt(year) : null,
       width_cm: width ? parseFloat(width) : null,
       height_cm: height ? parseFloat(height) : null,
-      // Authoritative: the artist's own currency
       price_amount: priceNum,
       price_currency: priceCurrency,
       reservation_fee_amount: reservationFee,
-      // Approximate, for browse filtering and sorting only
       price_huf: toHuf(priceNum, priceCurrency),
       reservation_fee_huf: toHuf(reservationFee, priceCurrency),
       country: country || null,
@@ -136,6 +143,22 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
     }).eq('id', params.id)
 
     if (updErr) { setError(updErr.message); setSaving(false); return }
+
+    // Address is stored separately so it never leaks from the public artworks table.
+    const trimmedAddress = pickupAddress.trim()
+    if (trimmedAddress) {
+      const { error: addrErr } = await supabase
+        .from('artwork_addresses')
+        .upsert(
+          { artwork_id: params.id, pickup_address: trimmedAddress, updated_at: new Date().toISOString() },
+          { onConflict: 'artwork_id' }
+        )
+      if (addrErr) { setError(addrErr.message); setSaving(false); return }
+    } else {
+      // Cleared it deliberately — remove the row rather than store an empty one.
+      await supabase.from('artwork_addresses').delete().eq('artwork_id', params.id)
+    }
+
     setSaving(false)
     setSaved(true)
     router.push('/dashboard')
@@ -266,6 +289,11 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
         <div>
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('pickupArea')}</label>
           <input value={pickupArea} onChange={ev => setPickupArea(ev.target.value)} style={inputStyle} />
+        </div>
+        <div>
+          <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('pickupAddress')}</label>
+          <input value={pickupAddress} onChange={ev => setPickupAddress(ev.target.value)} style={inputStyle} />
+          <p style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>{e('pickupAddressHelp')}</p>
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
           <input type="checkbox" checked={signed} onChange={ev => setSigned(ev.target.checked)} />
