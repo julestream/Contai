@@ -5,10 +5,12 @@ import Logo from '@/components/ui/Logo'
 import Button from '@/components/ui/Button'
 import Price from '@/components/ui/Price'
 import { useLang } from '@/i18n/LanguageProvider'
+import { useCurrency } from '@/currency/CurrencyProvider'
 import { reservationFee, normaliseCurrency } from '@/lib/fees'
 
 export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, agreedOffer: any }) {
   const { t } = useLang()
+  const { currency: viewerCurrency } = useCurrency()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -23,6 +25,7 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
     ? reservationFee(effectivePrice, currency)
     : (artwork.reservation_fee_amount ?? reservationFee(effectivePrice, currency))
   const remaining = effectivePrice - fee
+  const showConverted = viewerCurrency !== currency
 
   const offersDelivery = artwork.pickup_method === 'local_delivery'
   const [deliveryChoice, setDeliveryChoice] = useState<'pickup' | 'delivery'>('pickup')
@@ -65,7 +68,7 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
 
           {agreedOffer && (
             <div style={{ padding: '10px 14px', backgroundColor: '#eef2ee', borderRadius: '10px', marginBottom: '1.5rem', fontSize: '14px', color: '#3a5a44' }}>
-              {t('reserve.agreedPrice')} <Price amount={effectivePrice} currency={currency} />
+              {t('reserve.agreedPrice')} <Price amount={effectivePrice} currency={currency} native />
             </div>
           )}
 
@@ -82,16 +85,21 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
           <div style={{ padding: '1rem', backgroundColor: '#f5f3ef', borderRadius: '12px', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span style={{ color: '#666', fontSize: '14px' }}>{t('reserve.artworkPrice')}</span>
-              <Price amount={effectivePrice} currency={currency} style={{ fontSize: '14px' }} />
+              <Price amount={effectivePrice} currency={currency} native style={{ fontSize: '14px' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
               <span style={{ color: '#666', fontSize: '14px' }}>{t('reserve.reservationFee')}</span>
-              <Price amount={fee} currency={currency} style={{ fontSize: '14px', fontWeight: 600 }} />
+              <Price amount={fee} currency={currency} native style={{ fontSize: '14px', fontWeight: 600 }} />
             </div>
             <div style={{ borderTop: '1px solid #e8e8e8', paddingTop: '8px', display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: '#666', fontSize: '14px' }}>{t('reserve.remainingInPerson')}</span>
-              <Price amount={remaining} currency={currency} style={{ fontSize: '14px' }} />
+              <Price amount={remaining} currency={currency} native style={{ fontSize: '14px' }} />
             </div>
+            {showConverted && (
+              <p style={{ fontSize: '12px', color: '#999', marginTop: '10px', textAlign: 'right' }}>
+                <Price amount={effectivePrice} currency={currency} />
+              </p>
+            )}
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
@@ -145,7 +153,10 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
             )}
             <div style={{ minWidth: 0 }}>
               <p style={{ fontWeight: 600 }}>{artwork.title}</p>
-              <Price amount={fee} currency={currency} style={{ display: 'block', fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', marginTop: '4px' }} />
+              <Price amount={fee} currency={currency} native style={{ display: 'block', fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '18px', marginTop: '4px' }} />
+              {showConverted && (
+                <Price amount={fee} currency={currency} style={{ display: 'block', fontSize: '12px', color: '#999', marginTop: '2px' }} />
+              )}
               <p style={{ fontSize: '12px', color: '#999', marginTop: '2px' }}>{deliveryChoice === 'delivery' ? t('reserve.localDelivery') : t('reserve.inPersonPickup')}</p>
             </div>
           </div>
@@ -157,7 +168,7 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
           {error && <p style={{ color: '#b94040', fontSize: '14px', marginBottom: '1rem' }}>{error}</p>}
 
           <Button full onClick={handlePay} loading={loading}>
-            {t('reserve.pay')} <Price amount={fee} currency={currency} />
+            {t('reserve.pay')} <Price amount={fee} currency={currency} native />
           </Button>
           <Button full variant="ghost" onClick={() => setStep(1)}>{t('reserve.back')}</Button>
         </>

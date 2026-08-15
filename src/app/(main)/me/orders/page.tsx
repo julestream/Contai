@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
+import Price from '@/components/ui/Price'
 import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
 
 export const dynamic = 'force-dynamic'
@@ -47,6 +48,9 @@ export default async function OrdersPage() {
           const artwork = (r as any).artworks
           const img = (artwork?.images as string[])?.[0]
           const status = r.status as string
+          const currency = r.currency || 'HUF'
+          const fee = r.reservation_fee ?? r.reservation_fee_huf
+          const agreed = r.agreed_price ?? r.agreed_price_huf
           return (
             <Link key={r.id} href={`/handoff/${r.id}`} style={{ textDecoration: 'none' }}>
               <div style={{ display: 'flex', gap: '12px', padding: '1rem 0', borderBottom: '1px solid #eee', alignItems: 'center' }}>
@@ -58,11 +62,11 @@ export default async function OrdersPage() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: '15px', color: '#0a0a0a', fontWeight: 500 }}>{artwork?.title || o.artworkFallback}</p>
                   <p style={{ fontSize: '13px', color: '#666', marginTop: '2px' }}>
-                    {o.reservationFee} {r.reservation_fee_huf?.toLocaleString()} Ft
+                    {o.reservationFee} <Price amount={fee} currency={currency} native />
                   </p>
-                  {r.agreed_price_huf ? (
+                  {agreed ? (
                     <p style={{ fontSize: '13px', color: '#666' }}>
-                      {o.agreedPrice} {r.agreed_price_huf?.toLocaleString()} Ft
+                      {o.agreedPrice} <Price amount={agreed} currency={currency} native />
                     </p>
                   ) : null}
                   <span style={{ fontSize: '12px', color: STATUS_COLOR[status] || '#666', fontWeight: 600 }}>

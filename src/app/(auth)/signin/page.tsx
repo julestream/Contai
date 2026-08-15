@@ -2,11 +2,12 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Logo from '@/components/ui/Logo'
-import Button from '@/components/ui/Button'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useLang } from '@/i18n/LanguageProvider'
 
 export default function SignInPage() {
+  const { t } = useLang()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -25,7 +26,7 @@ export default function SignInPage() {
     })
 
     if (signInError) {
-      setError('Invalid email or password')
+      setError(t('auth.invalidLogin'))
       setLoading(false)
       return
     }
@@ -59,7 +60,7 @@ export default function SignInPage() {
       },
     })
     if (googleError) {
-      setError('Could not sign in with Google. Please try again.')
+      setError(t('auth.googleSignInError'))
       setGoogleLoading(false)
     }
   }
@@ -88,22 +89,22 @@ export default function SignInPage() {
         <Logo size={0.9} />
       </div>
 
-      <h1 style={{ fontSize: '26px', marginBottom: '4px', textAlign: 'center' }}>Welcome back</h1>
+      <h1 style={{ fontSize: '26px', marginBottom: '4px', textAlign: 'center' }}>{t('auth.welcomeBack')}</h1>
       <p style={{ textAlign: 'center', color: '#8a857c', fontSize: '14px', marginBottom: '2rem' }}>
-        Sign in to your account
+        {t('auth.signInSubtitle')}
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <input
           type="email"
-          placeholder="Email"
+          placeholder={t('auth.email')}
           value={email}
           onChange={e => setEmail(e.target.value)}
           style={inputStyle}
         />
         <input
           type="password"
-          placeholder="Password"
+          placeholder={t('auth.password')}
           value={password}
           onChange={e => setPassword(e.target.value)}
           style={inputStyle}
@@ -126,14 +127,14 @@ export default function SignInPage() {
             opacity: loading ? 0.6 : 1,
           }}
         >
-          {loading ? 'Signing in…' : 'Sign in'}
+          {loading ? t('auth.signingIn') : t('auth.signIn')}
         </button>
       </div>
 
       {/* Divider */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '1.5rem 0' }}>
         <div style={{ flex: 1, height: '1px', background: '#e0dcd3' }} />
-        <span style={{ color: '#8a857c', fontSize: '13px' }}>or</span>
+        <span style={{ color: '#8a857c', fontSize: '13px' }}>{t('auth.or')}</span>
         <div style={{ flex: 1, height: '1px', background: '#e0dcd3' }} />
       </div>
 
@@ -164,14 +165,14 @@ export default function SignInPage() {
           <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
           <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
         </svg>
-        {googleLoading ? 'Connecting…' : 'Continue with Google'}
+        {googleLoading ? t('auth.connecting') : t('auth.continueGoogle')}
       </button>
 
       <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '14px' }}>
-        <Link href="/forgot-password" style={{ color: '#8a857c', textDecoration: 'none' }}>Forgot password?</Link>
+        <Link href="/forgot-password" style={{ color: '#8a857c', textDecoration: 'none' }}>{t('auth.forgotPassword')}</Link>
       </p>
       <p style={{ textAlign: 'center', marginTop: '0.75rem', color: '#8a857c', fontSize: '14px' }}>
-        No account? <Link href="/signup" style={{ color: '#0a0a0a', fontWeight: 600, textDecoration: 'none' }}>Sign up</Link>
+        {t('auth.noAccount')} <Link href="/signup" style={{ color: '#0a0a0a', fontWeight: 600, textDecoration: 'none' }}>{t('auth.signUp')}</Link>
       </p>
     </div>
   )

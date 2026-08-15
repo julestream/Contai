@@ -29,15 +29,24 @@ export async function GET(
     return NextResponse.json({ error: 'Payment required' }, { status: 403 })
   }
 
+  // The service-role client bypasses RLS — this route is the only way
+  // a buyer ever sees the exact address, and only after paying.
   const adminSupabase = createAdminClient()
+
   const { data: artwork } = await adminSupabase
     .from('artworks')
-    .select('pickup_address, pickup_method')
+    .select('pickup_method')
     .eq('id', reservation.artwork_id)
     .single()
 
+  const { data: addressRow } = await adminSupabase
+    .from('artwork_addresses')
+    .select('pickup_address')
+    .eq('artwork_id', reservation.artwork_id)
+    .single()
+
   return NextResponse.json({
-    address: artwork?.pickup_address,
-    method: artwork?.pickup_method,
+    address: addressRow?.pickup_address ?? null,
+    method: artwork?.pickup_method ?? null,
   })
 }

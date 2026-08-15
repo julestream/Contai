@@ -186,7 +186,10 @@ export default function UploadPage() {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { setError(u('errNotSignedIn')); setLoading(false); return }
     const colourValue = multicolour ? ['Multicolour', ...colours] : colours
-    const { error: insertError } = await supabase.from('artworks').insert({
+
+    // The exact address is deliberately NOT stored on `artworks` —
+    // that table is publicly readable, and row-level security can't hide a column.
+    const { data: created, error: insertError } = await supabase.from('artworks').insert({
       artist_id: session.user.id,
       artist_name: artistName.trim() || null,
       title,
@@ -210,7 +213,6 @@ export default function UploadPage() {
       country,
       city,
       pickup_area: pickupArea,
-      pickup_address: pickupAddress,
       pickup_method: pickupMethod,
       type_of_art: typeOfArt || null,
       colours: colourValue,
@@ -219,8 +221,19 @@ export default function UploadPage() {
       certificate_path: certificatePath || null,
       certificate_status: certificatePath ? 'pending' : 'none',
       status: 'under_review',
-    })
+    }).select('id').single()
+
     if (insertError) { setError(insertError.message); setLoading(false); return }
+
+    // Private address goes to its own table, readable only by this artist and admins
+    if (created?.id && pickupAddress.trim()) {
+      const { error: addrError } = await supabase.from('artwork_addresses').insert({
+        artwork_id: created.id,
+        pickup_address: pickupAddress.trim(),
+      })
+      if (addrError) { setError(addrError.message); setLoading(false); return }
+    }
+
     router.push('/dashboard')
   }
 
