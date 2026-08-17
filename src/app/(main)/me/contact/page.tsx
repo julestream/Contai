@@ -21,13 +21,13 @@ export default function ContactPage() {
           {k.intro}
         </p>
 
-        <a href="mailto:hello@contaigallery.com" style={{ textDecoration: 'none' }}>
+        <a href="mailto:hello@contai.market" style={{ textDecoration: 'none' }}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: '12px',
             padding: '16px', borderRadius: '12px', background: '#0a0a0a', color: '#fff',
           }}>
             <Mail size={20} color="#c8a24a" />
-            <span style={{ fontSize: '15px', fontWeight: 500 }}>hello@contaigallery.com</span>
+            <span style={{ fontSize: '15px', fontWeight: 500 }}>hello@contai.market</span>
           </div>
         </a>
       </div>

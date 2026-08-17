@@ -21,7 +21,7 @@ export const infopages: Record<Lang, InfoSet> = {
         { q: 'Hogyan fizetem ki a többi részt?', a: 'A fennmaradó összeget közvetlenül a művésznek fizeted, amikor személyesen találkoztok az alkotás átvételekor.' },
         { q: 'Tehetek ajánlatot a kért ár alatt?', a: 'Igen. Az alkotás oldalán ajánlatot tehetsz, a művész pedig elfogadhatja, elutasíthatja vagy módosíthatja azt. Elfogadás esetén a megegyezett áron foglalsz.' },
         { q: 'Hogyan lehetek művész a Contain?', a: 'Regisztrálj, válaszd a művész szerepet, töltsd ki a profilodat és végezd el az ellenőrzést. Az ellenőrzés után feltöltheted a munkáidat.' },
-        { q: 'Még mindig segítségre van szükséged?', a: 'Írj nekünk bármikor a hello@contaigallery.com címre, és hamarosan válaszolunk.' },
+        { q: 'Még mindig segítségre van szükséged?', a: 'Írj nekünk bármikor a hello@contai.market címre, és hamarosan válaszolunk.' },
       ],
     },
     badges: {
@@ -44,7 +44,7 @@ export const infopages: Record<Lang, InfoSet> = {
         { q: 'How do I pay the rest of the price?', a: 'You pay the remaining amount directly to the artist when you meet in person to collect the artwork.' },
         { q: 'Can I make an offer below the asking price?', a: 'Yes. On an artwork page you can make an offer, and the artist can accept, decline, or counter it. If accepted, you reserve at the agreed price.' },
         { q: 'How do I become an artist on Contai?', a: 'Sign up and choose the artist role, then complete your profile and verification. Once verified, you can upload your work.' },
-        { q: 'Still need help?', a: 'Contact us any time at hello@contaigallery.com and we will get back to you.' },
+        { q: 'Still need help?', a: 'Contact us any time at hello@contai.market and we will get back to you.' },
       ],
     },
     badges: {
@@ -67,7 +67,7 @@ export const infopages: Record<Lang, InfoSet> = {
         { q: 'Cum plătesc restul prețului?', a: 'Plătești suma rămasă direct artistului când vă întâlniți personal pentru a ridica lucrarea.' },
         { q: 'Pot face o ofertă sub prețul cerut?', a: 'Da. Pe pagina unei lucrări poți face o ofertă, iar artistul o poate accepta, refuza sau contraoferta. Dacă este acceptată, rezervi la prețul convenit.' },
         { q: 'Cum devin artist pe Contai?', a: 'Înregistrează-te și alege rolul de artist, apoi completează-ți profilul și verificarea. După verificare, îți poți încărca lucrările.' },
-        { q: 'Mai ai nevoie de ajutor?', a: 'Contactează-ne oricând la hello@contaigallery.com și îți vom răspunde.' },
+        { q: 'Mai ai nevoie de ajutor?', a: 'Contactează-ne oricând la hello@contai.market și îți vom răspunde.' },
       ],
     },
     badges: {
