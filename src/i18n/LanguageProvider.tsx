@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState } from 'react'
 import { Lang, DEFAULT_LANG, getDict } from './dictionaries'
+import { createClient } from '@/lib/supabase/client'
 
 type LangContext = {
   lang: Lang
@@ -23,6 +24,17 @@ export function LanguageProvider({
   function setLang(l: Lang) {
     setLangState(l)
     document.cookie = `contai_lang=${l}; path=/; max-age=31536000`
+
+    // Remember it on the account too, so emails arrive in the right language.
+    // Fire and forget — a signed-out visitor simply skips this.
+    try {
+      const supabase = createClient()
+      supabase.auth.getUser().then(({ data }) => {
+        if (data?.user) {
+          supabase.from('profiles').update({ preferred_lang: l }).eq('id', data.user.id).then(() => {})
+        }
+      })
+    } catch {}
   }
 
   function t(path: string): any {

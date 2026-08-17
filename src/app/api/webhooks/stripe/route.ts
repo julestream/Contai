@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { notifyArtistOfReservation } from '@/lib/notify'
 import Stripe from 'stripe'
 import { NextResponse } from 'next/server'
 
@@ -52,6 +53,10 @@ export async function POST(request: Request) {
       .from('artworks')
       .update({ status: 'reserved' })
       .eq('id', artworkId)
+
+    // Tell the artist. Failures are logged, never thrown — a broken email
+    // must not stop Stripe's webhook from succeeding, or it will retry forever.
+    await notifyArtistOfReservation(reservationId)
   }
 
   if (event.type === 'checkout.session.expired') {
