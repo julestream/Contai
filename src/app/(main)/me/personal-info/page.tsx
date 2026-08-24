@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useLang } from '@/i18n/LanguageProvider'
+import { resizeImage } from '@/lib/resizeImage'
 
 const COUNTRIES = ['Hungary', 'Romania']
 const CITIES: Record<string, string[]> = {
@@ -57,9 +58,17 @@ export default function PersonalInfoPage() {
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { setUploadingAvatar(false); return }
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    // Avatars display at 72px — 400px is generous even on retina screens.
+    const resized = await resizeImage(file, 400, 0.85)
+    const safeName = resized.name.replace(/[^a-zA-Z0-9._-]/g, '_')
     const path = `avatars/${session.user.id}-${Date.now()}-${safeName}`
-    const { error: upErr } = await supabase.storage.from('artwork-images').upload(path, file, { upsert: true })
+    const { error: upErr } = await supabase.storage
+      .from('artwork-images')
+      .upload(path, resized, {
+        upsert: true,
+        contentType: resized.type,
+        cacheControl: '31536000',
+      })
     if (upErr) { setError(c('photoUploadFailed') + ' ' + upErr.message); setUploadingAvatar(false); return }
     const { data } = supabase.storage.from('artwork-images').getPublicUrl(path)
     setAvatarUrl(data.publicUrl)
