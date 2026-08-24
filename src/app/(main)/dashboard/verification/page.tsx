@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { useLang } from '@/i18n/LanguageProvider'
+import { resizeImage } from '@/lib/resizeImage'
 
 const DOC_KEYS = ['id', 'cv', 'certificate', 'provenance']
 
@@ -35,11 +36,16 @@ export default function VerificationPage() {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { setError(v('errNotSignedIn')); setUploading(null); return }
 
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    // Documents have to stay legible for review, so a gentler ceiling than
+    // artwork photos. PDFs pass through untouched. Shrinking here also means
+    // the full-resolution original of someone's ID never leaves their phone.
+    const prepared = await resizeImage(file, 2000, 0.88)
+
+    const safeName = prepared.name.replace(/[^a-zA-Z0-9._-]/g, '_')
     const path = `${session.user.id}/${docType}-${Date.now()}-${safeName}`
     const { error: uploadError } = await supabase.storage
       .from('verification-docs')
-      .upload(path, file, { upsert: true })
+      .upload(path, prepared, { upsert: true, contentType: prepared.type })
 
     if (uploadError) {
       setError(v('errUpload') + ' ' + uploadError.message)
@@ -100,7 +106,13 @@ export default function VerificationPage() {
                   </span>
                 ) : (
                   <label style={{ cursor: 'pointer', flexShrink: 0 }}>
-                    <input type="file" onChange={ev => handleUpload(key, ev)} style={{ display: 'none' }} />
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      disabled={uploading !== null}
+                      onChange={ev => handleUpload(key, ev)}
+                      style={{ display: 'none' }}
+                    />
                     <span style={{
                       padding: '8px 16px', borderRadius: '999px', fontSize: '13px',
                       backgroundColor: '#0a0a0a', color: 'white', fontWeight: 500, whiteSpace: 'nowrap',
