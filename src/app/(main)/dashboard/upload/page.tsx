@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/i18n/LanguageProvider'
 import { useCurrency, Currency } from '@/currency/CurrencyProvider'
+import { resizeImage } from '@/lib/resizeImage'
 
 const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Drawing', 'Print', 'Linocut', 'Mixed Media', 'Sculpture', 'Photography', 'Other']
 const TYPES = ['Painting', 'Print', 'Photography', 'Graphic Art', 'Sculpture']
@@ -42,6 +43,9 @@ const CURRENCIES: { value: Currency; label: string }[] = [
   { value: 'RON', label: 'lei' },
   { value: 'EUR', label: '€' },
 ]
+
+// Photos per artwork. Ten is plenty for a listing and keeps storage sane.
+const MAX_IMAGES = 10
 
 export default function UploadPage() {
   const router = useRouter()
@@ -141,11 +145,27 @@ export default function UploadPage() {
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { setError(u('errNotSignedIn')); setUploading(false); return }
+
+    // Only take as many as we have room for.
+    const room = MAX_IMAGES - images.length
+    const picked = Array.from(files).slice(0, Math.max(0, room))
+    if (picked.length === 0) { setUploading(false); return }
+
     const newImages: string[] = []
-    for (const file of Array.from(files)) {
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    for (const file of picked) {
+      // Shrink in the browser first. A 6MB phone photo becomes ~400KB,
+      // which is indistinguishable on screen but far cheaper to serve.
+      const resized = await resizeImage(file, 1600, 0.82)
+      const safeName = resized.name.replace(/[^a-zA-Z0-9._-]/g, '_')
       const path = `artworks/${session.user.id}/${Date.now()}-${safeName}`
-      const { error: upErr } = await supabase.storage.from('artwork-images').upload(path, file, { upsert: true })
+      const { error: upErr } = await supabase.storage
+        .from('artwork-images')
+        .upload(path, resized, {
+          upsert: true,
+          contentType: resized.type,
+          // Filenames are unique, so these can be cached forever.
+          cacheControl: '31536000',
+        })
       if (upErr) {
         setError(u('errPhotoUpload') + ' ' + upErr.message)
         setUploading(false)
@@ -156,6 +176,12 @@ export default function UploadPage() {
     }
     setImages(prev => [...prev, ...newImages])
     setUploading(false)
+    // Let the same file be picked again if the artist re-selects it.
+    e.target.value = ''
+  }
+
+  function removeImage(index: number) {
+    setImages(prev => prev.filter((_, i) => i !== index))
   }
 
   async function handleCertUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -166,9 +192,14 @@ export default function UploadPage() {
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { setError(u('errNotSignedIn')); setCertUploading(false); return }
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    // Certificates need to stay readable, so a higher ceiling than artwork
+    // photos. PDFs pass through untouched.
+    const prepared = await resizeImage(file, 2000, 0.85)
+    const safeName = prepared.name.replace(/[^a-zA-Z0-9._-]/g, '_')
     const path = `${session.user.id}/certificates/${Date.now()}-${safeName}`
-    const { error: upErr } = await supabase.storage.from('verification-docs').upload(path, file, { upsert: true })
+    const { error: upErr } = await supabase.storage
+      .from('verification-docs')
+      .upload(path, prepared, { upsert: true, contentType: prepared.type })
     if (upErr) {
       setError(u('errCertUpload') + ' ' + upErr.message)
       setCertUploading(false)
@@ -247,6 +278,8 @@ export default function UploadPage() {
     cursor: 'pointer', fontSize: '14px',
   })
 
+  const atLimit = images.length >= MAX_IMAGES
+
   return (
     <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
       <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '24px', marginBottom: '1rem' }}>{u('listArtwork')}</h1>
@@ -267,13 +300,33 @@ export default function UploadPage() {
       <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '20px', marginBottom: '1.5rem' }}>{steps[step - 1]}</h2>
       {step === 1 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px dashed #e8e8e8', borderRadius: '12px', padding: '2rem', cursor: 'pointer', color: '#999' }}>
-            <input type="file" accept="image/*" multiple onChange={handleImageUpload} style={{ display: 'none' }} />
+          <label style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: '2px dashed #e8e8e8', borderRadius: '12px', padding: '2rem',
+            cursor: atLimit ? 'default' : 'pointer', color: '#999',
+            opacity: atLimit ? 0.5 : 1,
+          }}>
+            <input type="file" accept="image/*" multiple disabled={atLimit || uploading} onChange={handleImageUpload} style={{ display: 'none' }} />
             {uploading ? u('uploading') : u('addPhotos')}
           </label>
+          <p style={{ fontSize: '12px', color: '#999', textAlign: 'center' }}>
+            {images.length} / {MAX_IMAGES}
+          </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {images.map((url, i) => (
-              <img key={i} src={url} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+              <div key={i} style={{ position: 'relative' }}>
+                <img src={url} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', display: 'block' }} />
+                <button
+                  onClick={() => removeImage(i)}
+                  aria-label="remove"
+                  style={{
+                    position: 'absolute', top: '-6px', right: '-6px',
+                    width: '22px', height: '22px', borderRadius: '999px',
+                    border: 'none', background: '#0a0a0a', color: '#fff',
+                    fontSize: '13px', lineHeight: '22px', padding: 0, cursor: 'pointer',
+                  }}
+                >×</button>
+              </div>
             ))}
           </div>
         </div>
