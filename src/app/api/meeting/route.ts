@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       }
 
       // A new proposal always clears any previous confirmation.
-      await admin
+      const { error: updErr } = await admin
         .from('reservations')
         .update({
           meeting_at: when.toISOString(),
@@ -60,6 +60,13 @@ export async function POST(request: Request) {
           status: 'scheduling_in_progress',
         })
         .eq('id', reservationId)
+
+      // If the write failed, say so. Reporting success on a failed save
+      // leaves the person believing a time was set when none was.
+      if (updErr) {
+        console.error('[meeting] propose failed:', updErr.message)
+        return NextResponse.json({ error: 'Could not save that time' }, { status: 500 })
+      }
 
       await notifyMeeting(reservationId, user.id, 'propose')
       return NextResponse.json({ ok: true })
@@ -74,13 +81,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'The other person needs to confirm' }, { status: 403 })
       }
 
-      await admin
+      const { error: updErr } = await admin
         .from('reservations')
         .update({
           meeting_confirmed_at: new Date().toISOString(),
           status: 'ready_for_pickup',
         })
         .eq('id', reservationId)
+
+      if (updErr) {
+        console.error('[meeting] confirm failed:', updErr.message)
+        return NextResponse.json({ error: 'Could not confirm that time' }, { status: 500 })
+      }
 
       await notifyMeeting(reservationId, user.id, 'confirm')
       return NextResponse.json({ ok: true })

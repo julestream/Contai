@@ -170,3 +170,154 @@ export async function notifyMeeting(
     footer: FOOTER[other.lang],
   })
 }
+
+/**
+ * The buyer has just paid. This is the moment they are most uncertain —
+ * money has left their account and they have nothing in their hands yet.
+ * Touchpoint 1 of the collector journey.
+ */
+export async function notifyBuyerOfReservation(reservationId: string) {
+  const admin = createAdminClient()
+
+  const { data: res } = await admin
+    .from('reservations')
+    .select('id, buyer_id, artworks(title, artist_name)')
+    .eq('id', reservationId)
+    .single()
+
+  const artwork: any = (res as any)?.artworks
+  if (!res || !artwork) return
+
+  const buyer = await recipient(res.buyer_id)
+  if (!buyer) return
+
+  const artistName = artwork.artist_name || ''
+  const title = artwork.title || ''
+
+  const copy: Record<EmailLang, { subject: string; heading: string; body: string; cta: string }> = {
+    hu: {
+      subject: `${title} — a tiéd, lefoglalva`,
+      heading: 'Megvan. A mű a tiédre vár.',
+      body: `Megérkezett a foglalásod a(z) <strong>${title}</strong> című műre${artistName ? ` — ${artistName} alkotása` : ''}. Mostantól senki más nem foglalhatja le.<br><br>A következő lépés a találkozó: te vagy a művész javasol egy időpontot, a másik megerősíti, és csak ezután jelenik meg az átvételi cím. A hátralévő összeget személyesen, az átvételkor fizeted.<br><br>Nem kell most tenned semmit — szólunk, amint a művész jelentkezik.`,
+      cta: 'A foglalásom megnyitása',
+    },
+    en: {
+      subject: `${title} is reserved for you`,
+      heading: 'It\'s yours. The work is waiting.',
+      body: `Your reservation for <strong>${title}</strong>${artistName ? ` by ${artistName}` : ''} has gone through. No one else can reserve it now.<br><br>Next comes the meeting: either you or the artist proposes a time, the other confirms, and only then does the pickup address appear. You pay the remaining balance in person, when you collect the work.<br><br>There is nothing for you to do right now — we will let you know as soon as the artist is in touch.`,
+      cta: 'Open your reservation',
+    },
+    ro: {
+      subject: `${title} este rezervată pentru tine`,
+      heading: 'Este a ta. Lucrarea te așteaptă.',
+      body: `Rezervarea ta pentru <strong>${title}</strong>${artistName ? ` de ${artistName}` : ''} a fost înregistrată. Nimeni altcineva nu o mai poate rezerva.<br><br>Urmează întâlnirea: tu sau artistul propuneți o oră, celălalt confirmă, și abia atunci apare adresa de ridicare. Restul sumei îl plătești personal, la preluarea lucrării.<br><br>Nu trebuie să faci nimic acum — te anunțăm imediat ce artistul ia legătura.`,
+      cta: 'Deschide rezervarea',
+    },
+  }
+
+  const c = copy[buyer.lang]
+  await sendEmail({
+    to: buyer.email,
+    subject: c.subject,
+    heading: c.heading,
+    body: c.body,
+    ctaLabel: c.cta,
+    ctaPath: `/handoff/${res.id}`,
+    footer: FOOTER[buyer.lang],
+  })
+}
+
+/**
+ * A reservation reached the end of its window without a handover.
+ * Both sides are told: the buyer that a refund is coming, the artist
+ * that the work is back on sale.
+ *
+ * The refund itself is issued by hand in Stripe — the wording here
+ * deliberately says a refund is on its way, never that it has arrived.
+ */
+export async function notifyReservationExpired(reservationId: string) {
+  const admin = createAdminClient()
+
+  const { data: res } = await admin
+    .from('reservations')
+    .select('id, buyer_id, artworks(title, artist_id)')
+    .eq('id', reservationId)
+    .single()
+
+  const artwork: any = (res as any)?.artworks
+  if (!res || !artwork?.artist_id) return
+
+  const title = artwork.title || ''
+
+  // --- the buyer ---
+  const buyer = await recipient(res.buyer_id)
+  if (buyer) {
+    const copy: Record<EmailLang, { subject: string; heading: string; body: string; cta: string }> = {
+      hu: {
+        subject: `${title} — a foglalás lejárt`,
+        heading: 'A foglalásod lejárt',
+        body: `A(z) <strong>${title}</strong> foglalási ideje letelt anélkül, hogy az átadás megtörtént volna, így a mű újra elérhető.<br><br>A foglalási díjat visszatérítjük — a Contai Garancia része. Néhány munkanapon belül megjelenik a számládon.<br><br>Ha még mindig szeretnéd a művet, keresd meg a Contain — és ha valami félresiklott, írj nekünk, szeretnénk tudni róla.`,
+        cta: 'Böngészés a Contain',
+      },
+      en: {
+        subject: `Your reservation for ${title} has expired`,
+        heading: 'Your reservation has expired',
+        body: `The window for <strong>${title}</strong> passed without a handover, so the work is available again.<br><br>Your reservation fee is being refunded — that is part of the Contai Guarantee. It should reach your account within a few working days.<br><br>If you still want the work, look for it on Contai — and if something went wrong along the way, do write to us. We would like to know.`,
+        cta: 'Browse Contai',
+      },
+      ro: {
+        subject: `Rezervarea pentru ${title} a expirat`,
+        heading: 'Rezervarea ta a expirat',
+        body: `Intervalul pentru <strong>${title}</strong> a trecut fără predare, așa că lucrarea este din nou disponibilă.<br><br>Taxa de rezervare îți este returnată — face parte din Garanția Contai. Ar trebui să ajungă în contul tău în câteva zile lucrătoare.<br><br>Dacă îți dorești în continuare lucrarea, caut-o pe Contai — iar dacă ceva nu a mers bine, scrie-ne. Vrem să știm.`,
+        cta: 'Explorează Contai',
+      },
+    }
+
+    const c = copy[buyer.lang]
+    await sendEmail({
+      to: buyer.email,
+      subject: c.subject,
+      heading: c.heading,
+      body: c.body,
+      ctaLabel: c.cta,
+      ctaPath: '/browse',
+      footer: FOOTER[buyer.lang],
+    })
+  }
+
+  // --- the artist ---
+  const artist = await recipient(artwork.artist_id)
+  if (artist) {
+    const copy: Record<EmailLang, { subject: string; heading: string; body: string; cta: string }> = {
+      hu: {
+        subject: `${title} — újra elérhető`,
+        heading: 'A műved újra elérhető',
+        body: `A(z) <strong>${title}</strong> foglalása lejárt anélkül, hogy az átadás megtörtént volna, ezért a mű visszakerült a Contaira, és újra lefoglalható.<br><br>Nem kell tenned semmit. Ha az átadás valójában megtörtént, vagy valami közbejött, szólj nekünk — rendbe tesszük.`,
+        cta: 'A műveim',
+      },
+      en: {
+        subject: `${title} is available again`,
+        heading: 'Your work is back on Contai',
+        body: `The reservation on <strong>${title}</strong> expired without a handover, so the work has returned to Contai and can be reserved again.<br><br>There is nothing you need to do. If the handover actually did happen, or something got in the way, tell us and we will put it right.`,
+        cta: 'My works',
+      },
+      ro: {
+        subject: `${title} este din nou disponibilă`,
+        heading: 'Lucrarea ta este din nou pe Contai',
+        body: `Rezervarea pentru <strong>${title}</strong> a expirat fără predare, așa că lucrarea a revenit pe Contai și poate fi rezervată din nou.<br><br>Nu trebuie să faci nimic. Dacă predarea a avut totuși loc sau a intervenit ceva, spune-ne și rezolvăm.`,
+        cta: 'Lucrările mele',
+      },
+    }
+
+    const c = copy[artist.lang]
+    await sendEmail({
+      to: artist.email,
+      subject: c.subject,
+      heading: c.heading,
+      body: c.body,
+      ctaLabel: c.cta,
+      ctaPath: '/dashboard',
+      footer: FOOTER[artist.lang],
+    })
+  }
+}
