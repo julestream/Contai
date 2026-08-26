@@ -39,6 +39,28 @@ function formatWhen(iso: string, lang: EmailLang) {
   }
 }
 
+/**
+ * A quiet copy to whoever runs Contai. Never translated, never pretty —
+ * this is an operations alert, not customer copy.
+ *
+ * Silently does nothing if CONTAI_ADMIN_EMAIL is unset, so removing the
+ * environment variable is how you turn these off.
+ */
+async function notifyAdmin(subject: string, lines: string[], ctaPath: string) {
+  const to = process.env.CONTAI_ADMIN_EMAIL
+  if (!to) return
+
+  await sendEmail({
+    to,
+    subject: `[Contai] ${subject}`,
+    heading: subject,
+    body: lines.join('<br>'),
+    ctaLabel: 'Open in Contai',
+    ctaPath,
+    footer: 'Internal notification. Remove CONTAI_ADMIN_EMAIL to stop these.',
+  })
+}
+
 /** The artist learns their work has been reserved and paid for. */
 export async function notifyArtistOfReservation(reservationId: string) {
   const admin = createAdminClient()
@@ -175,13 +197,16 @@ export async function notifyMeeting(
  * The buyer has just paid. This is the moment they are most uncertain —
  * money has left their account and they have nothing in their hands yet.
  * Touchpoint 1 of the collector journey.
+ *
+ * Also sends the admin copy, since a payment is the event most likely
+ * to need a human watching in the early days.
  */
 export async function notifyBuyerOfReservation(reservationId: string) {
   const admin = createAdminClient()
 
   const { data: res } = await admin
     .from('reservations')
-    .select('id, buyer_id, artworks(title, artist_name)')
+    .select('id, buyer_id, agreed_price, reservation_fee, currency, artworks(title, artist_name, artist_id, city)')
     .eq('id', reservationId)
     .single()
 
@@ -189,58 +214,76 @@ export async function notifyBuyerOfReservation(reservationId: string) {
   if (!res || !artwork) return
 
   const buyer = await recipient(res.buyer_id)
-  if (!buyer) return
-
   const artistName = artwork.artist_name || ''
   const title = artwork.title || ''
 
-  const copy: Record<EmailLang, { subject: string; heading: string; body: string; cta: string }> = {
-    hu: {
-      subject: `${title} — a tiéd, lefoglalva`,
-      heading: 'Megvan. A mű a tiédre vár.',
-      body: `Megérkezett a foglalásod a(z) <strong>${title}</strong> című műre${artistName ? ` — ${artistName} alkotása` : ''}. Mostantól senki más nem foglalhatja le.<br><br>A következő lépés a találkozó: te vagy a művész javasol egy időpontot, a másik megerősíti, és csak ezután jelenik meg az átvételi cím. A hátralévő összeget személyesen, az átvételkor fizeted.<br><br>Nem kell most tenned semmit — szólunk, amint a művész jelentkezik.`,
-      cta: 'A foglalásom megnyitása',
-    },
-    en: {
-      subject: `${title} is reserved for you`,
-      heading: 'It\'s yours. The work is waiting.',
-      body: `Your reservation for <strong>${title}</strong>${artistName ? ` by ${artistName}` : ''} has gone through. No one else can reserve it now.<br><br>Next comes the meeting: either you or the artist proposes a time, the other confirms, and only then does the pickup address appear. You pay the remaining balance in person, when you collect the work.<br><br>There is nothing for you to do right now — we will let you know as soon as the artist is in touch.`,
-      cta: 'Open your reservation',
-    },
-    ro: {
-      subject: `${title} este rezervată pentru tine`,
-      heading: 'Este a ta. Lucrarea te așteaptă.',
-      body: `Rezervarea ta pentru <strong>${title}</strong>${artistName ? ` de ${artistName}` : ''} a fost înregistrată. Nimeni altcineva nu o mai poate rezerva.<br><br>Urmează întâlnirea: tu sau artistul propuneți o oră, celălalt confirmă, și abia atunci apare adresa de ridicare. Restul sumei îl plătești personal, la preluarea lucrării.<br><br>Nu trebuie să faci nimic acum — te anunțăm imediat ce artistul ia legătura.`,
-      cta: 'Deschide rezervarea',
-    },
+  if (buyer) {
+    const copy: Record<EmailLang, { subject: string; heading: string; body: string; cta: string }> = {
+      hu: {
+        subject: `${title} — a tiéd, lefoglalva`,
+        heading: 'Megvan. A mű a tiédre vár.',
+        body: `Megérkezett a foglalásod a(z) <strong>${title}</strong> című műre${artistName ? ` — ${artistName} alkotása` : ''}. Mostantól senki más nem foglalhatja le.<br><br>A következő lépés a találkozó: te vagy a művész javasol egy időpontot, a másik megerősíti, és csak ezután jelenik meg az átvételi cím. A hátralévő összeget személyesen, az átvételkor fizeted.<br><br>Nem kell most tenned semmit — szólunk, amint a művész jelentkezik.`,
+        cta: 'A foglalásom megnyitása',
+      },
+      en: {
+        subject: `${title} is reserved for you`,
+        heading: 'It\'s yours. The work is waiting.',
+        body: `Your reservation for <strong>${title}</strong>${artistName ? ` by ${artistName}` : ''} has gone through. No one else can reserve it now.<br><br>Next comes the meeting: either you or the artist proposes a time, the other confirms, and only then does the pickup address appear. You pay the remaining balance in person, when you collect the work.<br><br>There is nothing for you to do right now — we will let you know as soon as the artist is in touch.`,
+        cta: 'Open your reservation',
+      },
+      ro: {
+        subject: `${title} este rezervată pentru tine`,
+        heading: 'Este a ta. Lucrarea te așteaptă.',
+        body: `Rezervarea ta pentru <strong>${title}</strong>${artistName ? ` de ${artistName}` : ''} a fost înregistrată. Nimeni altcineva nu o mai poate rezerva.<br><br>Urmează întâlnirea: tu sau artistul propuneți o oră, celălalt confirmă, și abia atunci apare adresa de ridicare. Restul sumei îl plătești personal, la preluarea lucrării.<br><br>Nu trebuie să faci nimic acum — te anunțăm imediat ce artistul ia legătura.`,
+        cta: 'Deschide rezervarea',
+      },
+    }
+
+    const c = copy[buyer.lang]
+    await sendEmail({
+      to: buyer.email,
+      subject: c.subject,
+      heading: c.heading,
+      body: c.body,
+      ctaLabel: c.cta,
+      ctaPath: `/handoff/${res.id}`,
+      footer: FOOTER[buyer.lang],
+    })
   }
 
-  const c = copy[buyer.lang]
-  await sendEmail({
-    to: buyer.email,
-    subject: c.subject,
-    heading: c.heading,
-    body: c.body,
-    ctaLabel: c.cta,
-    ctaPath: `/handoff/${res.id}`,
-    footer: FOOTER[buyer.lang],
-  })
+  // --- admin copy ---
+  const artist = artwork.artist_id ? await recipient(artwork.artist_id) : null
+  const cur = res.currency || ''
+  const price = res.agreed_price != null ? `${res.agreed_price} ${cur}` : 'unknown'
+  const fee = res.reservation_fee != null ? `${res.reservation_fee} ${cur}` : 'unknown'
+
+  await notifyAdmin(
+    `Paid: ${title}`,
+    [
+      `<strong>${title}</strong>${artistName ? ` — ${artistName}` : ''}`,
+      `Price: ${price} · Fee paid: ${fee}`,
+      `Artist: ${artist?.name || '—'} (${artist?.email || 'no email'})`,
+      `Buyer: ${buyer?.name || '—'} (${buyer?.email || 'no email'})`,
+      artwork.city ? `Pickup city: ${artwork.city}` : '',
+      '',
+      'They now have 48 hours to arrange and complete the handover.',
+    ].filter(Boolean),
+    `/handoff/${res.id}`
+  )
 }
 
 /**
  * A reservation reached the end of its window without a handover.
  * Both sides are told: the buyer that a refund is coming, the artist
- * that the work is back on sale.
- *
- * The refund itself is issued by hand in Stripe — the wording here
- * deliberately says a refund is on its way, never that it has arrived.
+ * that the work is back on sale. An admin copy goes out too, because
+ * the refund itself still has to be issued by hand in Stripe.
  */
 export async function notifyReservationExpired(reservationId: string) {
   const admin = createAdminClient()
 
   const { data: res } = await admin
     .from('reservations')
-    .select('id, buyer_id, artworks(title, artist_id)')
+    .select('id, buyer_id, reservation_fee, currency, stripe_payment_intent_id, artworks(title, artist_id)')
     .eq('id', reservationId)
     .single()
 
@@ -320,4 +363,25 @@ export async function notifyReservationExpired(reservationId: string) {
       footer: FOOTER[artist.lang],
     })
   }
+
+  // --- admin copy: this one needs action, not just awareness ---
+  const cur = res.currency || ''
+  const fee = res.reservation_fee != null ? `${res.reservation_fee} ${cur}` : 'unknown'
+
+  await notifyAdmin(
+    `EXPIRED — refund needed: ${title}`,
+    [
+      `<strong>${title}</strong> expired without a handover.`,
+      `Artist: ${artist?.name || '—'} (${artist?.email || 'no email'})`,
+      `Buyer: ${buyer?.name || '—'} (${buyer?.email || 'no email'})`,
+      '',
+      `<strong>Refund ${fee} in Stripe.</strong>`,
+      res.stripe_payment_intent_id
+        ? `Payment intent: ${res.stripe_payment_intent_id}`
+        : 'No payment intent on file — check Stripe manually.',
+      '',
+      'The buyer has been told a refund is on its way. Mark the reservation as refunded once it is done.',
+    ].filter(Boolean),
+    `/admin/handovers`
+  )
 }
