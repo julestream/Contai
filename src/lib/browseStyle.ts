@@ -5,11 +5,13 @@ import type { CSSProperties } from 'react'
 // ─────────────────────────────────────────────────────────────
 
 // ⬇︎ THE ONE LINE TO FLIP
-// Warm tinted page: '#faf7f2'   ·   Plain white page: '#ffffff'
-export const PAGE_BG = '#faf7f2'
+// Neutral page: '#f7f7f6'   ·   Plain white page: '#ffffff'
+// (was '#faf7f2', a warm tint)
+export const PAGE_BG = '#f7f7f6'
 
-// The panel each artwork floats on
-export const FRAME_BG = '#f1ece4'
+// The panel each artwork floats on — a touch darker than the page,
+// so the work still reads as sitting on something.
+export const FRAME_BG = '#eeeeec'
 export const FRAME_RATIO = '4 / 5'   // portrait — suits paintings
 export const FRAME_PAD = '16px'
 export const FRAME_RADIUS = '3px'
