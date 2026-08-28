@@ -91,7 +91,9 @@ export async function POST(request: Request) {
           currency: currency.toLowerCase(),
           product_data: {
             name: `Reservation fee — ${artwork.title}`,
-            description: 'This fee is deducted from the total price when you meet the artist.',
+            // The receipt is where a buyer looks when they need an invoice,
+            // so it has to say who is invoicing what.
+            description: 'Reservation fee, invoiced by CONTAIT KFT. Deducted from the total price; the balance is paid directly to the artist, who invoices it separately.',
           },
           // HUF, EUR and RON are all two-decimal in Stripe's API.
           unit_amount: Math.round(fee * 100),

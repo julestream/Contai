@@ -161,6 +161,16 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
             </div>
           </div>
 
+          {/* Who invoices what. The last thing read before paying. */}
+          <div style={{ padding: '14px 16px', background: '#f5f3ef', borderRadius: '10px', marginBottom: '1.25rem' }}>
+            <p style={{ fontSize: '13px', fontWeight: 600, color: '#0a0a0a', marginBottom: '6px' }}>
+              {t('reserve.invoicingTitle')}
+            </p>
+            <p style={{ fontSize: '13px', color: '#5a5246', lineHeight: 1.6 }}>
+              {t('reserve.invoicingNote')}
+            </p>
+          </div>
+
           <p style={{ fontSize: '13px', color: '#666', marginBottom: '1.5rem' }}>
             {t('reserve.agreePolicy')}
           </p>
