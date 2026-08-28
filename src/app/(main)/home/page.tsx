@@ -130,15 +130,16 @@ export default async function HomePage() {
   // Signed-in artists go straight to onboarding; everyone else signs up first.
   const artistHref = user ? '/dashboard/onboarding' : '/signup'
 
-  // Carousel cards, warm -> cold (text pulled from the dictionary)
+  // Carousel cards, warm -> cold (text pulled from the dictionary).
+  // The testers thank-you card was removed for launch — it spoke to the
+  // pre-launch group, not to arriving buyers.
   const news = [
     { id: 0, eyebrow: h.artistsEyebrow, title: h.artistsTitle, emphasis: h.artistsEmphasis, tag: 'Artists', href: artistHref },
     { id: 1, eyebrow: h.aboutEyebrow, title: h.aboutTitle, emphasis: h.aboutEmphasis, tag: 'About', href: '/about' },
     { id: 2, eyebrow: h.storiesEyebrow, title: h.storiesTitle, emphasis: h.storiesEmphasis, tag: 'Stories', href: '/artists-feature' },
     { id: 3, eyebrow: h.quizEyebrow, title: h.quizTitle, emphasis: h.quizEmphasis, tag: 'Quiz', href: '/quiz' },
     { id: 4, eyebrow: h.guideEyebrow, title: h.guideTitle, emphasis: h.guideEmphasis, tag: 'Guide', href: '/how-it-works' },
-    { id: 5, eyebrow: h.newsEyebrow, title: h.newsTitle, emphasis: h.newsEmphasis, tag: 'News', href: '/news' },
-    { id: 6, eyebrow: h.guaranteeEyebrow, title: h.guaranteeTitle, emphasis: h.guaranteeEmphasis, tag: 'Guarantee', href: '/guarantee' },
+    { id: 5, eyebrow: h.guaranteeEyebrow, title: h.guaranteeTitle, emphasis: h.guaranteeEmphasis, tag: 'Guarantee', href: '/guarantee' },
   ]
 
   function cardBackground(tag: string): string {
@@ -148,7 +149,6 @@ export default async function HomePage() {
       case 'Stories': return 'linear-gradient(150deg,#a8552c,#c06f3a)'
       case 'Quiz': return 'linear-gradient(150deg,#4e5a2f,#65733f)'
       case 'Guide': return 'linear-gradient(150deg,#16615a,#1f7a6f)'
-      case 'News': return 'linear-gradient(150deg,#2b3c66,#3d5181)'
       case 'Guarantee': return 'linear-gradient(150deg,#4a3358,#634470)'
       default: return 'linear-gradient(150deg,#1a1a1a,#3a3a3a)'
     }
