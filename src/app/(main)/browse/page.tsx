@@ -8,11 +8,11 @@ export default function BrowsePage() {
   const b = getDict(lang).browse
 
   const CATEGORIES = [
-    { num: '01', label: b.paintings, filter: 'Painting', icon: '/categories/01-paintings.svg' },
-    { num: '02', label: b.sculptures, filter: 'Sculpture', icon: '/categories/02-sculptures.svg' },
-    { num: '03', label: b.graphicArt, filter: 'Graphic Art', icon: '/categories/03-graphic-art.svg' },
-    { num: '04', label: b.photography, filter: 'Photography', icon: '/categories/04-photography.svg' },
-    { num: '05', label: b.prints, filter: 'Print', icon: '/categories/05-prints.svg' },
+    { num: '01', label: b.paintings, filter: 'Painting', icon: '/categories/01-paintings.jpg' },
+    { num: '02', label: b.sculptures, filter: 'Sculpture', icon: '/categories/02-sculptures.jpg' },
+    { num: '03', label: b.graphicArt, filter: 'Graphic Art', icon: '/categories/03-graphic-art.jpg' },
+    { num: '04', label: b.photography, filter: 'Photography', icon: '/categories/04-photography.jpg' },
+    { num: '05', label: b.prints, filter: 'Print', icon: '/categories/05-prints.jpg' },
   ]
 
   return (
@@ -28,8 +28,19 @@ export default function BrowsePage() {
           <Link key={c.filter} href={`/browse/results?type=${encodeURIComponent(c.filter)}`}
             style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1, justifyContent: 'center' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minHeight: 0 }}>
-              <img src={c.icon} alt={c.label} style={{ width: '100%', height: '100%', maxHeight: '100px', objectFit: 'contain', objectPosition: 'center', minHeight: 0 }} />
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', paddingLeft: '6px', flexShrink: 0 }}>
+              {/* Photographs need cropping rather than letterboxing — cover
+                  fills the band, contain would leave gaps beside each image. */}
+              <div style={{
+                width: '100%', maxHeight: '100px', flex: 1, minHeight: 0,
+                overflow: 'hidden', borderRadius: '2px',
+              }}>
+                <img
+                  src={c.icon}
+                  alt={c.label}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', paddingLeft: '6px', flexShrink: 0, marginTop: '6px' }}>
                 <span style={{ fontFamily: 'var(--font-instrument), sans-serif', fontSize: '8.4px', color: '#a49d92' }}>{c.num}</span>
                 <span style={{ fontFamily: 'var(--font-instrument), sans-serif', fontSize: '12.6px', letterSpacing: '0.18em', color: '#1a1a1a' }}>{c.label}</span>
               </div>
