@@ -21,8 +21,6 @@ export default function BrowsePage() {
         maxWidth: '430px', margin: '0 auto',
         height: '100%',
         display: 'flex', flexDirection: 'column',
-        padding: '10px 14px',
-        gap: '10px',
       }}>
         {CATEGORIES.map(c => (
           <Link
@@ -30,33 +28,44 @@ export default function BrowsePage() {
             href={`/browse/results?type=${encodeURIComponent(c.filter)}`}
             style={{
               textDecoration: 'none',
-              // Each row takes an equal share of whatever height is available,
-              // so all five always fit without scrolling.
+              // Equal share of the available height — five rows, always one screen.
               flex: 1,
               minHeight: 0,
-              display: 'flex',
-              flexDirection: 'column',
+              position: 'relative',
+              display: 'block',
+              overflow: 'hidden',
             }}
           >
-            {/* The image takes the room left after the label. */}
+            <img
+              src={c.icon}
+              alt={c.label}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+            />
+
+            {/* A gradient rather than a flat panel — the image stays visible
+                and the text still has something solid to sit against.
+                Two of these photographs are near-white, so the scrim has to
+                be dark enough to carry white type over any of them. */}
             <div style={{
-              flex: 1, minHeight: 0, width: '100%',
-              overflow: 'hidden', borderRadius: '2px',
-            }}>
-              <img
-                src={c.icon}
-                alt={c.label}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
-              />
-            </div>
-            {/* Tight under its own image — 4px reads as attached, 20px reads
-                as belonging to whatever comes next. */}
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 38%, rgba(0,0,0,0) 70%)',
+              pointerEvents: 'none',
+            }} />
+
             <div style={{
+              position: 'absolute', left: '16px', bottom: '12px',
               display: 'flex', alignItems: 'baseline', gap: '10px',
-              paddingLeft: '2px', marginTop: '4px', flexShrink: 0,
+              pointerEvents: 'none',
             }}>
-              <span style={{ fontFamily: 'var(--font-instrument), sans-serif', fontSize: '8.4px', color: '#a49d92' }}>{c.num}</span>
-              <span style={{ fontFamily: 'var(--font-instrument), sans-serif', fontSize: '12.6px', letterSpacing: '0.18em', color: '#1a1a1a' }}>{c.label}</span>
+              <span style={{
+                fontFamily: 'var(--font-instrument), sans-serif',
+                fontSize: '9px', color: 'rgba(255,255,255,0.72)',
+              }}>{c.num}</span>
+              <span style={{
+                fontFamily: 'var(--font-instrument), sans-serif',
+                fontSize: '13px', letterSpacing: '0.18em', color: '#ffffff',
+                textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+              }}>{c.label}</span>
             </div>
           </Link>
         ))}
