@@ -16,6 +16,8 @@ const COLOURS = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Pink', '
 const MATERIALS = ['Canvas', 'Paper', 'Wood', 'Metal', 'Glass', 'Ceramic', 'Fabric', 'Stone']
 const MOODS = ['Inspiration', 'Harmony', 'Intrigue', 'Joy', 'Self-reflection']
 const SIZES = ['Small', 'Medium', 'Large', 'Extra Large']
+// Same list the upload page offers, so the two always agree.
+const STYLES = ['Abstract', 'Figurative', 'Landscape', 'Portrait', 'Still Life', 'Minimalist', 'Expressionist', 'Geometric', 'Surrealist', 'Street Art']
 const BADGE_VALUES = ['verified_artist', 'established_artist', 'curator_approved']
 
 const COUNTRIES = ['Hungary', 'Romania']
@@ -43,6 +45,7 @@ export default function FilterPanel() {
   const [types, setTypes] = useState<string[]>(parseList(searchParams.get('type')))
   const [mediums, setMediums] = useState<string[]>(parseList(searchParams.get('medium')))
   const [moods, setMoods] = useState<string[]>(parseList(searchParams.get('mood')))
+  const [styles, setStyles] = useState<string[]>(parseList(searchParams.get('style')))
   const [colours, setColours] = useState<string[]>(parseList(searchParams.get('colour')))
   const [materials, setMaterials] = useState<string[]>(parseList(searchParams.get('material')))
   const [sizes, setSizes] = useState<string[]>(parseList(searchParams.get('size')))
@@ -64,6 +67,7 @@ export default function FilterPanel() {
     if (types.length) params.set('type', types.join(','))
     if (mediums.length) params.set('medium', mediums.join(','))
     if (moods.length) params.set('mood', moods.join(','))
+    if (styles.length) params.set('style', styles.join(','))
     if (colours.length) params.set('colour', colours.join(','))
     if (materials.length) params.set('material', materials.join(','))
     if (sizes.length) params.set('size', sizes.join(','))
@@ -78,7 +82,7 @@ export default function FilterPanel() {
   }
 
   function clearAll() {
-    setTypes([]); setMediums([]); setMoods([]); setColours([]); setMaterials([])
+    setTypes([]); setMediums([]); setMoods([]); setStyles([]); setColours([]); setMaterials([])
     setSizes([]); setBadges([]); setFramed(''); setMinPrice(''); setMaxPrice(''); setCountry(''); setCity('')
     const params = new URLSearchParams()
     if (searchParams.get('q')) params.set('q', searchParams.get('q')!)
@@ -87,7 +91,7 @@ export default function FilterPanel() {
   }
 
   const activeCount =
-    types.length + mediums.length + moods.length + colours.length +
+    types.length + mediums.length + moods.length + styles.length + colours.length +
     materials.length + sizes.length + badges.length +
     (framed ? 1 : 0) + (minPrice || maxPrice ? 1 : 0) + (country || city ? 1 : 0)
 
@@ -170,6 +174,12 @@ export default function FilterPanel() {
                 </div>
               </div>
             ))}
+
+            {/* Style */}
+            <div style={sectionLabel}>{f('style')}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {STYLES.map(s => <span key={s} style={chip(styles.includes(s))} onClick={() => toggle(styles, setStyles, s)}>{label('upload.styleLabels', s)}</span>)}
+            </div>
 
             {/* Mood */}
             <div style={sectionLabel}>{f('mood')}</div>

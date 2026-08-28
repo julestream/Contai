@@ -86,7 +86,9 @@ export default function UploadPage() {
   const [colours, setColours] = useState<string[]>([])
   const [multicolour, setMulticolour] = useState(false)
   const [mood, setMood] = useState<string[]>([])
-  const [style, setStyle] = useState('')
+  // Styles are not mutually exclusive — a work can be figurative and
+  // expressionist at once.
+  const [styles, setStyles] = useState<string[]>([])
   const [certificatePath, setCertificatePath] = useState('')
   const [certUploading, setCertUploading] = useState(false)
 
@@ -120,6 +122,10 @@ export default function UploadPage() {
 
   function toggleColour(name: string) {
     setColours(prev => prev.includes(name) ? prev.filter(x => x !== name) : [...prev, name])
+  }
+
+  function toggleStyle(name: string) {
+    setStyles(prev => prev.includes(name) ? prev.filter(x => x !== name) : [...prev, name])
   }
 
   function next() {
@@ -250,7 +256,7 @@ export default function UploadPage() {
       type_of_art: typeOfArt || null,
       colours: colourValue,
       mood,
-      style,
+      style: styles,
       certificate_path: certificatePath || null,
       certificate_status: certificatePath ? 'pending' : 'none',
       status: 'under_review',
@@ -504,7 +510,7 @@ export default function UploadPage() {
             <p style={{ fontWeight: 600, marginBottom: '8px' }}>{u('styleLabel')}</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {STYLES.map(s => (
-                <button key={s} onClick={() => setStyle(style === s ? '' : s)} style={chip(style === s)}>{labels('styleLabels', s)}</button>
+                <button key={s} onClick={() => toggleStyle(s)} style={chip(styles.includes(s))}>{labels('styleLabels', s)}</button>
               ))}
             </div>
           </div>

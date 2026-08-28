@@ -19,7 +19,7 @@ export default async function BrowseResultsPage({
   searchParams,
 }: {
   searchParams: {
-    type?: string; mood?: string; q?: string; medium?: string; colour?: string;
+    type?: string; mood?: string; style?: string; q?: string; medium?: string; colour?: string;
     material?: string; size?: string; badge?: string; framed?: string;
     min_price?: string; max_price?: string; country?: string; city?: string;
   }
@@ -34,6 +34,7 @@ export default async function BrowseResultsPage({
   const types = parseList(searchParams.type)
   const mediums = parseList(searchParams.medium)
   const moods = parseList(searchParams.mood)
+  const styles = parseList(searchParams.style)
   const colours = parseList(searchParams.colour)
   const materials = parseList(searchParams.material)
   const sizes = parseList(searchParams.size)
@@ -46,13 +47,17 @@ export default async function BrowseResultsPage({
     if (mediums.length) q = q.in('medium', mediums)
     if (sizes.length) q = q.in('size_category', sizes)
     if (moods.length) q = q.overlaps('mood', moods)
+    // style is an array now — an artwork matches if it carries any of them.
+    if (styles.length) q = q.overlaps('style', styles)
     if (colours.length) q = q.overlaps('colours', colours)
     if (materials.length) q = q.overlaps('materials', materials)
     if (searchParams.framed === 'true') q = q.eq('framed', true)
     if (searchParams.framed === 'false') q = q.eq('framed', false)
     if (searchParams.min_price) q = q.gte('price_huf', Number(searchParams.min_price))
     if (searchParams.max_price) q = q.lte('price_huf', Number(searchParams.max_price))
-    if (searchParams.q) q = q.or(`title.ilike.%${searchParams.q}%,style.ilike.%${searchParams.q}%`)
+    // Free-text search covers the title only; style is no longer a text
+    // column, so ilike cannot be used on it.
+    if (searchParams.q) q = q.ilike('title', `%${searchParams.q}%`)
     return q
   }
 
