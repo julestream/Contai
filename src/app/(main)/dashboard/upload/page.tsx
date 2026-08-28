@@ -302,6 +302,17 @@ export default function UploadPage() {
       <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '20px', marginBottom: '1.5rem' }}>{steps[step - 1]}</h2>
       {step === 1 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* Said before they pick, not after — an artist uploading a whole
+              portfolio finds out here rather than at the review step. */}
+          <div style={{ padding: '13px 15px', background: '#f5f3ef', borderRadius: '10px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 600, color: '#0a0a0a', marginBottom: '5px' }}>
+              {u('onePerListingTitle')}
+            </p>
+            <p style={{ fontSize: '13px', lineHeight: 1.6, color: '#5a5246', margin: 0 }}>
+              {u('onePerListingBody')}
+            </p>
+          </div>
+
           <label style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             border: '2px dashed #e8e8e8', borderRadius: '12px', padding: '2rem',

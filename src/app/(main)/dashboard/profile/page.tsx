@@ -7,6 +7,10 @@ import { resizeImage } from '@/lib/resizeImage'
 
 const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Drawing', 'Print', 'Linocut', 'Mixed Media', 'Sculpture', 'Photography', 'Other']
 
+// Match the onboarding limits — room for two languages.
+const BIO_MAX = 1000
+const STATEMENT_MAX = 600
+
 export default function EditProfilePage() {
   const router = useRouter()
   const { t } = useLang()
@@ -112,6 +116,9 @@ export default function EditProfilePage() {
     background: active ? '#0a0a0a' : '#fff', color: active ? '#fff' : '#0a0a0a',
     cursor: 'pointer', fontSize: '13px',
   })
+  const countStyle: React.CSSProperties = {
+    fontSize: '12px', color: '#999', marginTop: '4px', textAlign: 'right',
+  }
 
   if (loading) return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>{c('loading')}</div>
 
@@ -142,11 +149,25 @@ export default function EditProfilePage() {
         </div>
         <div>
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{d('bio')}</label>
-          <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} style={{ ...inputStyle, resize: 'vertical' }} placeholder={d('bioPlaceholder')} />
+          <textarea
+            value={bio}
+            onChange={e => setBio(e.target.value.slice(0, BIO_MAX))}
+            rows={6}
+            style={{ ...inputStyle, resize: 'vertical' }}
+            placeholder={d('bioPlaceholder')}
+          />
+          <p style={countStyle}>{bio.length}/{BIO_MAX}</p>
         </div>
         <div>
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{d('statement')}</label>
-          <textarea value={statement} onChange={e => setStatement(e.target.value)} rows={4} style={{ ...inputStyle, resize: 'vertical' }} placeholder={d('statementPlaceholder')} />
+          <textarea
+            value={statement}
+            onChange={e => setStatement(e.target.value.slice(0, STATEMENT_MAX))}
+            rows={5}
+            style={{ ...inputStyle, resize: 'vertical' }}
+            placeholder={d('statementPlaceholder')}
+          />
+          <p style={countStyle}>{statement.length}/{STATEMENT_MAX}</p>
         </div>
         <div>
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '8px' }}>{d('mediums')}</label>

@@ -8,6 +8,10 @@ import { useLang } from '@/i18n/LanguageProvider'
 
 const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Drawing', 'Print', 'Linocut', 'Mixed Media', 'Sculpture', 'Photography', 'Other']
 
+// Room for two languages — artists write in their own and in English.
+const BIO_MAX = 1000
+const STATEMENT_MAX = 600
+
 export default function OnboardingPage() {
   const router = useRouter()
   const { t } = useLang()
@@ -175,19 +179,19 @@ export default function OnboardingPage() {
           <textarea
             placeholder={o('bioPlaceholder')}
             value={bio}
-            onChange={e => setBio(e.target.value.slice(0, 500))}
-            rows={4}
-            style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e8e8e8', fontSize: '16px', outline: 'none', resize: 'none' }}
+            onChange={e => setBio(e.target.value.slice(0, BIO_MAX))}
+            rows={6}
+            style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e8e8e8', fontSize: '16px', outline: 'none', resize: 'vertical' }}
           />
-          <span style={{ fontSize: '12px', color: '#999' }}>{bio.length}/500</span>
+          <span style={{ fontSize: '12px', color: '#999' }}>{bio.length}/{BIO_MAX}</span>
           <textarea
             placeholder={o('statementPlaceholder')}
             value={statement}
-            onChange={e => setStatement(e.target.value.slice(0, 300))}
-            rows={3}
-            style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e8e8e8', fontSize: '16px', outline: 'none', resize: 'none' }}
+            onChange={e => setStatement(e.target.value.slice(0, STATEMENT_MAX))}
+            rows={5}
+            style={{ padding: '12px', borderRadius: '8px', border: '1px solid #e8e8e8', fontSize: '16px', outline: 'none', resize: 'vertical' }}
           />
-          <span style={{ fontSize: '12px', color: '#999' }}>{statement.length}/300</span>
+          <span style={{ fontSize: '12px', color: '#999' }}>{statement.length}/{STATEMENT_MAX}</span>
         </div>
       )}
 
