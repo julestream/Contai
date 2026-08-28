@@ -16,34 +16,47 @@ export default function BrowsePage() {
   ]
 
   return (
-    <div style={{ background: PAGE_BG, minHeight: 'calc(100vh - 150px)' }}>
+    <div style={{ background: PAGE_BG, height: 'calc(100vh - 150px)', overflow: 'hidden' }}>
       <div style={{
         maxWidth: '430px', margin: '0 auto',
-        height: 'calc(100vh - 150px)',
-        overflow: 'hidden',
+        height: '100%',
         display: 'flex', flexDirection: 'column',
-        justifyContent: 'space-evenly', padding: '4px 14px',
+        padding: '10px 14px',
+        gap: '10px',
       }}>
         {CATEGORIES.map(c => (
-          <Link key={c.filter} href={`/browse/results?type=${encodeURIComponent(c.filter)}`}
-            style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1, justifyContent: 'center' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minHeight: 0 }}>
-              {/* Photographs need cropping rather than letterboxing — cover
-                  fills the band, contain would leave gaps beside each image. */}
-              <div style={{
-                width: '100%', maxHeight: '100px', flex: 1, minHeight: 0,
-                overflow: 'hidden', borderRadius: '2px',
-              }}>
-                <img
-                  src={c.icon}
-                  alt={c.label}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
-                />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', paddingLeft: '6px', flexShrink: 0, marginTop: '6px' }}>
-                <span style={{ fontFamily: 'var(--font-instrument), sans-serif', fontSize: '8.4px', color: '#a49d92' }}>{c.num}</span>
-                <span style={{ fontFamily: 'var(--font-instrument), sans-serif', fontSize: '12.6px', letterSpacing: '0.18em', color: '#1a1a1a' }}>{c.label}</span>
-              </div>
+          <Link
+            key={c.filter}
+            href={`/browse/results?type=${encodeURIComponent(c.filter)}`}
+            style={{
+              textDecoration: 'none',
+              // Each row takes an equal share of whatever height is available,
+              // so all five always fit without scrolling.
+              flex: 1,
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {/* The image takes the room left after the label. */}
+            <div style={{
+              flex: 1, minHeight: 0, width: '100%',
+              overflow: 'hidden', borderRadius: '2px',
+            }}>
+              <img
+                src={c.icon}
+                alt={c.label}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+              />
+            </div>
+            {/* Tight under its own image — 4px reads as attached, 20px reads
+                as belonging to whatever comes next. */}
+            <div style={{
+              display: 'flex', alignItems: 'baseline', gap: '10px',
+              paddingLeft: '2px', marginTop: '4px', flexShrink: 0,
+            }}>
+              <span style={{ fontFamily: 'var(--font-instrument), sans-serif', fontSize: '8.4px', color: '#a49d92' }}>{c.num}</span>
+              <span style={{ fontFamily: 'var(--font-instrument), sans-serif', fontSize: '12.6px', letterSpacing: '0.18em', color: '#1a1a1a' }}>{c.label}</span>
             </div>
           </Link>
         ))}
