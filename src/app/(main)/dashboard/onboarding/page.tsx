@@ -164,6 +164,14 @@ export default function OnboardingPage() {
 
       {step === 2 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* Said here rather than on the intro — this is the moment they
+              are actually about to write, so it is the moment it helps. */}
+          <div style={{ padding: '13px 15px', background: '#f5f3ef', borderRadius: '10px', marginBottom: '4px' }}>
+            <p style={{ fontSize: '13px', lineHeight: 1.6, color: '#5a5246', margin: 0 }}>
+              {o('bilingualNote')}
+            </p>
+          </div>
+
           <textarea
             placeholder={o('bioPlaceholder')}
             value={bio}

@@ -82,6 +82,7 @@ export default function UploadPage() {
   const [pickupArea, setPickupArea] = useState('')
   const [pickupAddress, setPickupAddress] = useState('')
   const [pickupMethod, setPickupMethod] = useState<'in_person' | 'local_delivery'>('in_person')
+  const [travelsForHandoff, setTravelsForHandoff] = useState(false)
   const [colours, setColours] = useState<string[]>([])
   const [multicolour, setMulticolour] = useState(false)
   const [mood, setMood] = useState<string[]>([])
@@ -245,6 +246,7 @@ export default function UploadPage() {
       city,
       pickup_area: pickupArea,
       pickup_method: pickupMethod,
+      travels_for_handoff: travelsForHandoff,
       type_of_art: typeOfArt || null,
       colours: colourValue,
       mood,
@@ -444,6 +446,20 @@ export default function UploadPage() {
               <button key={m} onClick={() => setPickupMethod(m)} style={{ ...chip(pickupMethod === m), flex: 1 }}>{m === 'in_person' ? u('inPerson') : u('localDelivery')}</button>
             ))}
           </div>
+
+          {/* A real commitment to a stranger, so the wording is deliberately plain. */}
+          <label style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', cursor: 'pointer', marginTop: '4px' }}>
+            <input
+              type="checkbox"
+              checked={travelsForHandoff}
+              onChange={e => setTravelsForHandoff(e.target.checked)}
+              style={{ marginTop: '3px', width: '18px', height: '18px', flexShrink: 0, cursor: 'pointer' }}
+            />
+            <span style={{ fontSize: '14px', lineHeight: 1.5, color: '#0a0a0a' }}>{u('travelsLabel')}</span>
+          </label>
+          <p style={{ fontSize: '12px', color: '#999', lineHeight: 1.55, marginTop: '-6px', paddingLeft: '28px' }}>
+            {u('travelsHelp')}
+          </p>
         </div>
       )}
       {step === 5 && (

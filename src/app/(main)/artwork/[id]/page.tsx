@@ -38,6 +38,7 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
   const isOwner = user?.id === artwork.artist_id
   const hasCertificate = artwork.certificate_status === 'approved'
   const isHighValue = (artwork.price_huf || 0) >= HIGH_VALUE_HUF
+  const travels = !!artwork.travels_for_handoff
 
   // The artist's own currency is authoritative; fall back to legacy HUF rows.
   const priceCurrency = artwork.price_currency || 'HUF'
@@ -85,6 +86,18 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
           <p style={{ fontSize: '13px', color: '#666', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}>
             <span aria-hidden style={{ fontSize: '13px' }}>📍</span>
             {[city, country].filter(Boolean).join(', ')}
+          </p>
+        )}
+
+        {/* Sits directly under the location, because that is the line that
+            raises the question this answers. */}
+        {travels && !isSold && (
+          <p style={{
+            fontSize: '13px', color: '#3a5a44', marginTop: '8px',
+            padding: '8px 12px', background: '#eef2ee', borderRadius: '8px',
+            lineHeight: 1.5,
+          }}>
+            {a.travelsBadge}
           </p>
         )}
 
