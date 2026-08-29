@@ -4,11 +4,25 @@ import { createClient } from '@/lib/supabase/client'
 import Logo from '@/components/ui/Logo'
 import Button from '@/components/ui/Button'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useLang } from '@/i18n/LanguageProvider'
+
+// Only ever follow a path on this site. Anything else — a full URL, a
+// protocol-relative //evil.com — is discarded.
+function safeNext(value: string | null): string | null {
+  if (!value) return null
+  if (!value.startsWith('/')) return null
+  if (value.startsWith('//')) return null
+  return value
+}
 
 export default function SignUpPage() {
   const { t } = useLang()
+  const searchParams = useSearchParams()
+  // Where they were headed before being asked to create an account.
+  // Most people who reserve while signed out have no account yet, so this
+  // is the more common path of the two — losing it here loses the sale.
+  const next = safeNext(searchParams.get('next'))
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<'buyer' | 'artist'>('buyer')
@@ -22,11 +36,15 @@ export default function SignUpPage() {
     setError('')
     const supabase = createClient()
 
+    const callback = next
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
+      : `${window.location.origin}/auth/callback`
+
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: callback,
       },
     })
 
@@ -53,11 +71,15 @@ export default function SignUpPage() {
         return
       }
 
+      // An artist still goes to onboarding — they cannot list without it.
+      // A buyer who was mid-purchase returns to the artwork; they can pick
+      // their tastes later.
       if (role === 'artist') {
         router.push('/dashboard/onboarding')
       } else {
-        router.push('/welcome')
+        router.push(next || '/welcome')
       }
+      return
     }
     setLoading(false)
   }
@@ -66,10 +88,12 @@ export default function SignUpPage() {
     setGoogleLoading(true)
     setError('')
     const supabase = createClient()
+    const params = new URLSearchParams({ role })
+    if (next) params.set('next', next)
     const { error: googleError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?role=${role}`,
+        redirectTo: `${window.location.origin}/auth/callback?${params.toString()}`,
       },
     })
     if (googleError) {
@@ -161,7 +185,13 @@ export default function SignUpPage() {
       </button>
 
       <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#666', fontSize: '14px' }}>
-        {t('auth.haveAccount')} <Link href="/signin" style={{ color: '#0a0a0a', fontWeight: 600 }}>{t('auth.signIn')}</Link>
+        {t('auth.haveAccount')}{' '}
+        <Link
+          href={next ? `/signin?next=${encodeURIComponent(next)}` : '/signin'}
+          style={{ color: '#0a0a0a', fontWeight: 600 }}
+        >
+          {t('auth.signIn')}
+        </Link>
       </p>
     </div>
   )
