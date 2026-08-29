@@ -28,6 +28,9 @@ export default async function BrowseResultsPage({
   const dict = getDict(lang) as any
   const r = dict.results
   const typeLabels = (dict.upload?.typeLabels || {}) as Record<string, string>
+  // The same descriptions artists see when listing — so both sides of the
+  // marketplace share one definition of what belongs where.
+  const typeHelp = (dict.upload?.typeHelp || {}) as Record<string, string>
 
   const supabase = createClient()
 
@@ -119,6 +122,10 @@ export default async function BrowseResultsPage({
     ? (typeLabels[types[0]] || types[0])
     : (searchParams.q ? `"${searchParams.q}"` : r.allWorks)
 
+  // Only when exactly one category is being viewed — with several selected
+  // there is no single thing to describe.
+  const description = types.length === 1 ? typeHelp[types[0]] : null
+
   return (
     <div style={pageWrap}>
       <div style={innerWrap}>
@@ -126,6 +133,15 @@ export default async function BrowseResultsPage({
           <Link href="/browse" style={{ textDecoration: 'none', color: '#1a1a1a', fontSize: '20px' }}>←</Link>
           <h1 style={headingStyle}>{heading}</h1>
         </div>
+
+        {description && (
+          <p style={{
+            padding: '6px 1.15rem 0',
+            fontSize: '13px', lineHeight: 1.55, color: '#8a857c',
+          }}>
+            {description}
+          </p>
+        )}
 
         <Suspense>
           <FilterPanel />

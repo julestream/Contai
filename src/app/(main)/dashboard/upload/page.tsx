@@ -134,6 +134,9 @@ export default function UploadPage() {
     if (step === 2) {
       if (!title.trim()) { setError(u('errTitle')); return }
       if (!medium) { setError(u('errMedium')); return }
+      // Browse is built entirely on this field — a work without one appears
+      // in no category at all, which is worse than being in the wrong one.
+      if (!typeOfArt) { setError(u('errType')); return }
     }
     if (step === 3 && (!price.trim() || isNaN(parseFloat(price)))) { setError(u('errPrice')); return }
     if (step === 4) {
@@ -253,7 +256,7 @@ export default function UploadPage() {
       pickup_area: pickupArea,
       pickup_method: pickupMethod,
       travels_for_handoff: travelsForHandoff,
-      type_of_art: typeOfArt || null,
+      type_of_art: typeOfArt,
       colours: colourValue,
       mood,
       style: styles,
@@ -372,7 +375,7 @@ export default function UploadPage() {
             {MEDIUMS.map(m => <option key={m} value={m}>{labels('mediumLabels', m)}</option>)}
           </select>
           <div>
-            <p style={{ fontWeight: 600, marginBottom: '4px', fontSize: '14px' }}>{u('artType')} <span style={{ color: '#999', fontWeight: 400 }}>{u('optional')}</span></p>
+            <p style={{ fontWeight: 600, marginBottom: '4px', fontSize: '14px' }}>{u('artType')}</p>
             <p style={{ fontSize: '12px', color: '#999', marginBottom: '10px', lineHeight: 1.5 }}>{u('artTypeHelp')}</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {TYPES.map(ty => (
