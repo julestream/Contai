@@ -155,6 +155,57 @@ export default async function HomePage() {
     }
   }
 
+  // With a small catalogue, "Near you" and "Newest" show much the same work.
+  // The carousel between them stops that reading as a repeat. When there is
+  // no "Near you" — a signed-out visitor — Newest moves up to lead instead,
+  // so the page never opens on an explainer card.
+  const hasNearYou = nearYou.length > 0
+
+  const carousel = (
+    <div style={{ margin: '12px 0 28px' }}>
+      <HRow>
+        {news.map(n => (
+          <Link key={n.id} href={n.href} style={{ textDecoration: 'none', flexShrink: 0 }}>
+            <div style={{
+              width: '248px', height: '158px', borderRadius: '14px',
+              background: cardBackground(n.tag),
+              color: '#f2ebe2', padding: '18px', position: 'relative', overflow: 'hidden',
+              display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+            }}>
+              <div>
+                <span style={{ fontSize: '10.5px', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, opacity: 0.74 }}>{n.eyebrow}</span>
+                <div style={{ width: '26px', height: '1px', background: 'currentColor', opacity: 0.5, marginTop: '9px' }} />
+              </div>
+              {/* Room kept clear on the right so a long title never runs
+                  into the arrow sitting in that corner. */}
+              <div style={{
+                fontFamily: 'var(--font-fraunces), Georgia, serif', fontWeight: 500,
+                fontSize: '21px', lineHeight: 1.12, letterSpacing: '-0.01em',
+                paddingRight: '30px',
+              }}>
+                {n.title} <span style={{ fontStyle: 'italic', fontWeight: 400 }}>{n.emphasis}</span>
+              </div>
+              <span style={{ position: 'absolute', bottom: '16px', right: '18px', fontSize: '17px', opacity: 0.55 }}>→</span>
+            </div>
+          </Link>
+        ))}
+      </HRow>
+    </div>
+  )
+
+  const newestSection = (
+    <section style={{ margin: '16px 0 28px' }}>
+      <SectionHeader title={h.newest} href="/browse/newest" viewAllLabel={viewAll} />
+      <HRow>
+        {newest?.map(a => (
+          <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+            <ArtworkCard artwork={a} />
+          </div>
+        ))}
+      </HRow>
+    </section>
+  )
+
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
       <div style={{ padding: '1.25rem 1rem 0.5rem' }}>
@@ -167,7 +218,7 @@ export default async function HomePage() {
       </div>
 
       {/* Near you */}
-      {nearYou.length > 0 && (
+      {hasNearYou && (
         <section style={{ margin: '16px 0 28px' }}>
           <SectionHeader
             title={h.nearYou.replace('{city}', nearCity || '')}
@@ -184,9 +235,22 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* Art always comes before the explainer cards, whoever is looking. */}
+      {hasNearYou ? (
+        <>
+          {carousel}
+          {newestSection}
+        </>
+      ) : (
+        <>
+          {newestSection}
+          {carousel}
+        </>
+      )}
+
       {/* Recommended for you */}
       {recommended.length > 0 && (
-        <section style={{ margin: '12px 0 28px' }}>
+        <section style={{ marginBottom: '28px' }}>
           <SectionHeader title={h.recommended} href="/browse/newest" viewAllLabel={viewAll} />
           <HRow>
             {recommended.map(a => (
@@ -197,49 +261,6 @@ export default async function HomePage() {
           </HRow>
         </section>
       )}
-
-      {/* Discover carousel */}
-      <div style={{ margin: '12px 0 28px' }}>
-        <HRow>
-          {news.map(n => (
-            <Link key={n.id} href={n.href} style={{ textDecoration: 'none', flexShrink: 0 }}>
-              <div style={{
-                width: '248px', height: '158px', borderRadius: '14px',
-                background: cardBackground(n.tag),
-                color: '#f2ebe2', padding: '18px', position: 'relative', overflow: 'hidden',
-                display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-              }}>
-                <div>
-                  <span style={{ fontSize: '10.5px', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, opacity: 0.74 }}>{n.eyebrow}</span>
-                  <div style={{ width: '26px', height: '1px', background: 'currentColor', opacity: 0.5, marginTop: '9px' }} />
-                </div>
-                {/* Room kept clear on the right so a long title never runs
-                    into the arrow sitting in that corner. */}
-                <div style={{
-                  fontFamily: 'var(--font-fraunces), Georgia, serif', fontWeight: 500,
-                  fontSize: '21px', lineHeight: 1.12, letterSpacing: '-0.01em',
-                  paddingRight: '30px',
-                }}>
-                  {n.title} <span style={{ fontStyle: 'italic', fontWeight: 400 }}>{n.emphasis}</span>
-                </div>
-                <span style={{ position: 'absolute', bottom: '16px', right: '18px', fontSize: '17px', opacity: 0.55 }}>→</span>
-              </div>
-            </Link>
-          ))}
-        </HRow>
-      </div>
-
-      {/* Newest additions */}
-      <section style={{ marginBottom: '28px' }}>
-        <SectionHeader title={h.newest} href="/browse/newest" viewAllLabel={viewAll} />
-        <HRow>
-          {newest?.map(a => (
-            <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
-              <ArtworkCard artwork={a} />
-            </div>
-          ))}
-        </HRow>
-      </section>
 
       {/* Shop by mood */}
       <section style={{ marginBottom: '28px' }}>
