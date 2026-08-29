@@ -7,6 +7,7 @@ import { Bell, MessageCircle, Search, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { usePathname } from 'next/navigation'
 import CurrencySwitcher from '@/components/ui/CurrencySwitcher'
+import LanguageDropdown from '@/components/ui/LanguageDropdown'
 import { useLang } from '@/i18n/LanguageProvider'
 
 export default function TopBar() {
@@ -73,7 +74,7 @@ export default function TopBar() {
 
   return (
     <div style={{ position: 'sticky', top: 0, zIndex: 40, background: '#0a0a0a', borderBottom: '1px solid #1c1c1c' }}>
-      <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px' }}>
+      <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px' }}>
         <Link href="/notifications" aria-label={t('nav.notifications')} style={{ color: '#ffffff', flexShrink: 0 }}>
           <Bell size={24} />
         </Link>
@@ -88,6 +89,10 @@ export default function TopBar() {
             />
           </div>
         </form>
+        {/* Language sits beside currency — both are "how this page reads to me"
+            controls, and a visitor who cannot read the interface needs this
+            one before anything else. */}
+        <LanguageDropdown />
         <div style={{ flexShrink: 0 }}>
           <CurrencySwitcher compact />
         </div>
