@@ -38,7 +38,7 @@ export const dictionaries: Record<Lang, Dict> = {
     },
     home: {
       discover: 'Felfedezés',
-      tagline: 'Eredeti művek magyar és román alkotóktól — közvetlenül a művésztől, átlátható áron.',
+      tagline: 'Minden mű mögött egy találkozás.',
       nearYou: 'Közeledben — {city}',
       recommended: 'Neked ajánljuk',
       newest: 'Legújabb művek',
@@ -721,7 +721,7 @@ export const dictionaries: Record<Lang, Dict> = {
     },
     home: {
       discover: 'Discover',
-      tagline: 'Original work by Hungarian and Romanian artists — bought directly from them, at a price you can see.',
+      tagline: 'Behind every work, a meeting.',
       nearYou: 'Near you in {city}',
       recommended: 'Recommended for you',
       newest: 'Newest additions',
@@ -1404,7 +1404,7 @@ export const dictionaries: Record<Lang, Dict> = {
     },
     home: {
       discover: 'Descoperă',
-      tagline: 'Lucrări originale de la artiști maghiari și români — direct de la ei, la un preț transparent.',
+      tagline: 'Fiecare lucrare vine cu o întâlnire.',
       nearYou: 'Aproape de tine — {city}',
       recommended: 'Recomandate pentru tine',
       newest: 'Cele mai noi',
