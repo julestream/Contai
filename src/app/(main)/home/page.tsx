@@ -131,15 +131,16 @@ export default async function HomePage() {
   const artistHref = user ? '/dashboard/onboarding' : '/signup'
 
   // Buyer-facing cards first — what Contai is, why it is safe, how to find
-  // something. Artist recruitment comes last: the scarce side of this
-  // marketplace is buyers, and the home page should speak to them first.
+  // something. Artists comes near the end but not last: an artist who
+  // arrives should not have to scroll past everything. Stories is last
+  // because it has nothing behind it yet.
   const news = [
     { id: 0, eyebrow: h.aboutEyebrow, title: h.aboutTitle, emphasis: h.aboutEmphasis, tag: 'About', href: '/about' },
     { id: 1, eyebrow: h.guaranteeEyebrow, title: h.guaranteeTitle, emphasis: h.guaranteeEmphasis, tag: 'Guarantee', href: '/guarantee' },
     { id: 2, eyebrow: h.quizEyebrow, title: h.quizTitle, emphasis: h.quizEmphasis, tag: 'Quiz', href: '/quiz' },
     { id: 3, eyebrow: h.guideEyebrow, title: h.guideTitle, emphasis: h.guideEmphasis, tag: 'Guide', href: '/how-it-works' },
-    { id: 4, eyebrow: h.storiesEyebrow, title: h.storiesTitle, emphasis: h.storiesEmphasis, tag: 'Stories', href: '/artists-feature' },
-    { id: 5, eyebrow: h.artistsEyebrow, title: h.artistsTitle, emphasis: h.artistsEmphasis, tag: 'Artists', href: artistHref },
+    { id: 4, eyebrow: h.artistsEyebrow, title: h.artistsTitle, emphasis: h.artistsEmphasis, tag: 'Artists', href: artistHref },
+    { id: 5, eyebrow: h.storiesEyebrow, title: h.storiesTitle, emphasis: h.storiesEmphasis, tag: 'Stories', href: '/artists-feature' },
   ]
 
   function cardBackground(tag: string): string {
@@ -160,51 +161,14 @@ export default async function HomePage() {
         <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px' }}>{h.discover}</h1>
         {/* One line, no buttons — the bottom bar already has Browse, and a
             hero block would push the actual art below the fold. */}
-        <p style={{ fontSize: '13.5px', lineHeight: 1.55, color: '#8a857c', marginTop: '6px' }}>
+        <p style={{ fontSize: '13.5px', lineHeight: 1.55, color: '#8a857c', marginTop: '7px' }}>
           {h.tagline}
         </p>
       </div>
 
-      {/* Newest additions — the art comes before the explainer cards. */}
-      <section style={{ margin: '16px 0 28px' }}>
-        <SectionHeader title={h.newest} href="/browse/newest" viewAllLabel={viewAll} />
-        <HRow>
-          {newest?.map(a => (
-            <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
-              <ArtworkCard artwork={a} />
-            </div>
-          ))}
-        </HRow>
-      </section>
-
-      {/* Discover carousel */}
-      <div style={{ margin: '12px 0 28px' }}>
-        <HRow>
-          {news.map(n => (
-            <Link key={n.id} href={n.href} style={{ textDecoration: 'none', flexShrink: 0 }}>
-              <div style={{
-                width: '248px', height: '158px', borderRadius: '14px',
-                background: cardBackground(n.tag),
-                color: '#f2ebe2', padding: '18px', position: 'relative', overflow: 'hidden',
-                display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-              }}>
-                <div>
-                  <span style={{ fontSize: '10.5px', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, opacity: 0.74 }}>{n.eyebrow}</span>
-                  <div style={{ width: '26px', height: '1px', background: 'currentColor', opacity: 0.5, marginTop: '9px' }} />
-                </div>
-                <div style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontWeight: 500, fontSize: '21px', lineHeight: 1.12, letterSpacing: '-0.01em' }}>
-                  {n.title} <span style={{ fontStyle: 'italic', fontWeight: 400 }}>{n.emphasis}</span>
-                </div>
-                <span style={{ position: 'absolute', bottom: '16px', right: '18px', fontSize: '17px', opacity: 0.55 }}>→</span>
-              </div>
-            </Link>
-          ))}
-        </HRow>
-      </div>
-
       {/* Near you */}
       {nearYou.length > 0 && (
-        <section style={{ margin: '12px 0 28px' }}>
+        <section style={{ margin: '16px 0 28px' }}>
           <SectionHeader
             title={h.nearYou.replace('{city}', nearCity || '')}
             href={`/browse/results?city=${encodeURIComponent(nearCity || '')}`}
@@ -233,6 +197,49 @@ export default async function HomePage() {
           </HRow>
         </section>
       )}
+
+      {/* Discover carousel */}
+      <div style={{ margin: '12px 0 28px' }}>
+        <HRow>
+          {news.map(n => (
+            <Link key={n.id} href={n.href} style={{ textDecoration: 'none', flexShrink: 0 }}>
+              <div style={{
+                width: '248px', height: '158px', borderRadius: '14px',
+                background: cardBackground(n.tag),
+                color: '#f2ebe2', padding: '18px', position: 'relative', overflow: 'hidden',
+                display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+              }}>
+                <div>
+                  <span style={{ fontSize: '10.5px', letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 600, opacity: 0.74 }}>{n.eyebrow}</span>
+                  <div style={{ width: '26px', height: '1px', background: 'currentColor', opacity: 0.5, marginTop: '9px' }} />
+                </div>
+                {/* Room kept clear on the right so a long title never runs
+                    into the arrow sitting in that corner. */}
+                <div style={{
+                  fontFamily: 'var(--font-fraunces), Georgia, serif', fontWeight: 500,
+                  fontSize: '21px', lineHeight: 1.12, letterSpacing: '-0.01em',
+                  paddingRight: '30px',
+                }}>
+                  {n.title} <span style={{ fontStyle: 'italic', fontWeight: 400 }}>{n.emphasis}</span>
+                </div>
+                <span style={{ position: 'absolute', bottom: '16px', right: '18px', fontSize: '17px', opacity: 0.55 }}>→</span>
+              </div>
+            </Link>
+          ))}
+        </HRow>
+      </div>
+
+      {/* Newest additions */}
+      <section style={{ marginBottom: '28px' }}>
+        <SectionHeader title={h.newest} href="/browse/newest" viewAllLabel={viewAll} />
+        <HRow>
+          {newest?.map(a => (
+            <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+              <ArtworkCard artwork={a} />
+            </div>
+          ))}
+        </HRow>
+      </section>
 
       {/* Shop by mood */}
       <section style={{ marginBottom: '28px' }}>
