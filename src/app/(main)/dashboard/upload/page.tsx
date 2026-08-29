@@ -9,7 +9,7 @@ import { useCurrency, Currency } from '@/currency/CurrencyProvider'
 import { resizeImage } from '@/lib/resizeImage'
 
 const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Drawing', 'Print', 'Linocut', 'Mixed Media', 'Sculpture', 'Photography', 'Other']
-const TYPES = ['Painting', 'Print', 'Photography', 'Graphic Art', 'Sculpture']
+const TYPES = ['Painting', 'Sculpture', 'Print', 'Photography', 'Graphic Art']
 const MOODS = ['Joy', 'Harmony', 'Self-reflection', 'Inspiration', 'Intrigue']
 const STYLES = ['Abstract', 'Figurative', 'Landscape', 'Portrait', 'Still Life', 'Minimalist', 'Expressionist', 'Geometric', 'Surrealist', 'Street Art']
 const COUNTRIES = ['Hungary', 'Romania']
@@ -372,12 +372,24 @@ export default function UploadPage() {
             {MEDIUMS.map(m => <option key={m} value={m}>{labels('mediumLabels', m)}</option>)}
           </select>
           <div>
-            <p style={{ fontWeight: 600, marginBottom: '8px', fontSize: '14px' }}>{u('artType')} <span style={{ color: '#999', fontWeight: 400 }}>{u('optional')}</span></p>
+            <p style={{ fontWeight: 600, marginBottom: '4px', fontSize: '14px' }}>{u('artType')} <span style={{ color: '#999', fontWeight: 400 }}>{u('optional')}</span></p>
+            <p style={{ fontSize: '12px', color: '#999', marginBottom: '10px', lineHeight: 1.5 }}>{u('artTypeHelp')}</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {TYPES.map(ty => (
                 <button key={ty} onClick={() => setTypeOfArt(typeOfArt === ty ? '' : ty)} style={chip(typeOfArt === ty)}>{labels('typeLabels', ty)}</button>
               ))}
             </div>
+            {/* Only the chosen category explains itself — five descriptions
+                at once is a wall of text nobody reads. */}
+            {typeOfArt && (
+              <p style={{
+                fontSize: '12.5px', color: '#5a5246', lineHeight: 1.55,
+                marginTop: '10px', padding: '10px 12px',
+                background: '#f5f3ef', borderRadius: '8px',
+              }}>
+                {labels('typeHelp', typeOfArt)}
+              </p>
+            )}
           </div>
           <input placeholder={u('year')} value={year} onChange={e => setYear(e.target.value)} style={inputStyle} />
           <div>
