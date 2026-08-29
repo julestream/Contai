@@ -130,16 +130,16 @@ export default async function HomePage() {
   // Signed-in artists go straight to onboarding; everyone else signs up first.
   const artistHref = user ? '/dashboard/onboarding' : '/signup'
 
-  // Carousel cards, warm -> cold (text pulled from the dictionary).
-  // The testers thank-you card was removed for launch — it spoke to the
-  // pre-launch group, not to arriving buyers.
+  // Buyer-facing cards first — what Contai is, why it is safe, how to find
+  // something. Artist recruitment comes last: the scarce side of this
+  // marketplace is buyers, and the home page should speak to them first.
   const news = [
-    { id: 0, eyebrow: h.artistsEyebrow, title: h.artistsTitle, emphasis: h.artistsEmphasis, tag: 'Artists', href: artistHref },
-    { id: 1, eyebrow: h.aboutEyebrow, title: h.aboutTitle, emphasis: h.aboutEmphasis, tag: 'About', href: '/about' },
-    { id: 2, eyebrow: h.storiesEyebrow, title: h.storiesTitle, emphasis: h.storiesEmphasis, tag: 'Stories', href: '/artists-feature' },
-    { id: 3, eyebrow: h.quizEyebrow, title: h.quizTitle, emphasis: h.quizEmphasis, tag: 'Quiz', href: '/quiz' },
-    { id: 4, eyebrow: h.guideEyebrow, title: h.guideTitle, emphasis: h.guideEmphasis, tag: 'Guide', href: '/how-it-works' },
-    { id: 5, eyebrow: h.guaranteeEyebrow, title: h.guaranteeTitle, emphasis: h.guaranteeEmphasis, tag: 'Guarantee', href: '/guarantee' },
+    { id: 0, eyebrow: h.aboutEyebrow, title: h.aboutTitle, emphasis: h.aboutEmphasis, tag: 'About', href: '/about' },
+    { id: 1, eyebrow: h.guaranteeEyebrow, title: h.guaranteeTitle, emphasis: h.guaranteeEmphasis, tag: 'Guarantee', href: '/guarantee' },
+    { id: 2, eyebrow: h.quizEyebrow, title: h.quizTitle, emphasis: h.quizEmphasis, tag: 'Quiz', href: '/quiz' },
+    { id: 3, eyebrow: h.guideEyebrow, title: h.guideTitle, emphasis: h.guideEmphasis, tag: 'Guide', href: '/how-it-works' },
+    { id: 4, eyebrow: h.storiesEyebrow, title: h.storiesTitle, emphasis: h.storiesEmphasis, tag: 'Stories', href: '/artists-feature' },
+    { id: 5, eyebrow: h.artistsEyebrow, title: h.artistsTitle, emphasis: h.artistsEmphasis, tag: 'Artists', href: artistHref },
   ]
 
   function cardBackground(tag: string): string {
@@ -158,6 +158,11 @@ export default async function HomePage() {
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
       <div style={{ padding: '1.25rem 1rem 0.5rem' }}>
         <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px' }}>{h.discover}</h1>
+        {/* One line, no buttons — the bottom bar already has Browse, and a
+            hero block would push the actual art below the fold. */}
+        <p style={{ fontSize: '13.5px', lineHeight: 1.55, color: '#8a857c', marginTop: '6px' }}>
+          {h.tagline}
+        </p>
       </div>
 
       {/* Near you */}
@@ -192,6 +197,18 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* Newest additions — the art comes before the explainer cards. */}
+      <section style={{ margin: '16px 0 28px' }}>
+        <SectionHeader title={h.newest} href="/browse/newest" viewAllLabel={viewAll} />
+        <HRow>
+          {newest?.map(a => (
+            <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+              <ArtworkCard artwork={a} />
+            </div>
+          ))}
+        </HRow>
+      </section>
+
       {/* Discover carousel */}
       <div style={{ margin: '12px 0 28px' }}>
         <HRow>
@@ -216,18 +233,6 @@ export default async function HomePage() {
           ))}
         </HRow>
       </div>
-
-      {/* Newest additions */}
-      <section style={{ marginBottom: '28px' }}>
-        <SectionHeader title={h.newest} href="/browse/newest" viewAllLabel={viewAll} />
-        <HRow>
-          {newest?.map(a => (
-            <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
-              <ArtworkCard artwork={a} />
-            </div>
-          ))}
-        </HRow>
-      </section>
 
       {/* Shop by mood */}
       <section style={{ marginBottom: '28px' }}>
