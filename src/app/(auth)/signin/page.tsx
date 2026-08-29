@@ -3,11 +3,22 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Logo from '@/components/ui/Logo'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useLang } from '@/i18n/LanguageProvider'
+
+// Only ever follow a path on this site. Anything else — a full URL, a
+// protocol-relative //evil.com — is discarded.
+function safeNext(value: string | null): string | null {
+  if (!value) return null
+  if (!value.startsWith('/')) return null
+  if (value.startsWith('//')) return null
+  return value
+}
 
 export default function SignInPage() {
   const { t } = useLang()
+  const searchParams = useSearchParams()
+  const next = safeNext(searchParams.get('next'))
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -32,6 +43,13 @@ export default function SignInPage() {
     }
 
     if (data.user) {
+      // If they were sent here mid-purchase, that destination wins over
+      // the usual role-based landing page.
+      if (next) {
+        router.push(next)
+        return
+      }
+
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
@@ -53,10 +71,14 @@ export default function SignInPage() {
     setGoogleLoading(true)
     setError('')
     const supabase = createClient()
+    // The callback route reads `next` back off its own URL.
+    const callback = next
+      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
+      : `${window.location.origin}/auth/callback`
     const { error: googleError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callback,
       },
     })
     if (googleError) {
@@ -172,7 +194,13 @@ export default function SignInPage() {
         <Link href="/forgot-password" style={{ color: '#8a857c', textDecoration: 'none' }}>{t('auth.forgotPassword')}</Link>
       </p>
       <p style={{ textAlign: 'center', marginTop: '0.75rem', color: '#8a857c', fontSize: '14px' }}>
-        {t('auth.noAccount')} <Link href="/signup" style={{ color: '#0a0a0a', fontWeight: 600, textDecoration: 'none' }}>{t('auth.signUp')}</Link>
+        {t('auth.noAccount')}{' '}
+        <Link
+          href={next ? `/signup?next=${encodeURIComponent(next)}` : '/signup'}
+          style={{ color: '#0a0a0a', fontWeight: 600, textDecoration: 'none' }}
+        >
+          {t('auth.signUp')}
+        </Link>
       </p>
     </div>
   )

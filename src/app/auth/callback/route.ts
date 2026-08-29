@@ -2,10 +2,20 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// Only ever follow a path on this site — never a full URL or //evil.com.
+function safeNext(value: string | null): string | null {
+  if (!value) return null
+  if (!value.startsWith('/')) return null
+  if (value.startsWith('//')) return null
+  return value
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const roleParam = searchParams.get('role') // 'artist' or 'buyer', only present on sign-up
+  // Where the person was headed before they were asked to sign in.
+  const next = safeNext(searchParams.get('next'))
 
   // Behind Vercel's proxy, `origin` can resolve to an internal hostname.
   const forwardedHost = request.headers.get('x-forwarded-host')
@@ -13,6 +23,8 @@ export async function GET(request: NextRequest) {
   const base =
     process.env.NEXT_PUBLIC_APP_URL ||
     (forwardedHost ? `${forwardedProto}://${forwardedHost}` : origin)
+
+  const pendingCookies: { name: string; value: string; options: any }[] = []
 
   function go(path: string) {
     const response = NextResponse.redirect(`${base}${path}`)
@@ -23,8 +35,6 @@ export async function GET(request: NextRequest) {
     )
     return response
   }
-
-  const pendingCookies: { name: string; value: string; options: any }[] = []
 
   if (!code) {
     return go('/signin?error=nocode')
@@ -74,11 +84,17 @@ export async function GET(request: NextRequest) {
       console.error('[auth/callback] profile insert failed:', insertError.message)
       return go('/signin?error=profile')
     }
-    return go(newRole === 'artist' ? '/dashboard/onboarding' : '/welcome')
+    // An artist still goes to onboarding — they cannot list without it.
+    // A new buyer who was mid-purchase goes back to the artwork instead
+    // of to the welcome screen; they can pick their tastes later.
+    if (newRole === 'artist') return go('/dashboard/onboarding')
+    return go(next || '/welcome')
   }
 
-  // Existing user: route by their stored role
+  // A destination carried through sign-in wins over the usual landing page,
+  // except for admins, who should always land in the admin area.
   if (profile.role === 'admin') return go('/admin')
+  if (next) return go(next)
   if (profile.role === 'artist') return go('/dashboard')
   return go('/home')
 }
