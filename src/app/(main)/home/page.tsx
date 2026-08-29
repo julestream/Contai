@@ -165,38 +165,6 @@ export default async function HomePage() {
         </p>
       </div>
 
-      {/* Near you */}
-      {nearYou.length > 0 && (
-        <section style={{ margin: '12px 0 28px' }}>
-          <SectionHeader
-            title={h.nearYou.replace('{city}', nearCity || '')}
-            href={`/browse/results?city=${encodeURIComponent(nearCity || '')}`}
-            viewAllLabel={viewAll}
-          />
-          <HRow>
-            {nearYou.map(a => (
-              <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
-                <ArtworkCard artwork={a} />
-              </div>
-            ))}
-          </HRow>
-        </section>
-      )}
-
-      {/* Recommended for you */}
-      {recommended.length > 0 && (
-        <section style={{ margin: '12px 0 28px' }}>
-          <SectionHeader title={h.recommended} href="/browse/newest" viewAllLabel={viewAll} />
-          <HRow>
-            {recommended.map(a => (
-              <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
-                <ArtworkCard artwork={a} />
-              </div>
-            ))}
-          </HRow>
-        </section>
-      )}
-
       {/* Newest additions — the art comes before the explainer cards. */}
       <section style={{ margin: '16px 0 28px' }}>
         <SectionHeader title={h.newest} href="/browse/newest" viewAllLabel={viewAll} />
@@ -233,6 +201,38 @@ export default async function HomePage() {
           ))}
         </HRow>
       </div>
+
+      {/* Near you */}
+      {nearYou.length > 0 && (
+        <section style={{ margin: '12px 0 28px' }}>
+          <SectionHeader
+            title={h.nearYou.replace('{city}', nearCity || '')}
+            href={`/browse/results?city=${encodeURIComponent(nearCity || '')}`}
+            viewAllLabel={viewAll}
+          />
+          <HRow>
+            {nearYou.map(a => (
+              <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+                <ArtworkCard artwork={a} />
+              </div>
+            ))}
+          </HRow>
+        </section>
+      )}
+
+      {/* Recommended for you */}
+      {recommended.length > 0 && (
+        <section style={{ margin: '12px 0 28px' }}>
+          <SectionHeader title={h.recommended} href="/browse/newest" viewAllLabel={viewAll} />
+          <HRow>
+            {recommended.map(a => (
+              <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+                <ArtworkCard artwork={a} />
+              </div>
+            ))}
+          </HRow>
+        </section>
+      )}
 
       {/* Shop by mood */}
       <section style={{ marginBottom: '28px' }}>
