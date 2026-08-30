@@ -208,14 +208,13 @@ export default async function HomePage() {
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
-      {/* The slogan is the masthead. 'Felfedezés' named the tab rather than
-          the content, and the tab bar says that already — this says
-          something instead. */}
-      <div style={{ padding: '1.1rem 1rem 1.1rem' }}>
+      {/* The slogan sits at the same weight as the section headings below —
+          a sentence carrying a title's size shouted. */}
+      <div style={{ padding: '1rem 1rem 1.1rem' }}>
         <h1 style={{
           fontFamily: 'var(--font-fraunces), Georgia, serif',
-          fontSize: '25px', lineHeight: 1.2, letterSpacing: '-0.01em',
-          color: '#1a1a1a', maxWidth: '18em',
+          fontSize: '19px', lineHeight: 1.35, letterSpacing: '-0.005em',
+          color: '#1a1a1a', maxWidth: '20em',
         }}>
           {h.tagline}
         </h1>

@@ -8,7 +8,8 @@ export default function AdminBar() {
   const pathname = usePathname()
   const tabs = [
     { href: '/admin/handovers', label: 'Handovers' },
-    { href: '/admin/listings', label: 'Listings' },
+    { href: '/admin/listings', label: 'Review' },
+    { href: '/admin/all-listings', label: 'All listings' },
     { href: '/admin/documents', label: 'Documents' },
     { href: '/admin/issues', label: 'Issues' },
     { href: '/admin/artists', label: 'Artists' },
@@ -22,7 +23,10 @@ export default function AdminBar() {
         </Link>
         <div style={{ display: 'flex', gap: 4, flex: 1, flexWrap: 'wrap' }}>
           {tabs.map(t => {
-            const active = pathname.startsWith(t.href)
+            // '/admin/listings' is a prefix of '/admin/all-listings' in spirit
+            // but not in string terms, so startsWith is safe here — except
+            // that both tabs would light up if the paths nested. They don't.
+            const active = pathname === t.href || pathname.startsWith(t.href + '/')
             return (
               <Link key={t.href} href={t.href} style={{
                 textDecoration: 'none', fontSize: 14, padding: '6px 12px', borderRadius: 999,
