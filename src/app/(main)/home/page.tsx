@@ -208,13 +208,15 @@ export default async function HomePage() {
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
-      {/* The slogan sits at the same weight as the section headings below —
-          a sentence carrying a title's size shouted. */}
+      {/* Set as a remark rather than a title. Fraunces italic is already the
+          brand's voice on the carousel cards, and a sentence at heading
+          weight was shouting where it should murmur. */}
       <div style={{ padding: '1rem 1rem 1.1rem' }}>
         <h1 style={{
           fontFamily: 'var(--font-fraunces), Georgia, serif',
           fontSize: '19px', lineHeight: 1.35, letterSpacing: '-0.005em',
-          color: '#1a1a1a', maxWidth: '20em',
+          fontStyle: 'italic', fontWeight: 400,
+          color: '#5a5246', maxWidth: '20em',
         }}>
           {h.tagline}
         </h1>
