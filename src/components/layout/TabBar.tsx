@@ -15,6 +15,7 @@ export default function TabBar() {
     const active = isActive(href)
     return (
       <Link
+        key={href}
         href={href}
         style={{
           flex: 1,
@@ -34,6 +35,8 @@ export default function TabBar() {
       </Link>
     )
   }
+
+  const browseActive = isActive('/browse')
 
   return (
     <nav
@@ -55,16 +58,31 @@ export default function TabBar() {
           background: '#0a0a0a',
           borderTop: '1px solid #1c1c1c',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           padding: '8px 8px calc(8px + env(safe-area-inset-bottom))',
         }}
       >
         {Item('/home', t('nav.home'), Home)}
-        {Item('/browse', t('nav.browse'), LayoutGrid)}
+        {/* Sell is an ordinary slot now, with a word rather than a bare +.
+            It was the largest thing on the bar while serving only artists —
+            on a marketplace built for buyers, browsing deserves that place. */}
+        {Item('/dashboard/upload', t('nav.sell'), Plus)}
+
         <Link
-          href="/dashboard/upload"
-          aria-label={t('nav.sell')}
-          style={{ flex: 1, display: 'flex', justifyContent: 'center' }}
+          href="/browse"
+          aria-label={t('nav.browse')}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 4,
+            textDecoration: 'none',
+            color: browseActive ? '#ffffff' : '#a8a8a8',
+            fontSize: 11,
+            fontWeight: browseActive ? 700 : 400,
+          }}
         >
           <span
             style={{
@@ -78,11 +96,16 @@ export default function TabBar() {
               justifyContent: 'center',
               marginTop: -18,
               boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+              flexShrink: 0,
             }}
           >
-            <Plus size={26} strokeWidth={2.4} />
+            <LayoutGrid size={24} strokeWidth={2.2} />
+          </span>
+          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+            {t('nav.browse')}
           </span>
         </Link>
+
         {Item('/favorites', t('nav.favorites'), Heart)}
         {Item('/me', t('nav.me'), User)}
       </div>
