@@ -208,13 +208,17 @@ export default async function HomePage() {
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
-      {/* Tight to the bar above and to the first row of art below — the
-          masthead should not push the work off the screen. */}
-      <div style={{ padding: '0.85rem 1rem 1rem' }}>
-        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', lineHeight: 1.1 }}>{h.discover}</h1>
-        <p style={{ fontSize: '13.5px', lineHeight: 1.5, color: '#8a857c', marginTop: '5px' }}>
+      {/* The slogan is the masthead. 'Felfedezés' named the tab rather than
+          the content, and the tab bar says that already — this says
+          something instead. */}
+      <div style={{ padding: '1.1rem 1rem 1.1rem' }}>
+        <h1 style={{
+          fontFamily: 'var(--font-fraunces), Georgia, serif',
+          fontSize: '25px', lineHeight: 1.2, letterSpacing: '-0.01em',
+          color: '#1a1a1a', maxWidth: '18em',
+        }}>
           {h.tagline}
-        </p>
+        </h1>
       </div>
 
       {/* Near you */}
