@@ -12,6 +12,9 @@ const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Drawing', 'Print', 'Linocut',
 const TYPES = ['Painting', 'Sculpture', 'Print', 'Photography', 'Decorative Arts']
 const MOODS = ['Joy', 'Harmony', 'Self-reflection', 'Inspiration', 'Intrigue']
 const STYLES = ['Abstract', 'Figurative', 'Landscape', 'Portrait', 'Still Life', 'Minimalist', 'Expressionist', 'Geometric', 'Surrealist', 'Street Art']
+// Must stay in step with the list in FilterPanel, or a buyer's filter will
+// silently miss work tagged with something the panel does not offer.
+const MATERIALS = ['Canvas', 'Paper', 'Cardboard', 'Wood', 'Panel', 'Metal', 'Glass', 'Ceramic', 'Fabric', 'Stone']
 const COUNTRIES = ['Hungary', 'Romania']
 const CITIES: Record<string, string[]> = {
   Hungary: ['Budapest', 'Debrecen', 'Szeged', 'Miskolc', 'Pécs', 'Győr', 'Nyíregyháza', 'Kecskemét', 'Székesfehérvár', 'Szombathely', 'Other'],
@@ -85,6 +88,7 @@ export default function UploadPage() {
   const [travelsForHandoff, setTravelsForHandoff] = useState(false)
   const [colours, setColours] = useState<string[]>([])
   const [multicolour, setMulticolour] = useState(false)
+  const [materials, setMaterials] = useState<string[]>([])
   const [mood, setMood] = useState<string[]>([])
   // Styles are not mutually exclusive — a work can be figurative and
   // expressionist at once.
@@ -126,6 +130,10 @@ export default function UploadPage() {
 
   function toggleStyle(name: string) {
     setStyles(prev => prev.includes(name) ? prev.filter(x => x !== name) : [...prev, name])
+  }
+
+  function toggleMaterial(name: string) {
+    setMaterials(prev => prev.includes(name) ? prev.filter(x => x !== name) : [...prev, name])
   }
 
   function next() {
@@ -258,6 +266,7 @@ export default function UploadPage() {
       travels_for_handoff: travelsForHandoff,
       type_of_art: typeOfArt,
       colours: colourValue,
+      materials,
       mood,
       style: styles,
       certificate_path: certificatePath || null,
@@ -496,6 +505,18 @@ export default function UploadPage() {
       )}
       {step === 5 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Material has been filterable on Browse all along, but nothing
+              ever asked for it — so no artwork had any and the filter found
+              nothing. */}
+          <div>
+            <p style={{ fontWeight: 600, marginBottom: '4px' }}>{u('materialLabel')} <span style={{ color: '#999', fontWeight: 400 }}>{u('optional')}</span></p>
+            <p style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>{u('materialHelp')}</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {MATERIALS.map(m => (
+                <button key={m} onClick={() => toggleMaterial(m)} style={chip(materials.includes(m))}>{labels('materialLabels', m)}</button>
+              ))}
+            </div>
+          </div>
           <div>
             <p style={{ fontWeight: 600, marginBottom: '8px' }}>{u('colours')} <span style={{ color: '#999', fontWeight: 400 }}>{u('optional')}</span></p>
             <p style={{ fontSize: '12px', color: '#999', marginBottom: '10px' }}>{u('coloursHelp')}</p>

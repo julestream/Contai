@@ -7,16 +7,17 @@ import { useLang } from '@/i18n/LanguageProvider'
 const MEDIUM_GROUPS: { type: string; mediums: string[] }[] = [
   { type: 'Painting', mediums: ['Oil', 'Acrylic', 'Watercolour', 'Gouache', 'Tempera', 'Fresco', 'Encaustic', 'Pastel', 'Enamel'] },
   { type: 'Sculpture', mediums: ['Bronze', 'Marble', 'Wood', 'Stone', 'Ceramic', 'Clay', 'Resin', 'Glass', 'Metal', 'Plaster', 'Textile', 'Mixed Media'] },
-  { type: 'Graphic Art', mediums: ['Pencil', 'Charcoal', 'Ink', 'Marker', 'Pastel', 'Chalk', 'Digital', 'Mixed Media'] },
+  { type: 'Print', mediums: ['Lithograph', 'Screen Print', 'Etching', 'Linocut', 'Woodcut', 'Risograph', 'Giclee', 'Monotype', 'Pencil', 'Charcoal', 'Ink', 'Chalk'] },
   { type: 'Photography', mediums: ['Analogue', 'Digital', 'Darkroom Print', 'Instant Film', 'Long Exposure'] },
-  { type: 'Print', mediums: ['Lithograph', 'Screen Print', 'Etching', 'Linocut', 'Woodcut', 'Risograph', 'Giclee', 'Monotype'] },
+  { type: 'Decorative Arts', mediums: ['Glass', 'Ceramic', 'Clay', 'Textile', 'Metal', 'Wood', 'Resin', 'Mixed Media'] },
 ]
 
 const COLOURS = ['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Pink', 'Brown', 'Black', 'White', 'Grey', 'Gold']
-const MATERIALS = ['Canvas', 'Paper', 'Wood', 'Metal', 'Glass', 'Ceramic', 'Fabric', 'Stone']
+// Must stay in step with the list on the upload page, or a filter silently
+// misses work that was tagged with something not offered here.
+const MATERIALS = ['Canvas', 'Paper', 'Cardboard', 'Wood', 'Panel', 'Metal', 'Glass', 'Ceramic', 'Fabric', 'Stone']
 const MOODS = ['Inspiration', 'Harmony', 'Intrigue', 'Joy', 'Self-reflection']
 const SIZES = ['Small', 'Medium', 'Large', 'Extra Large']
-// Same list the upload page offers, so the two always agree.
 const STYLES = ['Abstract', 'Figurative', 'Landscape', 'Portrait', 'Still Life', 'Minimalist', 'Expressionist', 'Geometric', 'Surrealist', 'Street Art']
 const BADGE_VALUES = ['verified_artist', 'established_artist', 'curator_approved']
 
