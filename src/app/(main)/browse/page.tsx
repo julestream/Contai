@@ -8,9 +8,8 @@ export default function BrowsePage() {
   const dict = getDict(lang)
   const b = dict.browse
 
-  // Two prominent tiles, then three smaller. The `filter` values are the
-  // database's own type_of_art values and are never translated —
-  // 'Print' now reads as Prints & Graphics, 'Graphic Art' as Drawing & Mixed Media.
+  // The `filter` values are the database's own type_of_art values and are
+  // never translated.
   const PRIMARY = [
     { num: '01', label: b.paintings, filter: 'Painting', icon: '/categories/01-paintings.jpg' },
     { num: '02', label: b.sculptures, filter: 'Sculpture', icon: '/categories/02-sculptures.jpg' },
@@ -18,7 +17,7 @@ export default function BrowsePage() {
   const SECONDARY = [
     { num: '03', label: b.prints, filter: 'Print', icon: '/categories/03-graphic-art.jpg' },
     { num: '04', label: b.photography, filter: 'Photography', icon: '/categories/04-photography.jpg' },
-    { num: '05', label: b.graphicArt, filter: 'Graphic Art', icon: '/categories/05-prints.jpg' },
+    { num: '05', label: b.graphicArt, filter: 'Decorative Arts', icon: '/categories/05-prints.jpg' },
   ]
 
   const tileLink: React.CSSProperties = {
@@ -47,12 +46,12 @@ export default function BrowsePage() {
       <div style={{
         maxWidth: '430px', margin: '0 auto', height: '100%',
         display: 'flex', flexDirection: 'column',
-        padding: '14px 12px 12px',
+        padding: '12px 12px',
       }}>
         <h1 style={{
           fontFamily: 'var(--font-fraunces), Georgia, serif',
           fontSize: '25px', letterSpacing: '-0.01em', color: '#1a1a1a',
-          marginBottom: '12px', flexShrink: 0,
+          marginBottom: '10px', flexShrink: 0,
         }}>
           {dict.nav.browse}
         </h1>

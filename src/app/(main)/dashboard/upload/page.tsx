@@ -9,7 +9,7 @@ import { useCurrency, Currency } from '@/currency/CurrencyProvider'
 import { resizeImage } from '@/lib/resizeImage'
 
 const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Drawing', 'Print', 'Linocut', 'Mixed Media', 'Sculpture', 'Photography', 'Other']
-const TYPES = ['Painting', 'Sculpture', 'Print', 'Photography', 'Graphic Art']
+const TYPES = ['Painting', 'Sculpture', 'Print', 'Photography', 'Decorative Arts']
 const MOODS = ['Joy', 'Harmony', 'Self-reflection', 'Inspiration', 'Intrigue']
 const STYLES = ['Abstract', 'Figurative', 'Landscape', 'Portrait', 'Still Life', 'Minimalist', 'Expressionist', 'Geometric', 'Surrealist', 'Street Art']
 const COUNTRIES = ['Hungary', 'Romania']

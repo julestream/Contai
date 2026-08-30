@@ -162,7 +162,7 @@ export default async function HomePage() {
   const hasNearYou = nearYou.length > 0
 
   const carousel = (
-    <div style={{ margin: '12px 0 28px' }}>
+    <div style={{ margin: '4px 0 28px' }}>
       <HRow>
         {news.map(n => (
           <Link key={n.id} href={n.href} style={{ textDecoration: 'none', flexShrink: 0 }}>
@@ -194,7 +194,7 @@ export default async function HomePage() {
   )
 
   const newestSection = (
-    <section style={{ margin: '16px 0 28px' }}>
+    <section style={{ margin: '0 0 24px' }}>
       <SectionHeader title={h.newest} href="/browse/newest" viewAllLabel={viewAll} />
       <HRow>
         {newest?.map(a => (
@@ -208,18 +208,18 @@ export default async function HomePage() {
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
-      <div style={{ padding: '1.25rem 1rem 0.5rem' }}>
-        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px' }}>{h.discover}</h1>
-        {/* One line, no buttons — the bottom bar already has Browse, and a
-            hero block would push the actual art below the fold. */}
-        <p style={{ fontSize: '13.5px', lineHeight: 1.55, color: '#8a857c', marginTop: '7px' }}>
+      {/* Tight to the bar above and to the first row of art below — the
+          masthead should not push the work off the screen. */}
+      <div style={{ padding: '0.85rem 1rem 1rem' }}>
+        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', lineHeight: 1.1 }}>{h.discover}</h1>
+        <p style={{ fontSize: '13.5px', lineHeight: 1.5, color: '#8a857c', marginTop: '5px' }}>
           {h.tagline}
         </p>
       </div>
 
       {/* Near you */}
       {hasNearYou && (
-        <section style={{ margin: '16px 0 28px' }}>
+        <section style={{ margin: '0 0 24px' }}>
           <SectionHeader
             title={h.nearYou.replace('{city}', nearCity || '')}
             href={`/browse/results?city=${encodeURIComponent(nearCity || '')}`}
