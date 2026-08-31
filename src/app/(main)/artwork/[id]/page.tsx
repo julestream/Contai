@@ -47,7 +47,13 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
 
   const city = artwork.city || artist?.city || null
   const country = artwork.country || artist?.country || null
-  const location = [artwork.pickup_area, city, country].filter(Boolean).join(', ')
+
+  // The artist usually writes something like 'Budapest és környéke' here,
+  // which already contains the city. Appending city and country turned that
+  // into 'Budapest és környéke, Budapest, Hungary'.
+  const location = artwork.pickup_area
+    ? artwork.pickup_area
+    : [city, country].filter(Boolean).join(', ')
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '8rem' }}>
@@ -68,9 +74,24 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
         )}
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            {displayArtist}
-          </p>
+          {/* The artist's name is the natural way through to the rest of
+              their work, so it should behave like one. */}
+          {artist?.id ? (
+            <Link
+              href={`/artist/${artist.id}`}
+              style={{
+                fontSize: '11px', color: '#999', textTransform: 'uppercase',
+                letterSpacing: '0.1em', textDecoration: 'none',
+                borderBottom: '1px solid #e0dcd3', paddingBottom: '1px',
+              }}
+            >
+              {displayArtist}
+            </Link>
+          ) : (
+            <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              {displayArtist}
+            </p>
+          )}
           <FavoriteButton artworkId={artwork.id} />
         </div>
 

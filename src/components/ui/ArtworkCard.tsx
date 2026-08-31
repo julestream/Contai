@@ -10,21 +10,35 @@ export default function ArtworkCard({ artwork }: { artwork: any }) {
 
   const img = (artwork.images as string[])?.[0]
   const displayArtist = artwork.artist_name || artwork.profiles?.full_name || fallback
+  const artistId = artwork.artist_id || artwork.profiles?.id
 
   return (
-    <Link href={`/artwork/${artwork.id}`} style={{ textDecoration: 'none' }}>
-      <div style={{ width: '100%' }}>
+    <div style={{ width: '100%' }}>
+      {/* Only the image and title lead to the artwork. The artist's name is
+          its own link — a buyer who likes a piece usually wants to see what
+          else that person makes, and had no way through from here. */}
+      <Link href={`/artwork/${artwork.id}`} style={{ textDecoration: 'none' }}>
         <div style={frameStyle}>
           {img && <img src={img} alt={artwork.title || ''} style={artStyle} />}
         </div>
+      </Link>
+
+      {artistId ? (
+        <Link href={`/artist/${artistId}`} style={{ textDecoration: 'none' }}>
+          <p style={artistStyle}>{displayArtist}</p>
+        </Link>
+      ) : (
         <p style={artistStyle}>{displayArtist}</p>
+      )}
+
+      <Link href={`/artwork/${artwork.id}`} style={{ textDecoration: 'none' }}>
         <p style={titleStyle}>{artwork.title}</p>
         <Price
           amount={artwork.price_amount ?? artwork.price_huf}
           currency={artwork.price_currency || 'HUF'}
           style={priceStyle}
         />
-      </div>
-    </Link>
+      </Link>
+    </div>
   )
 }
