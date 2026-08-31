@@ -208,18 +208,19 @@ export default async function HomePage() {
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
-      {/* Set as a remark rather than a title. Fraunces italic is already the
-          brand's voice on the carousel cards, and a sentence at heading
-          weight was shouting where it should murmur. */}
-      <div style={{ padding: '1rem 1rem 1.1rem' }}>
-        <h1 style={{
-          fontFamily: 'var(--font-fraunces), Georgia, serif',
-          fontSize: '19px', lineHeight: 1.35, letterSpacing: '-0.005em',
+      {/* Set in the sans italic as a quiet remark rather than a title.
+          A <p> rather than an <h1>: the global stylesheet forces Fraunces
+          onto every heading, which was overriding the family here. */}
+      <div style={{ padding: '0.9rem 1rem 0.9rem' }}>
+        <p style={{
+          fontFamily: 'var(--font-instrument), system-ui, sans-serif',
+          fontSize: '15px', lineHeight: 1.45,
           fontStyle: 'italic', fontWeight: 400,
-          color: '#5a5246', maxWidth: '20em',
+          color: '#8a857c', maxWidth: '22em',
+          margin: 0,
         }}>
           {h.tagline}
-        </h1>
+        </p>
       </div>
 
       {/* Near you */}

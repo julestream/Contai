@@ -61,12 +61,25 @@ export default async function ArtistProfilePage({ params }: { params: { id: stri
         )}
       </div>
 
-      {/* Bio & statement */}
+      {/* Bio & statement
+          pre-wrap matters here: artists write in two languages and separate
+          them with a blank line. Without it every break collapses and the
+          languages run into one another. */}
       {(artist.bio || artist.artist_statement) && (
         <div style={{ padding: '1.5rem', borderBottom: '1px solid #eee' }}>
-          {artist.bio && <p style={{ fontSize: '15px', lineHeight: 1.6, color: '#0a0a0a' }}>{artist.bio}</p>}
+          {artist.bio && (
+            <p style={{ fontSize: '15px', lineHeight: 1.6, color: '#0a0a0a', whiteSpace: 'pre-wrap' }}>
+              {artist.bio}
+            </p>
+          )}
           {artist.artist_statement && (
-            <p style={{ fontSize: '14px', lineHeight: 1.6, color: '#555', marginTop: artist.bio ? '1rem' : 0, fontStyle: 'italic' }}>
+            <p style={{
+              fontSize: '14px', lineHeight: 1.6, color: '#555',
+              marginTop: artist.bio ? '1.25rem' : 0,
+              paddingTop: artist.bio ? '1.25rem' : 0,
+              borderTop: artist.bio ? '1px solid #f0efec' : 'none',
+              fontStyle: 'italic', whiteSpace: 'pre-wrap',
+            }}>
               {artist.artist_statement}
             </p>
           )}

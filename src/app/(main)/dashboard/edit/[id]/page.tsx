@@ -7,7 +7,32 @@ import { deleteArtwork } from './deleteArtwork'
 import { useLang } from '@/i18n/LanguageProvider'
 import { useCurrency, Currency } from '@/currency/CurrencyProvider'
 
-const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Gouache', 'Ink', 'Pastel', 'Charcoal', 'Pencil', 'Mixed Media', 'Digital', 'Photography', 'Other']
+// These lists must match the upload page exactly. They did not, and an
+// artist who listed a linocut found the medium missing from this dropdown —
+// which silently blanked it on save.
+const MEDIUMS = ['Oil', 'Acrylic', 'Watercolour', 'Drawing', 'Print', 'Linocut', 'Mixed Media', 'Sculpture', 'Photography', 'Other']
+const TYPES = ['Painting', 'Sculpture', 'Print', 'Photography', 'Decorative Arts']
+const MOODS = ['Joy', 'Harmony', 'Self-reflection', 'Inspiration', 'Intrigue']
+const STYLES = ['Abstract', 'Figurative', 'Landscape', 'Portrait', 'Still Life', 'Minimalist', 'Expressionist', 'Geometric', 'Surrealist', 'Street Art']
+const MATERIALS = ['Canvas', 'Paper', 'Cardboard', 'Wood', 'Panel', 'Metal', 'Glass', 'Ceramic', 'Fabric', 'Stone']
+const COLOURS = [
+  { name: 'Black', hex: '#0a0a0a' },
+  { name: 'White', hex: '#ffffff' },
+  { name: 'Grey', hex: '#9ca3af' },
+  { name: 'Beige', hex: '#e7dcc8' },
+  { name: 'Brown', hex: '#8b5e34' },
+  { name: 'Red', hex: '#dc2626' },
+  { name: 'Orange', hex: '#ea580c' },
+  { name: 'Yellow', hex: '#eab308' },
+  { name: 'Green', hex: '#16a34a' },
+  { name: 'Teal', hex: '#0d9488' },
+  { name: 'Blue', hex: '#2563eb' },
+  { name: 'Navy', hex: '#1e293b' },
+  { name: 'Purple', hex: '#7c3aed' },
+  { name: 'Pink', hex: '#ec4899' },
+  { name: 'Gold', hex: '#c8a24a' },
+  { name: 'Silver', hex: '#c0c5cc' },
+]
 
 const COUNTRIES = ['Hungary', 'Romania']
 const CITIES: Record<string, string[]> = {
@@ -29,6 +54,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
   const { toHuf } = useCurrency()
   const c = (k: string) => t(`common.${k}`)
   const e = (k: string) => t(`editArtwork.${k}`)
+  const u = (k: string) => t(`upload.${k}`)
   const label = (map: string, key: string) => {
     const m = t(map) as any
     return (m && m[key]) || key
@@ -43,6 +69,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
   const [artistName, setArtistName] = useState('')
   const [description, setDescription] = useState('')
   const [medium, setMedium] = useState('')
+  const [typeOfArt, setTypeOfArt] = useState('')
   const [year, setYear] = useState('')
   const [width, setWidth] = useState('')
   const [height, setHeight] = useState('')
@@ -52,7 +79,15 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
   const [city, setCity] = useState('')
   const [pickupArea, setPickupArea] = useState('')
   const [pickupAddress, setPickupAddress] = useState('')
+  const [pickupMethod, setPickupMethod] = useState<'in_person' | 'local_delivery'>('in_person')
+  const [travelsForHandoff, setTravelsForHandoff] = useState(false)
   const [signed, setSigned] = useState(false)
+  const [framed, setFramed] = useState(false)
+  const [styles, setStyles] = useState<string[]>([])
+  const [materials, setMaterials] = useState<string[]>([])
+  const [mood, setMood] = useState<string[]>([])
+  const [colours, setColours] = useState<string[]>([])
+  const [multicolour, setMulticolour] = useState(false)
   const [status, setStatus] = useState('')
 
   const [hiding, setHiding] = useState(false)
@@ -90,6 +125,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       setArtistName(art.artist_name || '')
       setDescription(art.description || '')
       setMedium(art.medium || '')
+      setTypeOfArt(art.type_of_art || '')
       setYear(art.year ? String(art.year) : '')
       setWidth(art.width_cm ? String(art.width_cm) : '')
       setHeight(art.height_cm ? String(art.height_cm) : '')
@@ -98,7 +134,18 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       setCountry(art.country || '')
       setCity(art.city || '')
       setPickupArea(art.pickup_area || '')
+      setPickupMethod((art.pickup_method as any) === 'local_delivery' ? 'local_delivery' : 'in_person')
+      setTravelsForHandoff(!!art.travels_for_handoff)
       setSigned(!!art.signed)
+      setFramed(!!art.framed)
+      setStyles(Array.isArray(art.style) ? art.style : (art.style ? [art.style] : []))
+      setMaterials(Array.isArray(art.materials) ? art.materials : [])
+      setMood(Array.isArray(art.mood) ? art.mood : [])
+      // 'Multicolour' is stored inside the colours array rather than as its
+      // own column, so it has to be lifted back out when loading.
+      const storedColours: string[] = Array.isArray(art.colours) ? art.colours : []
+      setMulticolour(storedColours.includes('Multicolour'))
+      setColours(storedColours.filter(x => x !== 'Multicolour'))
       setStatus(art.status || '')
 
       // The exact address lives in its own protected table.
@@ -115,6 +162,10 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id, router])
 
+  function toggleIn(list: string[], setList: (v: string[]) => void, value: string) {
+    setList(list.includes(value) ? list.filter(x => x !== value) : [...list, value])
+  }
+
   async function handleSave() {
     setError('')
     if (!title.trim()) { setError(e('errTitle')); return }
@@ -122,12 +173,15 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
     setSaving(true)
     setSaved(false)
 
+    const colourValue = multicolour ? ['Multicolour', ...colours] : colours
+
     const supabase = createClient()
     const { error: updErr } = await supabase.from('artworks').update({
       title,
       artist_name: artistName.trim() || null,
       description: description.trim() || null,
       medium,
+      type_of_art: typeOfArt || null,
       year: year ? parseInt(year) : null,
       width_cm: width ? parseFloat(width) : null,
       height_cm: height ? parseFloat(height) : null,
@@ -139,7 +193,14 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
       country: country || null,
       city: city || null,
       pickup_area: pickupArea,
+      pickup_method: pickupMethod,
+      travels_for_handoff: travelsForHandoff,
       signed,
+      framed,
+      style: styles,
+      materials,
+      mood,
+      colours: colourValue,
     }).eq('id', params.id)
 
     if (updErr) { setError(updErr.message); setSaving(false); return }
@@ -194,6 +255,9 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
     background: active ? '#0a0a0a' : '#fff', color: active ? '#fff' : '#0a0a0a',
     cursor: 'pointer', fontSize: '13px',
   })
+  const sectionLabel: React.CSSProperties = {
+    fontSize: '13px', color: '#666', display: 'block', marginBottom: '8px',
+  }
 
   if (loading) return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>{c('loading')}</div>
   if (denied) return <div style={{ padding: '2rem', maxWidth: '430px', margin: '0 auto' }}>{e('denied')} <Link href="/dashboard">{e('backToDashboard')}</Link></div>
@@ -253,9 +317,27 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('medium')}</label>
           <select value={medium} onChange={ev => setMedium(ev.target.value)} style={inputStyle}>
             <option value="">{e('selectMedium')}</option>
-            {MEDIUMS.map(m => <option key={m} value={m}>{label('filters.mediumLabels', m)}</option>)}
+            {MEDIUMS.map(m => <option key={m} value={m}>{label('upload.mediumLabels', m)}</option>)}
           </select>
         </div>
+
+        {/* Category — browse is built on this, so it has to be changeable. */}
+        <div>
+          <label style={sectionLabel}>{u('artType')}</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {TYPES.map(ty => (
+              <button key={ty} onClick={() => setTypeOfArt(typeOfArt === ty ? '' : ty)} style={chip(typeOfArt === ty)}>
+                {label('upload.typeLabels', ty)}
+              </button>
+            ))}
+          </div>
+          {typeOfArt && (
+            <p style={{ fontSize: '12.5px', color: '#5a5246', lineHeight: 1.55, marginTop: '10px', padding: '10px 12px', background: '#f5f3ef', borderRadius: '8px' }}>
+              {label('upload.typeHelp', typeOfArt)}
+            </p>
+          )}
+        </div>
+
         <div>
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{e('year')}</label>
           <input value={year} onChange={ev => setYear(ev.target.value)} style={inputStyle} inputMode="numeric" />
@@ -270,6 +352,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
             <input value={height} onChange={ev => setHeight(ev.target.value)} style={inputStyle} inputMode="numeric" />
           </div>
         </div>
+
         <div>
           <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{c('country')}</label>
           <select value={country} onChange={ev => { setCountry(ev.target.value); setCity('') }} style={inputStyle}>
@@ -295,6 +378,93 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
           <input value={pickupAddress} onChange={ev => setPickupAddress(ev.target.value)} style={inputStyle} />
           <p style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>{e('pickupAddressHelp')}</p>
         </div>
+
+        {/* Handover — neither of these could be changed after listing, so an
+            artist who moved house or changed their mind was stuck. */}
+        <div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {(['in_person', 'local_delivery'] as const).map(m => (
+              <button key={m} onClick={() => setPickupMethod(m)} style={{ ...chip(pickupMethod === m), flex: 1 }}>
+                {m === 'in_person' ? u('inPerson') : u('localDelivery')}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={travelsForHandoff}
+              onChange={ev => setTravelsForHandoff(ev.target.checked)}
+              style={{ marginTop: '3px', width: '18px', height: '18px', flexShrink: 0, cursor: 'pointer' }}
+            />
+            <span style={{ fontSize: '14px', lineHeight: 1.5, color: '#0a0a0a' }}>{u('travelsLabel')}</span>
+          </label>
+          <p style={{ fontSize: '12px', color: '#999', lineHeight: 1.55, marginTop: '6px', paddingLeft: '28px' }}>
+            {u('travelsHelp')}
+          </p>
+        </div>
+
+        {/* Style */}
+        <div>
+          <label style={sectionLabel}>{u('styleLabel')}</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {STYLES.map(s => (
+              <button key={s} onClick={() => toggleIn(styles, setStyles, s)} style={chip(styles.includes(s))}>
+                {label('upload.styleLabels', s)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Material */}
+        <div>
+          <label style={sectionLabel}>{u('materialLabel')}</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {MATERIALS.map(m => (
+              <button key={m} onClick={() => toggleIn(materials, setMaterials, m)} style={chip(materials.includes(m))}>
+                {label('upload.materialLabels', m)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Mood */}
+        <div>
+          <label style={sectionLabel}>{u('moodLabel')}</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {MOODS.map(m => (
+              <button key={m} onClick={() => toggleIn(mood, setMood, m)} style={chip(mood.includes(m))}>
+                {t(`mood.${m}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Colours */}
+        <div>
+          <label style={sectionLabel}>{u('colours')}</label>
+          <button onClick={() => setMulticolour(v => !v)} style={{ ...chip(multicolour), marginBottom: '12px' }}>
+            {u('multicolour')}
+          </button>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            {COLOURS.map(col => {
+              const active = colours.includes(col.name)
+              return (
+                <button key={col.name} onClick={() => toggleIn(colours, setColours, col.name)} title={label('upload.colourLabels', col.name)}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <span style={{ width: '34px', height: '34px', borderRadius: '999px', backgroundColor: col.hex, border: active ? '3px solid #0a0a0a' : '1px solid #d8d4cc' }} />
+                  <span style={{ fontSize: '10px', color: active ? '#0a0a0a' : '#999' }}>{label('upload.colourLabels', col.name)}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <input type="checkbox" checked={framed} onChange={ev => setFramed(ev.target.checked)} />
+          <span style={{ fontSize: '15px', color: '#0a0a0a' }}>{u('framed')}</span>
+        </label>
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
           <input type="checkbox" checked={signed} onChange={ev => setSigned(ev.target.checked)} />
           <span style={{ fontSize: '15px', color: '#0a0a0a' }}>{e('signedByArtist')}</span>
