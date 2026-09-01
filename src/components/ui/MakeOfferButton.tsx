@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { getOrCreateConversation } from '@/lib/getOrCreateConversation'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/i18n/LanguageProvider'
@@ -11,9 +12,22 @@ export default function MakeOfferButton({ artworkId, artistId }: { artworkId: st
 
   async function handleOffer() {
     setLoading(true)
+
+    // A signed-out visitor used to get nothing at all here: the server
+    // action returns null without a session, and the button silently did
+    // nothing. Silence reads as a broken site, so send them to sign in and
+    // bring them back to this artwork afterwards.
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      router.push(`/signin?next=${encodeURIComponent(`/artwork/${artworkId}`)}`)
+      return
+    }
+
     const convId = await getOrCreateConversation(artworkId, artistId)
     if (convId) {
       router.push(`/messages/${convId}?makeOffer=1`)
+      return
     }
     setLoading(false)
   }
