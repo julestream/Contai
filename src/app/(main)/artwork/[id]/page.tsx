@@ -179,9 +179,18 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
 
         {!isOwner && <MessageArtistButton artworkId={artwork.id} artistId={artist?.id} />}
 
-        <div style={{ marginTop: '1rem', padding: '12px', border: '1px solid #e8e8e8', borderRadius: '8px', fontSize: '13px', color: '#666', textAlign: 'center' }}>
-          {a.guaranteeStrip}
-        </div>
+        {/* The Guarantee is the reason a stranger trusts this transaction,
+            and it was mentioned here without a way to read it. */}
+        <Link href="/guarantee" style={{ textDecoration: 'none' }}>
+          <div style={{
+            marginTop: '1rem', padding: '12px', border: '1px solid #e8e8e8',
+            borderRadius: '8px', fontSize: '13px', color: '#666', textAlign: 'center',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+          }}>
+            <span>{a.guaranteeStrip}</span>
+            <span aria-hidden style={{ color: '#a49d92' }}>→</span>
+          </div>
+        </Link>
 
         <Link href={`/artist/${artist?.id}`} style={{ textDecoration: 'none' }}>
           <div style={{ marginTop: '1.5rem', padding: '1rem', border: '1px solid #e8e8e8', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
