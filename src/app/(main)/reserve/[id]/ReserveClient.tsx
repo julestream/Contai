@@ -56,6 +56,20 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
     }
   }
 
+  // Said twice on purpose: once before they commit to the flow, and again
+  // as the last thing they read before paying. 'Reserve' sounded like a
+  // wishlist, and an artist takes work off sale on the strength of it.
+  const commitmentBlock = (
+    <div style={{ padding: '14px 16px', background: '#f5f3ef', borderRadius: '10px', marginBottom: '1.25rem' }}>
+      <p style={{ fontSize: '13px', fontWeight: 600, color: '#0a0a0a', marginBottom: '6px' }}>
+        {t('reserve.commitmentTitle')}
+      </p>
+      <p style={{ fontSize: '13px', color: '#5a5246', lineHeight: 1.6 }}>
+        {t('reserve.commitmentNote')}
+      </p>
+    </div>
+  )
+
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', padding: '2rem', paddingBottom: '6rem' }}>
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
@@ -81,6 +95,8 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
               <p style={{ color: '#666', fontSize: '14px' }}>{(artwork as any).profiles?.full_name}</p>
             </div>
           </div>
+
+          {commitmentBlock}
 
           <div style={{ padding: '1rem', backgroundColor: '#f5f3ef', borderRadius: '12px', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -160,6 +176,8 @@ export default function ReserveClient({ artwork, agreedOffer }: { artwork: any, 
               <p style={{ fontSize: '12px', color: '#999', marginTop: '2px' }}>{deliveryChoice === 'delivery' ? t('reserve.localDelivery') : t('reserve.inPersonPickup')}</p>
             </div>
           </div>
+
+          {commitmentBlock}
 
           {/* Who invoices what. The last thing read before paying. */}
           <div style={{ padding: '14px 16px', background: '#f5f3ef', borderRadius: '10px', marginBottom: '1.25rem' }}>
