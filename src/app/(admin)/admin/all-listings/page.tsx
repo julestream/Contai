@@ -42,7 +42,7 @@ export default async function AllListingsPage({
     .single()
   if (profile?.role !== 'admin') redirect('/')
 
-  const status = searchParams.status || 'live'
+  const status = searchParams.status ?? 'live'
 
   let query = supabase
     .from('artworks')
@@ -72,7 +72,8 @@ export default async function AllListingsPage({
         All listings
       </h1>
       <p style={{ color: '#8a857c', fontSize: '14px', marginBottom: '1.5rem' }}>
-        Everything on Contai, including work already approved.
+        Everything on Contai, including work already approved. Star a piece to
+        put it in Curatorial picks on the home page.
       </p>
 
       {/* Status filter */}
@@ -110,8 +111,9 @@ export default async function AllListingsPage({
 
           return (
             <div key={a.id} style={{
-              border: '1px solid #e8e8e8', borderRadius: '12px',
-              padding: '1rem', background: '#fff',
+              border: a.featured ? '1px solid #e4d9c2' : '1px solid #e8e8e8',
+              borderRadius: '12px',
+              padding: '1rem', background: a.featured ? '#fdfbf7' : '#fff',
               display: 'flex', gap: '14px', alignItems: 'flex-start',
             }}>
               <div style={{
@@ -132,6 +134,14 @@ export default async function AllListingsPage({
                   }}>
                     {a.status}
                   </span>
+                  {a.featured && (
+                    <span style={{
+                      padding: '2px 9px', borderRadius: '999px', fontSize: '11.5px',
+                      fontWeight: 600, background: '#f3efe6', color: '#8a6d3b',
+                    }}>
+                      ★ pick
+                    </span>
+                  )}
                 </div>
 
                 {/* Credited artist and uploading account are different things.
@@ -164,7 +174,7 @@ export default async function AllListingsPage({
                   </Link>
                 </div>
 
-                <StatusActions artworkId={a.id} status={a.status} />
+                <StatusActions artworkId={a.id} status={a.status} featured={a.featured} />
               </div>
             </div>
           )

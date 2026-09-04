@@ -10,11 +10,14 @@ import { useRouter } from 'next/navigation'
 export default function StatusActions({
   artworkId,
   status,
+  featured,
 }: {
   artworkId: string
   status: string
+  featured?: boolean
 }) {
   const [loading, setLoading] = useState('')
+  const [isFeatured, setIsFeatured] = useState(!!featured)
   const [error, setError] = useState('')
   const router = useRouter()
 
@@ -31,6 +34,28 @@ export default function StatusActions({
       setLoading('')
       return
     }
+    router.refresh()
+    setLoading('')
+  }
+
+  // Home's 'Curatorial picks' falls back to the newest work when nothing is
+  // featured — which quietly turns a curated shelf into a second 'newest'
+  // row. This is how the shelf becomes real.
+  async function toggleFeatured() {
+    setLoading('featured')
+    setError('')
+    const next = !isFeatured
+    const supabase = createClient()
+    const { error: updErr } = await supabase
+      .from('artworks')
+      .update({ featured: next })
+      .eq('id', artworkId)
+    if (updErr) {
+      setError(updErr.message)
+      setLoading('')
+      return
+    }
+    setIsFeatured(next)
     router.refresh()
     setLoading('')
   }
@@ -63,6 +88,17 @@ export default function StatusActions({
             {loading === 'under_review' ? '…' : 'Back to review'}
           </button>
         )}
+        <button
+          onClick={toggleFeatured}
+          disabled={!!loading}
+          style={btn(
+            isFeatured ? '#f3efe6' : '#fff',
+            isFeatured ? '#8a6d3b' : '#8a857c',
+            isFeatured ? '#e4d9c2' : '#e0dcd3'
+          )}
+        >
+          {loading === 'featured' ? '…' : isFeatured ? '★ Curatorial pick' : '☆ Add to picks'}
+        </button>
       </div>
       {error && <p style={{ color: '#b94040', fontSize: '13px', marginTop: '8px' }}>{error}</p>}
     </div>

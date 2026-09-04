@@ -43,6 +43,18 @@ export default async function BrowseResultsPage({
   const sizes = parseList(searchParams.size)
   const badges = parseList(searchParams.badge)
 
+  // A free-text search should find an artist by name, not just a title.
+  // Names live in two places: artist_name on the artwork (used when
+  // listing on someone's behalf) and the uploading account's profile.
+  let searchArtistIds: string[] = []
+  if (searchParams.q) {
+    const { data: matchingArtists } = await supabase
+      .from('profiles')
+      .select('id')
+      .ilike('full_name', `%${searchParams.q}%`)
+    searchArtistIds = (matchingArtists || []).map((p: any) => p.id)
+  }
+
   // Every filter except location. Reused for the travelling band below,
   // which is the same search with the place restriction lifted.
   function applyFilters(q: any) {
@@ -58,9 +70,17 @@ export default async function BrowseResultsPage({
     if (searchParams.framed === 'false') q = q.eq('framed', false)
     if (searchParams.min_price) q = q.gte('price_huf', Number(searchParams.min_price))
     if (searchParams.max_price) q = q.lte('price_huf', Number(searchParams.max_price))
-    // Free-text search covers the title only; style is no longer a text
-    // column, so ilike cannot be used on it.
-    if (searchParams.q) q = q.ilike('title', `%${searchParams.q}%`)
+    if (searchParams.q) {
+      const term = searchParams.q
+      const clauses = [
+        `title.ilike.%${term}%`,
+        `artist_name.ilike.%${term}%`,
+      ]
+      if (searchArtistIds.length) {
+        clauses.push(`artist_id.in.(${searchArtistIds.join(',')})`)
+      }
+      q = q.or(clauses.join(','))
+    }
     return q
   }
 
@@ -82,7 +102,7 @@ export default async function BrowseResultsPage({
 
   let query = supabase
     .from('artworks')
-    .select('*, profiles(full_name)')
+    .select('*, profiles(id, full_name)')
     .eq('status', 'live')
     .order('created_at', { ascending: false })
 
@@ -102,7 +122,7 @@ export default async function BrowseResultsPage({
   if (hasPlaceFilter) {
     let tq = supabase
       .from('artworks')
-      .select('*, profiles(full_name)')
+      .select('*, profiles(id, full_name)')
       .eq('status', 'live')
       .eq('travels_for_handoff', true)
       .order('created_at', { ascending: false })
@@ -125,6 +145,19 @@ export default async function BrowseResultsPage({
   // Only when exactly one category is being viewed — with several selected
   // there is no single thing to describe.
   const description = types.length === 1 ? typeHelp[types[0]] : null
+
+  const isEmpty = (artworks?.length || 0) === 0 && travelling.length === 0
+
+  // A category the buyer arrived at from a browse tile, with nothing in it
+  // yet, is a different situation from a filtered search that found nothing.
+  const isEmptyCategory =
+    isEmpty &&
+    types.length === 1 &&
+    !searchParams.q &&
+    !mediums.length && !moods.length && !styles.length &&
+    !colours.length && !materials.length && !sizes.length && !badges.length &&
+    !searchParams.framed && !searchParams.min_price && !searchParams.max_price &&
+    !searchParams.country && !searchParams.city
 
   return (
     <div style={pageWrap}>
@@ -159,9 +192,27 @@ export default async function BrowseResultsPage({
           {artworks?.map(x => <ArtworkCard key={x.id} artwork={x} />)}
         </div>
 
-        {artworks?.length === 0 && travelling.length === 0 && (
+        {isEmptyCategory ? (
+          <div style={{ padding: '3rem 2rem', textAlign: 'center' }}>
+            <p style={{
+              fontFamily: 'var(--font-fraunces), Georgia, serif',
+              fontSize: '16px', lineHeight: 1.6, color: '#5a5246',
+              marginBottom: '1.25rem', maxWidth: '300px', margin: '0 auto 1.25rem',
+            }}>
+              {r.emptySoon}
+            </p>
+            <Link href="/browse/results" style={{ textDecoration: 'none' }}>
+              <span style={{
+                display: 'inline-block', padding: '11px 22px', borderRadius: '999px',
+                border: '1px solid #0a0a0a', color: '#0a0a0a', fontSize: '14px',
+              }}>
+                {r.emptySoonCta}
+              </span>
+            </Link>
+          </div>
+        ) : isEmpty ? (
           <div style={emptyStyle}>{r.noMatch}</div>
-        )}
+        ) : null}
 
         {travelling.length > 0 && (
           <>
