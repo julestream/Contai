@@ -12,8 +12,10 @@ export default function SplashScreen() {
     if (seen) return
     sessionStorage.setItem('contai_splash_seen', '1')
     setShow(true)
-    const fade = setTimeout(() => setHidden(true), 4000)
-    const remove = setTimeout(() => setShow(false), 5000)
+    // 15% shorter than the original 4000/5000. Long enough to register,
+    // short enough not to stand between someone and the art.
+    const fade = setTimeout(() => setHidden(true), 3400)
+    const remove = setTimeout(() => setShow(false), 4250)
     return () => { clearTimeout(fade); clearTimeout(remove) }
   }, [])
 
@@ -32,11 +34,11 @@ export default function SplashScreen() {
         justifyContent: 'center',
         gap: 40,
         opacity: hidden ? 0 : 1,
-        transition: 'opacity 1000ms ease',
+        transition: 'opacity 850ms ease',
         pointerEvents: hidden ? 'none' : 'auto',
       }}
     >
-      <Logo dark size={1.6} />
+      <Logo dark size={1.6} link={false} />
       <div
         style={{
           width: 26,
