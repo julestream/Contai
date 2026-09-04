@@ -724,7 +724,7 @@ export const dictionaries: Record<Lang, Dict> = {
     },
     home: {
       discover: 'Discover',
-      tagline: 'Every work is a meeting.',
+      tagline: 'Every piece of art is a meeting.',
       nearYou: 'Near you in {city}',
       recommended: 'Recommended for you',
       newest: 'Newest additions',
