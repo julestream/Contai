@@ -12,6 +12,7 @@ import Price from '@/components/ui/Price'
 import ArtworkGallery from '@/components/ui/ArtworkGallery'
 import HighValueNotice from '@/components/ui/HighValueNotice'
 import ScaleFigure from '@/components/ui/ScaleFigure'
+import HowBuyingWorks from '@/components/ui/HowBuyingWorks'
 
 // Compared against the normalised HUF figure so the threshold works across currencies.
 const HIGH_VALUE_HUF = 600000
@@ -170,14 +171,21 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
             {a.vacationMsg}
           </div>
         ) : (
-          <Link href={`/reserve/${artwork.id}`} style={{ textDecoration: 'none' }}>
-            <div style={{
-              marginTop: '1.5rem', padding: '16px', backgroundColor: '#0a0a0a', color: 'white',
-              borderRadius: '999px', textAlign: 'center', fontSize: '16px', fontWeight: 500,
-            }}>
-              {a.reserve} · <Price amount={feeAmount} currency={priceCurrency} />
-            </div>
-          </Link>
+          <>
+            <Link href={`/reserve/${artwork.id}`} style={{ textDecoration: 'none' }}>
+              <div style={{
+                marginTop: '1.5rem', padding: '16px', backgroundColor: '#0a0a0a', color: 'white',
+                borderRadius: '999px', textAlign: 'center', fontSize: '16px', fontWeight: 500,
+              }}>
+                {a.reserve} · <Price amount={feeAmount} currency={priceCurrency} />
+              </div>
+            </Link>
+
+            {/* Buying here is unusual enough that the hesitation happens at
+                this exact point. Until now the explanation only appeared
+                after the buyer had already tapped Reserve. */}
+            <HowBuyingWorks />
+          </>
         )}
 
         {isHighValue && !isSold && <HighValueNotice />}
