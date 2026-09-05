@@ -11,6 +11,7 @@ import RecordView from '@/components/ui/RecordView'
 import Price from '@/components/ui/Price'
 import ArtworkGallery from '@/components/ui/ArtworkGallery'
 import HighValueNotice from '@/components/ui/HighValueNotice'
+import ScaleFigure from '@/components/ui/ScaleFigure'
 
 // Compared against the normalised HUF figure so the threshold works across currencies.
 const HIGH_VALUE_HUF = 600000
@@ -139,6 +140,14 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
             {location && <p style={{ gridColumn: '1 / -1' }}><span style={{ color: '#999' }}>{a.pickupLocation}</span><br />{location}</p>}
           </div>
         </div>
+
+        {/* Directly under the measurements, because that is where the
+            question 'but how big is that?' actually occurs. */}
+        <ScaleFigure
+          widthCm={artwork.width_cm}
+          heightCm={artwork.height_cm}
+          depthCm={artwork.depth_cm}
+        />
 
         {artwork.description && (
           <p style={{ marginTop: '1.5rem', fontSize: '15px', lineHeight: 1.6, color: '#333', whiteSpace: 'pre-wrap' }}>
