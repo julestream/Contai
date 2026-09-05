@@ -71,7 +71,7 @@ export default function HowBuyingWorks() {
               marginBottom: '10px',
             }}
           >
-            {t('home.guideTitle')} {t('home.guideEmphasis')} →
+            {t('artwork.moreAboutProcess')} →
           </Link>
         </div>
       )}

@@ -1,8 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { useLang } from '@/i18n/LanguageProvider'
-import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
+import BackLink from '@/components/ui/BackLink'
 import { getHowItWorks } from '@/i18n/howitworks'
 
 export default function HowItWorksPage() {
@@ -11,9 +10,10 @@ export default function HowItWorksPage() {
 
   return (
     <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1rem 0.5rem' }}>
-        <Link href="/home" style={{ textDecoration: 'none', color: '#0a0a0a', fontSize: '20px' }}>←</Link>
-        <LanguageSwitcher />
+      {/* The language switcher lives in the top bar now, on every page —
+          a second one here was a leftover from before that existed. */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '1rem 1rem 0.5rem' }}>
+        <BackLink />
       </div>
 
       <div style={{ padding: '0.5rem 1.25rem 0' }}>
