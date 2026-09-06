@@ -213,8 +213,10 @@ h1, h2, h3, h4, h5, h6 {
     padding-right: 2rem;
   }
 
-  /* No sideways scrolling: four across, and anything beyond that is
-     reached through 'view all'. */
+  /* No sideways scrolling: exactly one row of four, and anything beyond
+     that is reached through 'view all'. With a small catalogue, several
+     sections show much the same work, so a second row would repeat
+     rather than reveal. */
   .h-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
