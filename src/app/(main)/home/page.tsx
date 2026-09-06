@@ -17,7 +17,7 @@ const MOOD_IMG: Record<string, string> = {
 
 function SectionHeader({ title, href, viewAllLabel }: { title: string; href?: string; viewAllLabel: string }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', padding: '0 1rem', marginBottom: '12px' }}>
+    <div className="section-header" style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', padding: '0 1rem', marginBottom: '12px' }}>
       <h2 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '19px', color: '#0a0a0a' }}>{title}</h2>
       {href && (
         <Link href={href} style={{ fontSize: '12px', color: '#666', textDecoration: 'none', letterSpacing: '0.04em' }}>
@@ -28,12 +28,9 @@ function SectionHeader({ title, href, viewAllLabel }: { title: string; href?: st
   )
 }
 
-function HRow({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', padding: '0 1rem 4px', scrollbarWidth: 'none' }}>
-      {children}
-    </div>
-  )
+function HRow({ children, variant }: { children: React.ReactNode; variant?: 'moods' | 'cards' }) {
+  const cls = variant ? `h-row h-row-${variant}` : 'h-row'
+  return <div className={cls}>{children}</div>
 }
 
 export default async function HomePage() {
@@ -50,26 +47,26 @@ export default async function HomePage() {
   // Newest additions
   const { data: newest } = await supabase
     .from('artworks')
-    .select('*, profiles(full_name)')
+    .select('*, profiles(id, full_name)')
     .eq('status', 'live')
     .order('created_at', { ascending: false })
-    .limit(6)
+    .limit(8)
 
   // Curatorial picks — featured first, fall back to newest if none featured
   let { data: picks } = await supabase
     .from('artworks')
-    .select('*, profiles(full_name)')
+    .select('*, profiles(id, full_name)')
     .eq('status', 'live')
     .eq('featured', true)
     .order('created_at', { ascending: false })
-    .limit(6)
+    .limit(8)
   if (!picks || picks.length === 0) {
     const { data: fallbackPicks } = await supabase
       .from('artworks')
-      .select('*, profiles(full_name)')
+      .select('*, profiles(id, full_name)')
       .eq('status', 'live')
       .order('created_at', { ascending: true })
-      .limit(6)
+      .limit(8)
     picks = fallbackPicks || []
   }
 
@@ -81,9 +78,9 @@ export default async function HomePage() {
   if (user) {
     const { data: favRows } = await supabase
       .from('favorites')
-      .select('artwork_id, artworks(*, profiles(full_name))')
+      .select('artwork_id, artworks(*, profiles(id, full_name))')
       .eq('profile_id', user.id)
-      .limit(6)
+      .limit(8)
     favorites = (favRows || []).map((f: any) => f.artworks).filter(Boolean)
 
     const { data: prof } = await supabase
@@ -96,11 +93,11 @@ export default async function HomePage() {
     if (prefTypes.length > 0) {
       const { data: recs } = await supabase
         .from('artworks')
-        .select('*, profiles(full_name)')
+        .select('*, profiles(id, full_name)')
         .eq('status', 'live')
         .in('type_of_art', prefTypes)
         .order('created_at', { ascending: false })
-        .limit(6)
+        .limit(8)
       recommended = recs || []
     }
 
@@ -108,17 +105,17 @@ export default async function HomePage() {
       nearCity = prof.city
       const { data: near } = await supabase
         .from('artworks')
-        .select('*, profiles(full_name)')
+        .select('*, profiles(id, full_name)')
         .eq('status', 'live')
         .eq('city', prof.city)
         .order('created_at', { ascending: false })
-        .limit(6)
+        .limit(8)
       nearYou = near || []
     }
 
     const { data: rvRows } = await supabase
       .from('recently_viewed')
-      .select('artwork_id, viewed_at, artworks(*, profiles(full_name))')
+      .select('artwork_id, viewed_at, artworks(*, profiles(id, full_name))')
       .eq('user_id', user.id)
       .order('viewed_at', { ascending: false })
       .limit(8)
@@ -163,10 +160,10 @@ export default async function HomePage() {
 
   const carousel = (
     <div style={{ margin: '4px 0 28px' }}>
-      <HRow>
+      <HRow variant="cards">
         {news.map(n => (
-          <Link key={n.id} href={n.href} style={{ textDecoration: 'none', flexShrink: 0 }}>
-            <div style={{
+          <Link key={n.id} href={n.href} style={{ textDecoration: 'none' }} className="h-row-item">
+            <div className="news-card" style={{
               width: '248px', height: '158px', borderRadius: '14px',
               background: cardBackground(n.tag),
               color: '#f2ebe2', padding: '18px', position: 'relative', overflow: 'hidden',
@@ -198,7 +195,7 @@ export default async function HomePage() {
       <SectionHeader title={h.newest} href="/browse/newest" viewAllLabel={viewAll} />
       <HRow>
         {newest?.map(a => (
-          <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+          <div key={a.id} className="h-row-item">
             <ArtworkCard artwork={a} />
           </div>
         ))}
@@ -207,7 +204,7 @@ export default async function HomePage() {
   )
 
   return (
-    <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '6rem' }}>
+    <div className="home-page">
       {/* Set in the sans italic as a quiet remark rather than a title.
           A <p> rather than an <h1>: the global stylesheet forces Fraunces
           onto every heading, which was overriding the family here. */}
@@ -233,7 +230,7 @@ export default async function HomePage() {
           />
           <HRow>
             {nearYou.map(a => (
-              <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+              <div key={a.id} className="h-row-item">
                 <ArtworkCard artwork={a} />
               </div>
             ))}
@@ -260,7 +257,7 @@ export default async function HomePage() {
           <SectionHeader title={h.recommended} href="/browse/newest" viewAllLabel={viewAll} />
           <HRow>
             {recommended.map(a => (
-              <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+              <div key={a.id} className="h-row-item">
                 <ArtworkCard artwork={a} />
               </div>
             ))}
@@ -271,10 +268,10 @@ export default async function HomePage() {
       {/* Shop by mood */}
       <section style={{ marginBottom: '28px' }}>
         <SectionHeader title={h.shopByMood} href="/browse/results" viewAllLabel={viewAll} />
-        <HRow>
+        <HRow variant="moods">
           {MOODS.map(m => (
-            <Link key={m} href={`/browse/results?mood=${m}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
-              <div style={{
+            <Link key={m} href={`/browse/results?mood=${m}`} style={{ textDecoration: 'none' }} className="h-row-item">
+              <div className="mood-tile" style={{
                 width: '120px', height: '90px', borderRadius: '12px', overflow: 'hidden',
                 position: 'relative', background: '#2a2a2a',
               }}>
@@ -303,7 +300,7 @@ export default async function HomePage() {
         <SectionHeader title={h.curatorial} href="/browse/curatorial" viewAllLabel={viewAll} />
         <HRow>
           {picks?.map(a => (
-            <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+            <div key={a.id} className="h-row-item">
               <ArtworkCard artwork={a} />
             </div>
           ))}
@@ -316,7 +313,7 @@ export default async function HomePage() {
           <SectionHeader title={h.recentlyViewed} viewAllLabel={viewAll} />
           <HRow>
             {recentlyViewed.map(a => (
-              <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+              <div key={a.id} className="h-row-item">
                 <ArtworkCard artwork={a} />
               </div>
             ))}
@@ -330,7 +327,7 @@ export default async function HomePage() {
           <SectionHeader title={h.yourFavorites} href="/favorites" viewAllLabel={viewAll} />
           <HRow>
             {favorites.map(a => (
-              <div key={a.id} style={{ flexShrink: 0, width: '150px' }}>
+              <div key={a.id} className="h-row-item">
                 <ArtworkCard artwork={a} />
               </div>
             ))}

@@ -83,6 +83,30 @@ h1, h2, h3, h4, h5, h6 {
   padding-bottom: 8rem;
 }
 
+/* ── Home rows ───────────────────────────────────────────────
+   A swipeable strip on a phone. On a laptop there is no swipe, and
+   several people disliked sideways scrolling, so these become plain
+   rows with 'view all' carrying anyone who wants more. */
+
+.h-row {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 0 1rem 4px;
+  scrollbar-width: none;
+}
+
+.h-row-item {
+  flex-shrink: 0;
+  width: 150px;
+}
+
+.home-page {
+  max-width: 430px;
+  margin: 0 auto;
+  padding-bottom: 6rem;
+}
+
 @media (min-width: 640px) and (max-width: 899px) {
   .artwork-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -181,5 +205,54 @@ h1, h2, h3, h4, h5, h6 {
   .artwork-buy {
     position: sticky;
     top: 90px;
+  }
+
+  .home-page {
+    max-width: 1120px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  /* No sideways scrolling: four across, and anything beyond that is
+     reached through 'view all'. */
+  .h-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+    overflow-x: visible;
+    padding: 0;
+  }
+
+  .h-row-item {
+    width: auto;
+  }
+
+  /* The mood tiles are smaller and there are five of them. */
+  .h-row-moods {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .h-row-moods .h-row-item {
+    width: auto;
+  }
+
+  .mood-tile {
+    width: 100% !important;
+    height: 150px !important;
+  }
+
+  /* The explainer cards: three across, two rows of them. */
+  .h-row-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .news-card {
+    width: 100% !important;
+    height: 180px !important;
+  }
+
+  .section-header {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 }
