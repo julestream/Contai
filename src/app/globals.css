@@ -54,6 +54,33 @@ h1, h2, h3, h4, h5, h6 {
   display: none;
 }
 
+/* ── The artwork grid ────────────────────────────────────────
+   Two columns on a phone, three on a tablet, four on a laptop.
+   Inline styles cannot express that, so the grid lives here. */
+
+.artwork-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 14px;
+  row-gap: 34px;
+  padding: 0 1.15rem;
+}
+
+/* A page whose content is bounded on desktop but full-width on phone. */
+.content-column {
+  max-width: 430px;
+  margin: 0 auto;
+  padding-bottom: 6rem;
+}
+
+@media (min-width: 640px) and (max-width: 899px) {
+  .artwork-grid {
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 18px;
+    row-gap: 38px;
+  }
+}
+
 @media (min-width: 900px) {
   .app-field {
     background: #ffffff;
@@ -88,5 +115,39 @@ h1, h2, h3, h4, h5, h6 {
     margin: 0 auto !important;
     padding-left: 2rem;
     padding-right: 2rem;
+  }
+
+  .content-column {
+    max-width: 1120px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .artwork-grid {
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: 22px;
+    row-gap: 46px;
+    padding: 0;
+  }
+
+  /* Five categories in one row rather than the phone's 2 + 3 stack. */
+  .browse-tiles {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 12px !important;
+    height: auto !important;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem 3rem !important;
+  }
+
+  .browse-tile {
+    aspect-ratio: 3 / 4;
+    flex: none !important;
+  }
+
+  .browse-page {
+    height: auto !important;
+    overflow: visible !important;
   }
 }

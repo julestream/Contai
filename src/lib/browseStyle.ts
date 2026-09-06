@@ -2,28 +2,21 @@ import type { CSSProperties } from 'react'
 
 // ─────────────────────────────────────────────────────────────
 // The whole browse look lives here. Retune once, everything follows.
+//
+// The grid itself moved to globals.css as `.artwork-grid`: it changes
+// with screen width, and inline styles cannot express a media query.
 // ─────────────────────────────────────────────────────────────
 
 // ⬇︎ THE ONE LINE TO FLIP
 // Neutral page: '#f7f7f6'   ·   Plain white page: '#ffffff'
-// (was '#faf7f2', a warm tint)
 export const PAGE_BG = '#f7f7f6'
 
 // The panel each artwork floats on — a touch darker than the page,
 // so the work still reads as sitting on something.
-export const FRAME_BG = '#eeeeec'
+export const FRAME_BG = '#f3f3f2'
 export const FRAME_RATIO = '4 / 5'   // portrait — suits paintings
 export const FRAME_PAD = '16px'
 export const FRAME_RADIUS = '3px'
-
-// Grid rhythm — the generous row gap is most of the editorial feel
-export const GRID: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: '1fr 1fr',
-  columnGap: '14px',
-  rowGap: '34px',
-  padding: '0 1.15rem',
-}
 
 export const frameStyle: CSSProperties = {
   background: FRAME_BG,
@@ -74,12 +67,6 @@ export const priceStyle: CSSProperties = {
 export const pageWrap: CSSProperties = {
   background: PAGE_BG,
   minHeight: '100%',
-}
-
-export const innerWrap: CSSProperties = {
-  maxWidth: '430px',
-  margin: '0 auto',
-  paddingBottom: '6rem',
 }
 
 export const headerWrap: CSSProperties = {

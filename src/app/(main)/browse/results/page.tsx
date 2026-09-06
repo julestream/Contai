@@ -6,7 +6,7 @@ import { Suspense } from 'react'
 import FilterPanel from '@/components/ui/FilterPanel'
 import SaveSearchButton from '@/components/ui/SaveSearchButton'
 import { getDict, DEFAULT_LANG, Lang } from '@/i18n/dictionaries'
-import { pageWrap, innerWrap, headerWrap, headingStyle, countStyle, GRID, emptyStyle } from '@/lib/browseStyle'
+import { pageWrap, headerWrap, headingStyle, countStyle, emptyStyle } from '@/lib/browseStyle'
 
 export const dynamic = 'force-dynamic'
 
@@ -161,7 +161,7 @@ export default async function BrowseResultsPage({
 
   return (
     <div style={pageWrap}>
-      <div style={innerWrap}>
+      <div className="content-column">
         <div style={headerWrap}>
           <Link href="/browse" style={{ textDecoration: 'none', color: '#1a1a1a', fontSize: '20px' }}>←</Link>
           <h1 style={headingStyle}>{heading}</h1>
@@ -188,7 +188,7 @@ export default async function BrowseResultsPage({
           {artworks?.length || 0} {r.works}
         </div>
 
-        <div style={GRID}>
+        <div className="artwork-grid">
           {artworks?.map(x => <ArtworkCard key={x.id} artwork={x} />)}
         </div>
 
@@ -227,7 +227,7 @@ export default async function BrowseResultsPage({
                 {r.travellingBandHelp}
               </p>
             </div>
-            <div style={{ ...GRID, paddingTop: '20px' }}>
+            <div className="artwork-grid" style={{ paddingTop: '20px' }}>
               {travelling.map(x => <ArtworkCard key={x.id} artwork={x} />)}
             </div>
           </>
