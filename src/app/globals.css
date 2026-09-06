@@ -73,6 +73,16 @@ h1, h2, h3, h4, h5, h6 {
   padding-bottom: 6rem;
 }
 
+/* ── The artwork page ────────────────────────────────────────
+   One column on a phone. On a laptop the image takes the left and
+   everything else sits beside it. */
+
+.artwork-layout {
+  max-width: 430px;
+  margin: 0 auto;
+  padding-bottom: 8rem;
+}
+
 @media (min-width: 640px) and (max-width: 899px) {
   .artwork-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -141,13 +151,35 @@ h1, h2, h3, h4, h5, h6 {
     padding: 1.5rem 2rem 3rem !important;
   }
 
+  /* Tall tiles that fill the screen, rather than five thumbnails sitting
+     in the top third of an empty page. The subtraction accounts for the
+     top bar and the heading above the row. */
   .browse-tile {
-    aspect-ratio: 3 / 4;
+    height: calc(100vh - 230px);
+    min-height: 420px;
     flex: none !important;
   }
 
   .browse-page {
     height: auto !important;
     overflow: visible !important;
+  }
+
+  /* Image left, everything else right. */
+  .artwork-layout {
+    max-width: 1120px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 3.5rem;
+    align-items: start;
+    padding: 2rem 2rem 4rem;
+  }
+
+  /* Only the buying decision follows you down the page. Details, scale
+     and description are long enough that sticking the whole column
+     would overflow the window on a laptop. */
+  .artwork-buy {
+    position: sticky;
+    top: 90px;
   }
 }

@@ -58,77 +58,125 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
     : [city, country].filter(Boolean).join(', ')
 
   return (
-    <div style={{ maxWidth: '430px', margin: '0 auto', paddingBottom: '8rem' }}>
+    <div className="artwork-layout">
       <RecordView artworkId={artwork.id} />
 
-      <ArtworkGallery images={images} />
+      {/* Left on desktop, top on a phone. */}
+      <div>
+        <ArtworkGallery images={images} />
+      </div>
 
+      {/* Right on desktop. Everything that is not the image. */}
       <div style={{ padding: '1.5rem' }}>
-        {isOwner && (
-          <Link href={`/dashboard/edit/${artwork.id}`} style={{ textDecoration: 'none' }}>
-            <div style={{
-              marginBottom: '1rem', padding: '12px', backgroundColor: '#0a0a0a', color: '#fff',
-              borderRadius: '8px', textAlign: 'center', fontSize: '14px', fontWeight: 500,
-            }}>
-              {a.editListing}
-            </div>
-          </Link>
-        )}
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {/* The artist's name is the natural way through to the rest of
-              their work, so it should behave like one. */}
-          {artist?.id ? (
-            <Link
-              href={`/artist/${artist.id}`}
-              style={{
-                fontSize: '11px', color: '#999', textTransform: 'uppercase',
-                letterSpacing: '0.1em', textDecoration: 'none',
-                borderBottom: '1px solid #e0dcd3', paddingBottom: '1px',
-              }}
-            >
-              {displayArtist}
+        <div className="artwork-buy">
+          {isOwner && (
+            <Link href={`/dashboard/edit/${artwork.id}`} style={{ textDecoration: 'none' }}>
+              <div style={{
+                marginBottom: '1rem', padding: '12px', backgroundColor: '#0a0a0a', color: '#fff',
+                borderRadius: '8px', textAlign: 'center', fontSize: '14px', fontWeight: 500,
+              }}>
+                {a.editListing}
+              </div>
             </Link>
-          ) : (
-            <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-              {displayArtist}
+          )}
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {/* The artist's name is the natural way through to the rest of
+                their work, so it should behave like one. */}
+            {artist?.id ? (
+              <Link
+                href={`/artist/${artist.id}`}
+                style={{
+                  fontSize: '11px', color: '#999', textTransform: 'uppercase',
+                  letterSpacing: '0.1em', textDecoration: 'none',
+                  borderBottom: '1px solid #e0dcd3', paddingBottom: '1px',
+                }}
+              >
+                {displayArtist}
+              </Link>
+            ) : (
+              <p style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                {displayArtist}
+              </p>
+            )}
+            <FavoriteButton artworkId={artwork.id} />
+          </div>
+
+          <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', marginTop: '4px' }}>{artwork.title}</h1>
+          <Price
+            amount={priceAmount}
+            currency={priceCurrency}
+            style={{ display: 'block', fontFamily: 'var(--font-instrument), sans-serif', fontSize: '22px', marginTop: '8px' }}
+          />
+
+          {/* Location line — prominent for pickup-only */}
+          {(city || country) && (
+            <p style={{ fontSize: '13px', color: '#666', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <span aria-hidden style={{ fontSize: '13px' }}>📍</span>
+              {[city, country].filter(Boolean).join(', ')}
             </p>
           )}
-          <FavoriteButton artworkId={artwork.id} />
+
+          {/* Sits directly under the location, because that is the line that
+              raises the question this answers. */}
+          {travels && !isSold && (
+            <p style={{
+              fontSize: '13px', color: '#3a5a44', marginTop: '8px',
+              padding: '8px 12px', background: '#eef2ee', borderRadius: '8px',
+              lineHeight: 1.5,
+            }}>
+              {a.travelsBadge}
+            </p>
+          )}
+
+          {hasCertificate && (
+            <div style={{ marginTop: '12px' }}>
+              <Badge type="certificate" />
+            </div>
+          )}
+
+          {isSold ? (
+            <div style={{
+              marginTop: '1.5rem', padding: '16px', backgroundColor: '#eee', color: '#666',
+              borderRadius: '999px', textAlign: 'center', fontSize: '16px', fontWeight: 500,
+            }}>
+              {a.sold}
+            </div>
+          ) : onVacation ? (
+            <div style={{
+              marginTop: '1.5rem', padding: '16px', backgroundColor: '#f5f3ef', color: '#8a857c',
+              borderRadius: '12px', textAlign: 'center', fontSize: '14px', lineHeight: 1.5,
+            }}>
+              {a.vacationMsg}
+            </div>
+          ) : (
+            <>
+              <Link href={`/reserve/${artwork.id}`} style={{ textDecoration: 'none' }}>
+                <div style={{
+                  marginTop: '1.5rem', padding: '16px', backgroundColor: '#0a0a0a', color: 'white',
+                  borderRadius: '999px', textAlign: 'center', fontSize: '16px', fontWeight: 500,
+                }}>
+                  {a.reserve} · <Price amount={feeAmount} currency={priceCurrency} />
+                </div>
+              </Link>
+
+              {/* Buying here is unusual enough that the hesitation happens at
+                  this exact point. Until now the explanation only appeared
+                  after the buyer had already tapped Reserve. */}
+              <HowBuyingWorks />
+            </>
+          )}
+
+          {!isSold && !isOwner && !onVacation && (
+            <MakeOfferButton artworkId={artwork.id} artistId={artist?.id} />
+          )}
+
+          {!isOwner && <MessageArtistButton artworkId={artwork.id} artistId={artist?.id} />}
         </div>
 
-        <h1 style={{ fontFamily: 'var(--font-fraunces), Georgia, serif', fontSize: '26px', marginTop: '4px' }}>{artwork.title}</h1>
-        <Price
-          amount={priceAmount}
-          currency={priceCurrency}
-          style={{ display: 'block', fontFamily: 'var(--font-instrument), sans-serif', fontSize: '22px', marginTop: '8px' }}
-        />
-
-        {/* Location line — prominent for pickup-only */}
-        {(city || country) && (
-          <p style={{ fontSize: '13px', color: '#666', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span aria-hidden style={{ fontSize: '13px' }}>📍</span>
-            {[city, country].filter(Boolean).join(', ')}
-          </p>
-        )}
-
-        {/* Sits directly under the location, because that is the line that
-            raises the question this answers. */}
-        {travels && !isSold && (
-          <p style={{
-            fontSize: '13px', color: '#3a5a44', marginTop: '8px',
-            padding: '8px 12px', background: '#eef2ee', borderRadius: '8px',
-            lineHeight: 1.5,
-          }}>
-            {a.travelsBadge}
-          </p>
-        )}
-
-        {hasCertificate && (
-          <div style={{ marginTop: '12px' }}>
-            <Badge type="certificate" />
-          </div>
-        )}
+        {/* Below the sticky block: everything that rewards reading rather
+            than deciding. */}
+        {isHighValue && !isSold && <HighValueNotice />}
 
         <div style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: '#f5f3ef', borderRadius: '8px', fontSize: '14px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -156,51 +204,11 @@ export default async function ArtworkPage({ params }: { params: { id: string } }
           </p>
         )}
 
-        {isSold ? (
-          <div style={{
-            marginTop: '1.5rem', padding: '16px', backgroundColor: '#eee', color: '#666',
-            borderRadius: '999px', textAlign: 'center', fontSize: '16px', fontWeight: 500,
-          }}>
-            {a.sold}
-          </div>
-        ) : onVacation ? (
-          <div style={{
-            marginTop: '1.5rem', padding: '16px', backgroundColor: '#f5f3ef', color: '#8a857c',
-            borderRadius: '12px', textAlign: 'center', fontSize: '14px', lineHeight: 1.5,
-          }}>
-            {a.vacationMsg}
-          </div>
-        ) : (
-          <>
-            <Link href={`/reserve/${artwork.id}`} style={{ textDecoration: 'none' }}>
-              <div style={{
-                marginTop: '1.5rem', padding: '16px', backgroundColor: '#0a0a0a', color: 'white',
-                borderRadius: '999px', textAlign: 'center', fontSize: '16px', fontWeight: 500,
-              }}>
-                {a.reserve} · <Price amount={feeAmount} currency={priceCurrency} />
-              </div>
-            </Link>
-
-            {/* Buying here is unusual enough that the hesitation happens at
-                this exact point. Until now the explanation only appeared
-                after the buyer had already tapped Reserve. */}
-            <HowBuyingWorks />
-          </>
-        )}
-
-        {isHighValue && !isSold && <HighValueNotice />}
-
-        {!isSold && !isOwner && !onVacation && (
-          <MakeOfferButton artworkId={artwork.id} artistId={artist?.id} />
-        )}
-
-        {!isOwner && <MessageArtistButton artworkId={artwork.id} artistId={artist?.id} />}
-
         {/* The Guarantee is the reason a stranger trusts this transaction,
             and it was mentioned here without a way to read it. */}
         <Link href="/guarantee" style={{ textDecoration: 'none' }}>
           <div style={{
-            marginTop: '1rem', padding: '12px', border: '1px solid #e8e8e8',
+            marginTop: '1.5rem', padding: '12px', border: '1px solid #e8e8e8',
             borderRadius: '8px', fontSize: '13px', color: '#666', textAlign: 'center',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
           }}>
