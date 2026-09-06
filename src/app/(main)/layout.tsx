@@ -3,21 +3,15 @@ import TopBar from '@/components/layout/TopBar'
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#ece8e1',
-    }}>
-      <div style={{
-        maxWidth: 480,
-        margin: '0 auto',
-        minHeight: '100vh',
-        background: '#ffffff',
-        boxShadow: '0 0 40px rgba(0,0,0,0.06)',
-        position: 'relative',
-      }}>
+    <div className="app-field">
+      <div className="app-shell">
         <TopBar />
-        <div style={{ paddingBottom: 90 }}>{children}</div>
-        <TabBar />
+        <div className="app-body">{children}</div>
+        {/* Below 900px the tab bar is the navigation; above it, the top
+            bar carries everything and this is hidden by CSS. */}
+        <div className="mobile-only">
+          <TabBar />
+        </div>
       </div>
     </div>
   )

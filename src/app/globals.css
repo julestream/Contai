@@ -21,3 +21,68 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-fraunces), Georgia, serif;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Desktop
+   The app was built phone-first: a 480px column on a beige field,
+   with a shadow that reads as a device. That framing is right on a
+   phone and looks like a mistake on a laptop, so above 900px the
+   shell simply becomes a page.
+   ───────────────────────────────────────────────────────────── */
+
+.app-field {
+  min-height: 100vh;
+  background: #ece8e1;
+}
+
+.app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #ffffff;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.06);
+  position: relative;
+}
+
+.app-body {
+  padding-bottom: 90px;
+}
+
+/* Shown only on wide screens; the tab bar takes over below. */
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .app-field {
+    background: #ffffff;
+  }
+
+  .app-shell {
+    max-width: none;
+    box-shadow: none;
+  }
+
+  /* The tab bar's 90px of clearance is no longer needed once the
+     navigation moves to the top. */
+  .app-body {
+    padding-bottom: 3rem;
+  }
+
+  .mobile-only {
+    display: none !important;
+  }
+
+  .desktop-only {
+    display: block;
+  }
+
+  /* Content stops well short of the window edge. Art needs margins,
+     and a full-bleed grid on a large monitor reads as a stock library. */
+  .page-width {
+    max-width: 1120px !important;
+    margin: 0 auto !important;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
