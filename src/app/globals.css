@@ -24,10 +24,9 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ─────────────────────────────────────────────────────────────
    Desktop
-   The app was built phone-first: a 480px column on a beige field,
-   with a shadow that reads as a device. That framing is right on a
-   phone and looks like a mistake on a laptop, so above 900px the
-   shell simply becomes a page.
+   The app was built phone-first: a 480px column on a beige field.
+   That framing is right on a phone and looks like a mistake on a
+   laptop, so above 900px the shell simply becomes a page.
    ───────────────────────────────────────────────────────────── */
 
 .app-field {
@@ -35,12 +34,14 @@ h1, h2, h3, h4, h5, h6 {
   background: #ece8e1;
 }
 
+/* No shadow: it read as a phone held in a frame. The beige alone still
+   gives the column an edge on tablets and half-width windows, which is
+   the only place it is visible at all. */
 .app-shell {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
   background: #ffffff;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.06);
   position: relative;
 }
 
@@ -60,7 +61,6 @@ h1, h2, h3, h4, h5, h6 {
 
   .app-shell {
     max-width: none;
-    box-shadow: none;
   }
 
   /* The tab bar's 90px of clearance is no longer needed once the
@@ -75,6 +75,10 @@ h1, h2, h3, h4, h5, h6 {
 
   .desktop-only {
     display: block;
+  }
+
+  .desktop-flex {
+    display: flex !important;
   }
 
   /* Content stops well short of the window edge. Art needs margins,
