@@ -15,10 +15,10 @@ const MOOD_IMG: Record<string, string> = {
   Intrigue: '/moods/intrigue.png',
 }
 
-// One row per section. With a small catalogue, more than this repeats the
-// same work across sections rather than showing anything new — 'view all'
-// carries anyone who wants the rest.
-const PER_ROW = 4
+// A phone swipes through all of these; a laptop shows the first four and
+// hides the rest, since there is nothing to swipe to. Fetching eight keeps
+// the phone experience as it was.
+const ROW_LIMIT = 8
 
 function SectionHeader({ title, href, viewAllLabel }: { title: string; href?: string; viewAllLabel: string }) {
   return (
@@ -55,7 +55,7 @@ export default async function HomePage() {
     .select('*, profiles(id, full_name)')
     .eq('status', 'live')
     .order('created_at', { ascending: false })
-    .limit(PER_ROW)
+    .limit(ROW_LIMIT)
 
   // Curatorial picks — featured first, fall back to newest if none featured
   let { data: picks } = await supabase
@@ -64,14 +64,14 @@ export default async function HomePage() {
     .eq('status', 'live')
     .eq('featured', true)
     .order('created_at', { ascending: false })
-    .limit(PER_ROW)
+    .limit(ROW_LIMIT)
   if (!picks || picks.length === 0) {
     const { data: fallbackPicks } = await supabase
       .from('artworks')
       .select('*, profiles(id, full_name)')
       .eq('status', 'live')
       .order('created_at', { ascending: true })
-      .limit(PER_ROW)
+      .limit(ROW_LIMIT)
     picks = fallbackPicks || []
   }
 
@@ -85,7 +85,7 @@ export default async function HomePage() {
       .from('favorites')
       .select('artwork_id, artworks(*, profiles(id, full_name))')
       .eq('profile_id', user.id)
-      .limit(PER_ROW)
+      .limit(ROW_LIMIT)
     favorites = (favRows || []).map((f: any) => f.artworks).filter(Boolean)
 
     const { data: prof } = await supabase
@@ -102,7 +102,7 @@ export default async function HomePage() {
         .eq('status', 'live')
         .in('type_of_art', prefTypes)
         .order('created_at', { ascending: false })
-        .limit(PER_ROW)
+        .limit(ROW_LIMIT)
       recommended = recs || []
     }
 
@@ -114,7 +114,7 @@ export default async function HomePage() {
         .eq('status', 'live')
         .eq('city', prof.city)
         .order('created_at', { ascending: false })
-        .limit(PER_ROW)
+        .limit(ROW_LIMIT)
       nearYou = near || []
     }
 
@@ -123,7 +123,7 @@ export default async function HomePage() {
       .select('artwork_id, viewed_at, artworks(*, profiles(id, full_name))')
       .eq('user_id', user.id)
       .order('viewed_at', { ascending: false })
-      .limit(PER_ROW)
+      .limit(ROW_LIMIT)
     recentlyViewed = (rvRows || [])
       .map((r: any) => r.artworks)
       .filter((a: any) => a && a.status === 'live')

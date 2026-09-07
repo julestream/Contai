@@ -101,12 +101,23 @@ h1, h2, h3, h4, h5, h6 {
   width: 150px;
 }
 
+/* The explainer cards and mood tiles set their own width — 150px is
+   the artwork card, and forcing it on them collapsed the gap between
+   them into one continuous band of colour. */
+.h-row-cards .h-row-item,
+.h-row-moods .h-row-item {
+  width: auto;
+}
+
 .home-page {
   max-width: 430px;
   margin: 0 auto;
   padding-bottom: 6rem;
 }
 
+/* On a phone only the first four of each row are worth loading eagerly,
+   but all eight stay swipeable. On desktop the fifth onward is hidden:
+   one row, and 'view all' for the rest. */
 @media (min-width: 640px) and (max-width: 899px) {
   .artwork-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -189,7 +200,9 @@ h1, h2, h3, h4, h5, h6 {
     overflow: visible !important;
   }
 
-  /* Image left, everything else right. */
+  /* Image left, everything else right. Nothing is sticky: the right
+     column is long, and a sticky block inside it rode over the details
+     as they scrolled past. */
   .artwork-layout {
     max-width: 1120px;
     display: grid;
@@ -197,14 +210,6 @@ h1, h2, h3, h4, h5, h6 {
     gap: 3.5rem;
     align-items: start;
     padding: 2rem 2rem 4rem;
-  }
-
-  /* Only the buying decision follows you down the page. Details, scale
-     and description are long enough that sticking the whole column
-     would overflow the window on a laptop. */
-  .artwork-buy {
-    position: sticky;
-    top: 90px;
   }
 
   .home-page {
@@ -229,13 +234,19 @@ h1, h2, h3, h4, h5, h6 {
     width: auto;
   }
 
+  /* Beyond the first four there is nothing to swipe to on a laptop, so
+     the rest of the row is simply not shown. */
+  .h-row > .h-row-item:nth-child(n + 5) {
+    display: none;
+  }
+
   /* The mood tiles are smaller and there are five of them. */
   .h-row-moods {
     grid-template-columns: repeat(5, 1fr);
   }
 
-  .h-row-moods .h-row-item {
-    width: auto;
+  .h-row-moods > .h-row-item:nth-child(n + 5) {
+    display: block;
   }
 
   .mood-tile {
@@ -246,6 +257,10 @@ h1, h2, h3, h4, h5, h6 {
   /* The explainer cards: three across, two rows of them. */
   .h-row-cards {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .h-row-cards > .h-row-item:nth-child(n + 5) {
+    display: block;
   }
 
   .news-card {
