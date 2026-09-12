@@ -22,9 +22,23 @@ const instrumentSans = Instrument_Sans({
   display: "swap",
 });
 
+const SITE_TITLE = "Contai - The Art Market";
+const SITE_DESCRIPTION = "Discover and reserve original art from artists in Hungary and Romania";
+
 export const metadata: Metadata = {
-  title: "Contai — The Art Market",
-  description: "Discover and reserve original art from Budapest artists",
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    siteName: "Contai",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({
