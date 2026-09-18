@@ -29,6 +29,13 @@ export async function GET(
     return NextResponse.json({ error: 'Payment required' }, { status: 403 })
   }
 
+  // Paying is not enough. The promise made to artists is that their home
+  // address stays private until *both* sides have agreed a time, so this
+  // is enforced here and not only hidden in the interface.
+  if (!reservation.meeting_confirmed_at) {
+    return NextResponse.json({ error: 'Meeting not yet confirmed' }, { status: 403 })
+  }
+
   // The service-role client bypasses RLS — this route is the only way
   // a buyer ever sees the exact address, and only after paying.
   const adminSupabase = createAdminClient()
