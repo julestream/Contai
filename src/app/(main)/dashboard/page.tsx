@@ -12,6 +12,7 @@ export default async function DashboardPage() {
   const lang = (cookies().get('contai_lang')?.value as Lang) || DEFAULT_LANG
   const dict = getDict(lang)
   const d = (dict as any).dashboard
+  const pl = (dict as any).pickupLocations
   const statusLabels = (d?.statusLabels || {}) as Record<string, string>
 
   const supabase = createClient()
@@ -85,19 +86,25 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Actions */}
-      <div style={{ padding: '1rem', borderBottom: '1px solid #e8e8e8', display: 'flex', gap: '8px' }}>
-        <Link href="/dashboard/upload" style={{ textDecoration: 'none', flex: 1 }}>
+      {/* Actions — two by two, so a fourth entry does not crush the labels
+          at 430px the way a single row of four would. */}
+      <div style={{ padding: '1rem', borderBottom: '1px solid #e8e8e8', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+        <Link href="/dashboard/upload" style={{ textDecoration: 'none' }}>
           <div style={{ padding: '12px 8px', backgroundColor: '#0a0a0a', color: 'white', borderRadius: '8px', textAlign: 'center', fontSize: '13px', fontWeight: 500, lineHeight: 1.25 }}>
             {d.listArtwork}
           </div>
         </Link>
-        <Link href="/dashboard/profile" style={{ textDecoration: 'none', flex: 1 }}>
+        <Link href="/dashboard/profile" style={{ textDecoration: 'none' }}>
           <div style={{ padding: '12px 8px', border: '1px solid #e8e8e8', borderRadius: '8px', textAlign: 'center', fontSize: '13px', color: '#0a0a0a', lineHeight: 1.25 }}>
             {d.editProfile}
           </div>
         </Link>
-        <Link href="/dashboard/verification" style={{ textDecoration: 'none', flex: 1 }}>
+        <Link href="/dashboard/pickup-locations" style={{ textDecoration: 'none' }}>
+          <div style={{ padding: '12px 8px', border: '1px solid #e8e8e8', borderRadius: '8px', textAlign: 'center', fontSize: '13px', color: '#0a0a0a', lineHeight: 1.25 }}>
+            {pl?.manageLink || 'Pickup locations'}
+          </div>
+        </Link>
+        <Link href="/dashboard/verification" style={{ textDecoration: 'none' }}>
           <div style={{ padding: '12px 8px', border: '1px solid #e8e8e8', borderRadius: '8px', textAlign: 'center', fontSize: '13px', color: '#0a0a0a', lineHeight: 1.25 }}>
             {d.verification}
           </div>
