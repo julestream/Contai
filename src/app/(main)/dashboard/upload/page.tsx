@@ -50,12 +50,25 @@ const CURRENCIES: { value: Currency; label: string }[] = [
 // Photos per artwork. Ten is plenty for a listing and keeps storage sane.
 const MAX_IMAGES = 10
 
+type PickupLocation = {
+  id: string
+  label: string
+  country: string | null
+  city: string | null
+  pickup_area: string | null
+  pickup_address: string | null
+  pickup_method: string
+  travels_for_handoff: boolean
+  is_default: boolean
+}
+
 export default function UploadPage() {
   const router = useRouter()
   const { t } = useLang()
   const { toHuf } = useCurrency()
   const u = (k: string) => t(`upload.${k}`)
   const c = (k: string) => t(`common.${k}`)
+  const pl = (k: string) => t(`pickupLocations.${k}`)
   const labels = (map: string, key: string) => {
     const m = t(`upload.${map}`) as any
     return (m && m[key]) || key
@@ -86,6 +99,11 @@ export default function UploadPage() {
   const [pickupAddress, setPickupAddress] = useState('')
   const [pickupMethod, setPickupMethod] = useState<'in_person' | 'local_delivery'>('in_person')
   const [travelsForHandoff, setTravelsForHandoff] = useState(false)
+  // Saved locations are a shortcut for filling the fields below — the values
+  // are still copied onto the artwork, so editing a saved location later
+  // never rewrites a piece that is already listed.
+  const [savedLocations, setSavedLocations] = useState<PickupLocation[]>([])
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
   const [colours, setColours] = useState<string[]>([])
   const [multicolour, setMulticolour] = useState(false)
   const [materials, setMaterials] = useState<string[]>([])
@@ -123,6 +141,37 @@ export default function UploadPage() {
     }
     checkId()
   }, [])
+
+  useEffect(() => {
+    async function loadLocations() {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const { data } = await supabase
+        .from('pickup_locations')
+        .select('*')
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: true })
+      if (!data || data.length === 0) return
+      setSavedLocations(data)
+      // Prefill from the default straight away, so an artist with one saved
+      // location never has to touch step 4 again.
+      const preset = data.find(l => l.is_default) || null
+      if (preset) applyLocation(preset)
+    }
+    loadLocations()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function applyLocation(loc: PickupLocation) {
+    setCountry(loc.country || '')
+    setCity(loc.city || '')
+    setPickupArea(loc.pickup_area || '')
+    setPickupAddress(loc.pickup_address || '')
+    setPickupMethod(loc.pickup_method === 'local_delivery' ? 'local_delivery' : 'in_person')
+    setTravelsForHandoff(loc.travels_for_handoff)
+    setSelectedLocationId(loc.id)
+  }
 
   function toggleColour(name: string) {
     setColours(prev => prev.includes(name) ? prev.filter(x => x !== name) : [...prev, name])
@@ -456,9 +505,38 @@ export default function UploadPage() {
       )}
       {step === 4 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* The whole point of saved locations: tap once instead of
+              retyping five fields for every piece. */}
+          {savedLocations.length > 0 && (
+            <div style={{ padding: '13px 15px', background: '#f5f3ef', borderRadius: '10px' }}>
+              <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '9px' }}>{pl('useSaved')}</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {savedLocations.map(loc => (
+                  <button
+                    key={loc.id}
+                    onClick={() => applyLocation(loc)}
+                    style={{ ...chip(selectedLocationId === loc.id), fontSize: '13px', padding: '7px 14px' }}
+                  >
+                    {loc.label}
+                  </button>
+                ))}
+              </div>
+              <Link href="/dashboard/pickup-locations" style={{ fontSize: '12px', color: '#5a5246', textDecoration: 'underline', display: 'inline-block', marginTop: '10px' }}>
+                {pl('manageLink')}
+              </Link>
+            </div>
+          )}
+          {savedLocations.length === 0 && (
+            <p style={{ fontSize: '12.5px', color: '#5a5246', lineHeight: 1.55, padding: '11px 13px', background: '#f5f3ef', borderRadius: '8px' }}>
+              {pl('intro')}{' '}
+              <Link href="/dashboard/pickup-locations" style={{ color: '#0a0a0a', textDecoration: 'underline' }}>
+                {pl('addNew')}
+              </Link>
+            </p>
+          )}
           <div>
             <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{u('country')}</label>
-            <select value={country} onChange={e => { setCountry(e.target.value); setCity('') }} style={{ ...inputStyle, width: '100%' }}>
+            <select value={country} onChange={e => { setCountry(e.target.value); setCity(''); setSelectedLocationId(null) }} style={{ ...inputStyle, width: '100%' }}>
               <option value="">{u('selectCountry')}</option>
               {COUNTRIES.map(x => <option key={x} value={x}>{x}</option>)}
             </select>
@@ -466,7 +544,7 @@ export default function UploadPage() {
           {country && (
             <div>
               <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{u('city')}</label>
-              <select value={city} onChange={e => setCity(e.target.value)} style={{ ...inputStyle, width: '100%' }}>
+              <select value={city} onChange={e => { setCity(e.target.value); setSelectedLocationId(null) }} style={{ ...inputStyle, width: '100%' }}>
                 <option value="">{u('selectCity')}</option>
                 {CITIES[country]?.map(x => <option key={x} value={x}>{x}</option>)}
               </select>
@@ -474,17 +552,17 @@ export default function UploadPage() {
           )}
           <div>
             <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{u('pickupAreaLabel')}</label>
-            <input placeholder={u('pickupAreaPlaceholder')} value={pickupArea} onChange={e => setPickupArea(e.target.value)} style={{ ...inputStyle, width: '100%' }} />
+            <input placeholder={u('pickupAreaPlaceholder')} value={pickupArea} onChange={e => { setPickupArea(e.target.value); setSelectedLocationId(null) }} style={{ ...inputStyle, width: '100%' }} />
             <p style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>{u('pickupAreaHelp')}</p>
           </div>
           <div>
             <label style={{ fontSize: '13px', color: '#666', display: 'block', marginBottom: '6px' }}>{u('pickupAddressLabel')}</label>
-            <input placeholder={u('pickupAddressPlaceholder')} value={pickupAddress} onChange={e => setPickupAddress(e.target.value)} style={{ ...inputStyle, width: '100%' }} />
+            <input placeholder={u('pickupAddressPlaceholder')} value={pickupAddress} onChange={e => { setPickupAddress(e.target.value); setSelectedLocationId(null) }} style={{ ...inputStyle, width: '100%' }} />
             <p style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>{u('pickupAddressHelp')}</p>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             {(['in_person', 'local_delivery'] as const).map(m => (
-              <button key={m} onClick={() => setPickupMethod(m)} style={{ ...chip(pickupMethod === m), flex: 1 }}>{m === 'in_person' ? u('inPerson') : u('localDelivery')}</button>
+              <button key={m} onClick={() => { setPickupMethod(m); setSelectedLocationId(null) }} style={{ ...chip(pickupMethod === m), flex: 1 }}>{m === 'in_person' ? u('inPerson') : u('localDelivery')}</button>
             ))}
           </div>
 
@@ -493,7 +571,7 @@ export default function UploadPage() {
             <input
               type="checkbox"
               checked={travelsForHandoff}
-              onChange={e => setTravelsForHandoff(e.target.checked)}
+              onChange={e => { setTravelsForHandoff(e.target.checked); setSelectedLocationId(null) }}
               style={{ marginTop: '3px', width: '18px', height: '18px', flexShrink: 0, cursor: 'pointer' }}
             />
             <span style={{ fontSize: '14px', lineHeight: 1.5, color: '#0a0a0a' }}>{u('travelsLabel')}</span>
